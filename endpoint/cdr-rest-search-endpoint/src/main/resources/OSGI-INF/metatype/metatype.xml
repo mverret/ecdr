@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright (c) Cohesive Integrations, LLC
+ *
+ * This is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or any later version. 
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details. A copy of the GNU Lesser General Public License is distributed along with this program and can be found at
+ * <http://www.gnu.org/licenses/lgpl.html>.
+ * 
+ **/
+ -->
+<metatype:MetaData xmlns:metatype="http://www.osgi.org/xmlns/metatype/v1.0.0">
+
+    <OCD name="CDR REST Search Endpoint (Profile v1.1)" id="cdr-rest-search-endpoint-1.1">
+
+        <AD name="Default Response Format" id="defaultResponseFormat" required="true" type="String" default="atom"
+            description="The default response format to return results as if no format parameter is supplied in the query">
+            <Option label="Atom" value="atom" />
+            <Option label="Atom with Metadata Payload (any format)" value="atom-ddms" />
+        </AD>
+
+        <AD name="Default Page Size (Count)" id="defaultCount" required="true" type="Integer" default="100"
+            description="The default number of results to return per page if the 'count' parameter is not supplied in the query" />
+
+        <AD name="Default Query Timeout (Seconds)" id="defaultTimeoutSeconds" required="true" type="Integer" default="300"
+            description="The default number of seconds a query should wait before timing out if no response is returned, if the timeout parameter is not supplied in the query." />
+
+        <AD name="Default Radius (Meters)" id="defaultRadiusMeters" required="true" type="Double" default="50000.0"
+            description="The default number of meters to use as the radius for point radius queries if the 'radius' parameter is not supplied in the query, but the 'lat' and 'lon' parameters are" />
+
+        <AD name="Default Date Type" id="defaultDateType" required="true" type="String" default="effective"
+            description="The default date type value to use no 'dtType' parameter is supplied in the query, but a atleast one of 'dtStart' or 'dtEnd' is specified.">
+            <Option label="Created" value="created" />
+            <Option label="Effective" value="effective" />
+            <Option label="Info Cut Off (ICOD)" value="infoCutOff" />
+            <Option label="Posted" value="posted" />
+            <Option label="Temporal Coverage" value="temporalCoverage" />
+            <Option label="Updated" value="updated" />
+            <Option label="Valid Until" value="validTil" />
+        </AD>
+        
+        <AD name="Query Request Cache Size" id="queryRequestCacheSize" required="true" type="Integer" default="3"
+            description="The number of query IDs (OID) to keep in cache to check against when  checking for unique queries.  Updating this value will clear the current cache." />
+            
+    </OCD>
+
+    <Designate pid="cdr-rest-search-endpoint-1.1">
+        <Object ocdref="cdr-rest-search-endpoint-1.1" />
+    </Designate>
+
+</metatype:MetaData>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright (c) Cohesive Integrations, LLC
+ *
+ * This is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or any later version. 
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details. A copy of the GNU Lesser General Public License is distributed along with this program and can be found at
+ * <http://www.gnu.org/licenses/lgpl.html>.
+ * 
+ **/
+ -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>cdr.ddf</groupId>
+        <artifactId>endpoint</artifactId>
+        <version>0.5.0-SNAPSHOT</version>
+    </parent>
+    <name>CDR :: Endpoints :: REST Search Service</name>
+    <groupId>cdr.ddf.endpoint</groupId>
+    <artifactId>cdr-rest-search-endpoint</artifactId>
+    <packaging>bundle</packaging>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>cdr.ddf.libs</groupId>
+            <artifactId>cdr-rest-search-commons</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-ext</artifactId>
+            <version>1.7.6</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-bundle</artifactId>
+            <version>2.7.11</version>
+        </dependency>
+
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <configuration>
+                    <instructions>
+                        <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
+                        <Embed-Transitive>true</Embed-Transitive>
+                        <Embed-Dependency>
+                            platform-configuration-impl,
+                            catalog-core-api-impl,
+                        </Embed-Dependency>
+                        <Import-Package>
+                            META-INF.cxf,
+                            META-INF.cxf.osgi,
+
+                            *,
+                        </Import-Package>
+                        <Export-Package />
+                        <Private-Package>
+                            cdr.ddf.search.endpoint.rest,
+                        </Private-Package>
+                    </instructions>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
+
+
+</project>

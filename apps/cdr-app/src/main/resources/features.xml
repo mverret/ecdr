@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright (c) Cohesive Integrations, LLC
+ *
+ * This is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or any later version. 
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details. A copy of the GNU Lesser General Public License is distributed along with this program and can be found at
+ * <http://www.gnu.org/licenses/lgpl.html>.
+ * 
+ **/
+ -->
+<features name="${project.artifactId}-${project.version}">
+
+
+    <feature name="cdr-atom-result-xformer-1.0" install="manual" version="${project.version}"
+        description="Atom Metacard and Query Response Transformer">
+        <bundle>mvn:cdr.ddf.transformer/cdr-atom-result-xformer-1.0/${project.version}</bundle>
+    </feature>
+
+    <feature name="cdr-rest-search-endpoint" install="manual" version="${project.version}" description="CDR REST Search endpoint.">
+        <bundle>mvn:cdr.ddf.endpoint/cdr-rest-search-endpoint/${project.version}</bundle>
+        <bundle>mvn:cdr.ddf.libs/cdr-rest-search-commons/${project.version}</bundle>
+        <bundle>mvn:cdr.ddf.federation/cdr-federation-strategies/${project.version}</bundle>
+    </feature>
+
+    <feature name="cdr-rest-source" install="manual" version="${project.version}" description="CDR REST Source">
+        <bundle>mvn:cdr.ddf.source/cdr-rest-source/${project.version}</bundle>
+        <bundle>mvn:cdr.ddf.libs/cdr-rest-search-commons/${project.version}</bundle>
+    </feature>
+
+    <feature name="cdr-rest-broker-endpoint" install="manual" version="${project.version}" description="CDR REST Search endpoint.">
+        <bundle>mvn:cdr.ddf.endpoint/cdr-rest-broker-endpoint/${project.version}</bundle>
+        <bundle>mvn:cdr.ddf.libs/cdr-rest-search-commons/${project.version}</bundle>
+        <bundle>mvn:cdr.ddf.federation/cdr-federation-strategies/${project.version}</bundle>
+    </feature>
+
+    <feature name="cdr-app" install="auto" version="${project.version}"
+        description="DDF CDR (Content Discovery and Retrieval) is used for discovering data using the CDR Interfaces.::DDF CDR">
+        <feature>catalog-app</feature>
+        <feature>cdr-rest-search-endpoint</feature>
+        <feature>cdr-rest-broker-endpoint</feature>
+        <feature>cdr-atom-result-xformer-1.0</feature>
+        <feature>cdr-rest-source</feature>
+    </feature>
+
+</features>

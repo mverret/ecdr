@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright (c) Cohesive Integrations, LLC
+ *
+ * This is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or any later version. 
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details. A copy of the GNU Lesser General Public License is distributed along with this program and can be found at
+ * <http://www.gnu.org/licenses/lgpl.html>.
+ * 
+ **/
+ -->
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0" 
+    xmlns:jaxrs="http://cxf.apache.org/blueprint/jaxrs"
+    xmlns:cxf="http://cxf.apache.org/blueprint/core" 
+    xmlns:ext="http://aries.apache.org/blueprint/xmlns/blueprint-ext/v1.0.0"
+    xsi:schemaLocation="
+        http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
+        http://cxf.apache.org/blueprint/jaxrs http://cxf.apache.org/schemas/blueprint/jaxrs.xsd
+        http://cxf.apache.org/blueprint/core http://cxf.apache.org/schemas/blueprint/core.xsd
+    ">
+    
+    <!-- According to the schema the type-converters element must be above all other elements except 'description' -->
+    <type-converters>
+        <bean id="listConverter" class="ddf.catalog.util.impl.ListConverter" />
+    </type-converters>
+
+    <reference id="catalogFramework" interface="ddf.catalog.CatalogFramework" />
+    <reference id="filterBuilder" interface="ddf.catalog.filter.FilterBuilder" />
+
+    <service id="cdrRestConfigWatcher" ref="configurationWatcher" interface="org.codice.ddf.configuration.ConfigurationWatcher" />
+    <bean id="configurationWatcher" class="org.codice.ddf.configuration.impl.ConfigurationWatcherImpl" />
+
+    <jaxrs:server id="cdrRestEndpoint" address="/cdr/broker/rest">
+        <jaxrs:serviceBeans>
+            <ref component-id="cdrRestSearchService" />
+        </jaxrs:serviceBeans>
+    </jaxrs:server>
+
+    <bean id="preFederatedQuerySortedList" class="ddf.catalog.util.impl.SortedServiceList">
+        <argument ref="blueprintBundleContext" />
+    </bean>
+    
+    <bean id="postFederatedQuerySortedList" class="ddf.catalog.util.impl.SortedServiceList">
+        <argument ref="blueprintBundleContext" />
+    </bean>
+
+    <!-- PRE FEDERATED QUERY REFERENCE -->
+    <reference-list id="preFederatedQuery" interface="ddf.catalog.plugin.PreFederatedQueryPlugin" availability="optional">
+        <reference-listener bind-method="bindPlugin" unbind-method="unbindPlugin" ref="preFederatedQuerySortedList" />
+    </reference-list>
+    
+    <!-- POST FEDERATED QUERY REFERENCE -->
+    <reference-list id="postFederatedQuery" interface="ddf.catalog.plugin.PostFederatedQueryPlugin" availability="optional">
+        <reference-listener bind-method="bindPlugin" unbind-method="unbindPlugin" ref="postFederatedQuerySortedList" />
+    </reference-list>
+
+    <bean id="pool" class="java.util.concurrent.Executors" factory-method="newCachedThreadPool" />
+
+    <bean id="sorted" class="cdr.ddf.federation.SimpleSortedFederationStrategy">
+        <cm:managed-properties persistent-id="cdr.ddf.federation.SimpleSortedFederationStrategy"
+            update-strategy="container-managed" />
+        <argument ref="pool" />
+        <argument ref="preFederatedQuerySortedList" />
+        <argument ref="postFederatedQuerySortedList" />
+        <property name="maxStartIndex" value="50000" />
+    </bean>
+    
+    <bean id="fifo" class="cdr.ddf.federation.FifoFederationStrategy">
+        <cm:managed-properties persistent-id="cdr.ddf.federation.FifoFederationStrategy"
+            update-strategy="container-managed" />
+        <argument ref="pool" />
+        <argument ref="preFederatedQuerySortedList" />
+        <argument ref="postFederatedQuerySortedList" />
+    </bean>
+    <!-- <bean id="fifo" class="ddf.catalog.federation.impl.FifoFederationStrategy">
+        <cm:managed-properties persistent-id="cdr.ddf.federation.FifoFederationStrategy"
+            update-strategy="container-managed" />
+        <argument ref="pool" />
+        <argument ref="preFederatedQuerySortedList" />
+        <argument ref="postFederatedQuerySortedList" />
+    </bean>-->
+    
+    <bean id="cdrRestSearchService" class="cdr.ddf.broker.endpoint.rest.CDRRestBrokerServiceImpl">
+        <argument ref="catalogFramework" />
+        <argument ref="configurationWatcher" />
+        <argument ref="filterBuilder" />
+        <argument ref="queryParser" />
+        <argument ref="sorted" />
+        <argument ref="fifo" />
+    </bean>
+
+    <bean id="queryParser" class="cdr.ddf.commons.query.rest.parsers.BrokerQueryParser">
+        <cm:managed-properties persistent-id="cdr-rest-broker-endpoint-1.0.1" update-strategy="container-managed" />
+        <property name="defaultResponseFormat" value="atom" />
+        <property name="defaultCount" value="100" />
+        <property name="defaultTimeoutSeconds" value="300" />
+        <property name="defaultRadiusMeters" value="10000" />
+        <property name="defaultDateType" value="effective" />
+        <property name="queryRequestCacheSize" value="1000" />
+        <property name="defaultDeduplication" value="true" />
+    </bean>
+
+</blueprint>

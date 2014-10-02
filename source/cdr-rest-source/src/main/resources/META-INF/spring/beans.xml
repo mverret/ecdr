@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright (c) Cohesive Integrations, LLC
+ *
+ * This is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or any later version. 
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details. A copy of the GNU Lesser General Public License is distributed along with this program and can be found at
+ * <http://www.gnu.org/licenses/lgpl.html>.
+ * 
+ **/
+ -->
+<beans:beans xmlns="http://www.springframework.org/schema/osgi" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:osgix="http://www.springframework.org/schema/osgi-compendium" xmlns:osgi="http://www.springframework.org/schema/osgi"
+    xmlns:beans="http://www.springframework.org/schema/beans" xmlns:ctx="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/osgi  
+        http://www.springframework.org/schema/osgi/spring-osgi.xsd
+        http://www.springframework.org/schema/osgi-compendium                                    
+        http://www.springframework.org/schema/osgi-compendium/spring-osgi-compendium.xsd    
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/beans   
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <osgi:reference id="filterAdapter" interface="ddf.catalog.filter.FilterAdapter" />
+
+    <osgix:managed-service-factory id="cdr.ddf.source.rest.CDRRestSource" factory-pid="CDRRestSource"
+        update-strategy="bean-managed" update-method="refresh">
+
+        <osgix:interfaces>
+            <beans:value>ddf.catalog.source.FederatedSource</beans:value>
+        </osgix:interfaces>
+
+        <beans:bean id="MySearchSource" class="cdr.ddf.source.rest.CDRRestSource" init-method="init"
+            destroy-method="destroy">
+            <beans:constructor-arg ref="filterAdapter" />
+            <beans:property name="id" value="cdr-source" />
+            <beans:property name="endpointUrl" value="http://localhost:8181/services/cdr/search/rest" />
+            <beans:property name="defaultResponseFormat" value="atom-ddms" />
+            <beans:property name="title" value="CDR REST Federation" />
+            <beans:property name="description" value="CDR REST Federated Source v3.0" />
+            <beans:property name="organization" value="" />
+            <beans:property name="version" value="3.0" />
+        </beans:bean>
+
+    </osgix:managed-service-factory>
+
+
+
+
+</beans:beans>
