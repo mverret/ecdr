@@ -1,9 +1,9 @@
 package cdr.ddf.search.util;
 
+import net.di2e.ecdr.commons.query.util.GeospatialHelper;
+
 import org.junit.Assert;
 import org.junit.Test;
-
-import cdr.ddf.commons.query.util.GeospatialHelper;
 
 public class GeospatialHelperTest {
 

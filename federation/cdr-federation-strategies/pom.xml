@@ -18,19 +18,19 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>cdr.ddf</groupId>
+        <groupId>net.di2e.ecdr</groupId>
         <artifactId>federation</artifactId>
-        <version>0.5.0-SNAPSHOT</version>
+        <version>0.6.0-SNAPSHOT</version>
     </parent>
 
-    <name>CDR :: Federation :: Federation Strategies</name>
-    <groupId>cdr.ddf.federation</groupId>
+    <name>Enterprise CDR :: Federation :: Federation Strategies</name>
+    <groupId>net.di2e.ecdr.federation</groupId>
     <artifactId>cdr-federation-strategies</artifactId>
     <packaging>bundle</packaging>
 
     <dependencies>
         <dependency>
-            <groupId>cdr.ddf.libs</groupId>
+            <groupId>net.di2e.ecdr.libs</groupId>
             <artifactId>cdr-rest-search-commons</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -103,7 +103,7 @@
                             *
                         </Import-Package>
                         <Export-Package>
-                            cdr.ddf.federation;version="${project.version}"
+                            net.di2e.ecdr.federation;version="${project.version}"
                         </Export-Package>
                     </instructions>
                 </configuration>

@@ -51,8 +51,8 @@
     
     <bean id="pool" class="java.util.concurrent.Executors" factory-method="newCachedThreadPool" />
     
-    <bean id="fifo" class="cdr.ddf.federation.FifoFederationStrategy">
-        <cm:managed-properties persistent-id="cdr.ddf.federation.FifoFederationStrategy"
+    <bean id="fifo" class="net.di2e.ecdr.federation.FifoFederationStrategy">
+        <cm:managed-properties persistent-id="net.di2e.ecdr.federation.FifoFederationStrategy"
             update-strategy="container-managed" />
         <argument ref="pool" />
         <argument ref="preFederatedQuerySortedList" />
@@ -65,7 +65,7 @@
     <service id="cdrRestConfigWatcher" ref="configurationWatcher" interface="org.codice.ddf.configuration.ConfigurationWatcher" />
     <bean id="configurationWatcher" class="org.codice.ddf.configuration.impl.ConfigurationWatcherImpl" />
     
-    <bean id="queryParser" class="cdr.ddf.commons.query.rest.parsers.LegacyQueryParser">
+    <bean id="queryParser" class="net.di2e.ecdr.commons.query.rest.parsers.LegacyQueryParser">
         <cm:managed-properties persistent-id="cdr-rest-search-endpoint-1.1" update-strategy="container-managed"/>
         <property name="defaultResponseFormat" value="atom" />
         <property name="defaultCount" value="100" />
@@ -75,7 +75,7 @@
         <property name="queryRequestCacheSize" value="1000" />
     </bean>
 
-    <bean id="cdrRestSearchService" class="cdr.ddf.search.endpoint.rest.CDRRestSearchServiceImpl">
+    <bean id="cdrRestSearchService" class="net.di2e.ecdr.search.endpoint.rest.CDRRestSearchServiceImpl">
         <argument ref="catalogFramework" />
         <argument ref="configurationWatcher" />
         <argument ref="filterBuilder" />

@@ -18,28 +18,28 @@
 
     <feature name="cdr-atom-result-xformer-1.0" install="manual" version="${project.version}"
         description="Atom Metacard and Query Response Transformer">
-        <bundle>mvn:cdr.ddf.transformer/cdr-atom-result-xformer-1.0/${project.version}</bundle>
+        <bundle>mvn:net.di2e.ecdr.transformer/cdr-atom-result-xformer-1.0/${project.version}</bundle>
     </feature>
 
     <feature name="cdr-rest-search-endpoint" install="manual" version="${project.version}" description="CDR REST Search endpoint.">
-        <bundle>mvn:cdr.ddf.endpoint/cdr-rest-search-endpoint/${project.version}</bundle>
-        <bundle>mvn:cdr.ddf.libs/cdr-rest-search-commons/${project.version}</bundle>
-        <bundle>mvn:cdr.ddf.federation/cdr-federation-strategies/${project.version}</bundle>
+        <bundle>mvn:net.di2e.ecdr.endpoint/cdr-rest-search-endpoint/${project.version}</bundle>
+        <bundle>mvn:net.di2e.ecdr.libs/cdr-rest-search-commons/${project.version}</bundle>
+        <bundle>mvn:net.di2e.ecdr.federation/cdr-federation-strategies/${project.version}</bundle>
     </feature>
 
     <feature name="cdr-rest-source" install="manual" version="${project.version}" description="CDR REST Source">
-        <bundle>mvn:cdr.ddf.source/cdr-rest-source/${project.version}</bundle>
-        <bundle>mvn:cdr.ddf.libs/cdr-rest-search-commons/${project.version}</bundle>
+        <bundle>mvn:net.di2e.ecdr.source/cdr-rest-source/${project.version}</bundle>
+        <bundle>mvn:net.di2e.ecdr.libs/cdr-rest-search-commons/${project.version}</bundle>
     </feature>
 
     <feature name="cdr-rest-broker-endpoint" install="manual" version="${project.version}" description="CDR REST Search endpoint.">
-        <bundle>mvn:cdr.ddf.endpoint/cdr-rest-broker-endpoint/${project.version}</bundle>
-        <bundle>mvn:cdr.ddf.libs/cdr-rest-search-commons/${project.version}</bundle>
-        <bundle>mvn:cdr.ddf.federation/cdr-federation-strategies/${project.version}</bundle>
+        <bundle>mvn:net.di2e.ecdr.endpoint/cdr-rest-broker-endpoint/${project.version}</bundle>
+        <bundle>mvn:net.di2e.ecdr.libs/cdr-rest-search-commons/${project.version}</bundle>
+        <bundle>mvn:net.di2e.ecdr.federation/cdr-federation-strategies/${project.version}</bundle>
     </feature>
 
     <feature name="cdr-app" install="auto" version="${project.version}"
-        description="DDF CDR (Content Discovery and Retrieval) is used for discovering data using the CDR Interfaces.::DDF CDR">
+        description="Enterprise CDR (Content Discovery and Retrieval) is used for discovering data using the CDR Interfaces.::Enterprise CDR">
         <feature>catalog-app</feature>
         <feature>cdr-rest-search-endpoint</feature>
         <feature>cdr-rest-broker-endpoint</feature>

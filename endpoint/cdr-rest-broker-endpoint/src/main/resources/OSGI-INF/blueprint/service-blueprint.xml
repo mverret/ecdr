@@ -62,8 +62,8 @@
 
     <bean id="pool" class="java.util.concurrent.Executors" factory-method="newCachedThreadPool" />
 
-    <bean id="sorted" class="cdr.ddf.federation.SimpleSortedFederationStrategy">
-        <cm:managed-properties persistent-id="cdr.ddf.federation.SimpleSortedFederationStrategy"
+    <bean id="sorted" class="net.di2e.ecdr.federation.SimpleSortedFederationStrategy">
+        <cm:managed-properties persistent-id="net.di2e.ecdr.federation.SimpleSortedFederationStrategy"
             update-strategy="container-managed" />
         <argument ref="pool" />
         <argument ref="preFederatedQuerySortedList" />
@@ -71,22 +71,22 @@
         <property name="maxStartIndex" value="50000" />
     </bean>
     
-    <bean id="fifo" class="cdr.ddf.federation.FifoFederationStrategy">
-        <cm:managed-properties persistent-id="cdr.ddf.federation.FifoFederationStrategy"
+    <bean id="fifo" class="net.di2e.ecdr.federation.FifoFederationStrategy">
+        <cm:managed-properties persistent-id="net.di2e.ecdr.federation.FifoFederationStrategy"
             update-strategy="container-managed" />
         <argument ref="pool" />
         <argument ref="preFederatedQuerySortedList" />
         <argument ref="postFederatedQuerySortedList" />
     </bean>
     <!-- <bean id="fifo" class="ddf.catalog.federation.impl.FifoFederationStrategy">
-        <cm:managed-properties persistent-id="cdr.ddf.federation.FifoFederationStrategy"
+        <cm:managed-properties persistent-id="net.di2e.ecdr.federation.FifoFederationStrategy"
             update-strategy="container-managed" />
         <argument ref="pool" />
         <argument ref="preFederatedQuerySortedList" />
         <argument ref="postFederatedQuerySortedList" />
     </bean>-->
     
-    <bean id="cdrRestSearchService" class="cdr.ddf.broker.endpoint.rest.CDRRestBrokerServiceImpl">
+    <bean id="cdrRestSearchService" class="net.di2e.ecdr.broker.endpoint.rest.CDRRestBrokerServiceImpl">
         <argument ref="catalogFramework" />
         <argument ref="configurationWatcher" />
         <argument ref="filterBuilder" />
@@ -95,7 +95,7 @@
         <argument ref="fifo" />
     </bean>
 
-    <bean id="queryParser" class="cdr.ddf.commons.query.rest.parsers.BrokerQueryParser">
+    <bean id="queryParser" class="net.di2e.ecdr.commons.query.rest.parsers.BrokerQueryParser">
         <cm:managed-properties persistent-id="cdr-rest-broker-endpoint-1.0.1" update-strategy="container-managed" />
         <property name="defaultResponseFormat" value="atom" />
         <property name="defaultCount" value="100" />

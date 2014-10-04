@@ -17,19 +17,19 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>cdr.ddf</groupId>
+        <groupId>net.di2e.ecdr</groupId>
         <artifactId>endpoint</artifactId>
-        <version>0.5.0-SNAPSHOT</version>
+        <version>0.6.0-SNAPSHOT</version>
     </parent>
-    <name>CDR :: Endpoints :: REST Brokered Search Service</name>
-    <groupId>cdr.ddf.endpoint</groupId>
+    <name>Enterprise CDR :: Endpoints :: REST Brokered Search Service</name>
+    <groupId>net.di2e.ecdr.endpoint</groupId>
     <artifactId>cdr-rest-broker-endpoint</artifactId>
     <packaging>bundle</packaging>
 
 
     <dependencies>
         <dependency>
-            <groupId>cdr.ddf.libs</groupId>
+            <groupId>net.di2e.ecdr.libs</groupId>
             <artifactId>cdr-rest-search-commons</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -71,7 +71,7 @@
                         </Import-Package>
                         <Export-Package />
                         <Private-Package>
-                            cdr.ddf.broker.endpoint.rest,
+                            net.di2e.ecdr.broker.endpoint.rest,
                         </Private-Package>
                     </instructions>
                 </configuration>

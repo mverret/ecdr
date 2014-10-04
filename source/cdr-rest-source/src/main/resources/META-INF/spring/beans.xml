@@ -27,14 +27,14 @@
 
     <osgi:reference id="filterAdapter" interface="ddf.catalog.filter.FilterAdapter" />
 
-    <osgix:managed-service-factory id="cdr.ddf.source.rest.CDRRestSource" factory-pid="CDRRestSource"
+    <osgix:managed-service-factory id="net.di2e.ecdr.source.rest.CDRRestSource" factory-pid="CDRRestSource"
         update-strategy="bean-managed" update-method="refresh">
 
         <osgix:interfaces>
             <beans:value>ddf.catalog.source.FederatedSource</beans:value>
         </osgix:interfaces>
 
-        <beans:bean id="MySearchSource" class="cdr.ddf.source.rest.CDRRestSource" init-method="init"
+        <beans:bean id="MySearchSource" class="net.di2e.ecdr.source.rest.CDRRestSource" init-method="init"
             destroy-method="destroy">
             <beans:constructor-arg ref="filterAdapter" />
             <beans:property name="id" value="cdr-source" />

@@ -18,13 +18,13 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>cdr</groupId>
-    <artifactId>ddf</artifactId>
-    <version>0.5.0-SNAPSHOT</version>
+    <groupId>net.di2e.ecdr</groupId>
+    <artifactId>parent</artifactId>
+    <version>0.6.0-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>CDR</name>
+    <name>Enterprise CDR</name>
     <description>Top level pom file for CDR running on DDF</description>
-    <url>http://content-discovery.github.io/</url>
+    <url>https://github.com/di2e/cdr-ddf/wiki</url>
     <inceptionYear>2014</inceptionYear>
 
     <organization>
@@ -60,6 +60,10 @@
         </developer>
         <developer>
             <name>Nguessan Kouame</name>
+            <organization>Cohesive Integrations, LLC</organization>
+        </developer>
+		<developer>
+            <name>Matt Ramey</name>
             <organization>Cohesive Integrations, LLC</organization>
         </developer>
     </developers>
@@ -98,9 +102,9 @@
     </properties>
 
     <scm>
-        <url>https://github.com/content-discovery/ddf-cdr.git</url>
-        <connection>scm:git:git://github.com/content-discovery/ddf-cdr.git</connection>
-        <developerConnection>scm:git:git://github.com/content-discovery/ddf-cdr.git</developerConnection>
+        <url>https://github.com/di2e/cdr-ddf.git</url>
+        <connection>scm:git:git://github.com/di2e/cdr-ddf.git</connection>
+        <developerConnection>scm:git:git://github.com/di2e/cdr-ddf.git</developerConnection>
         <tag>HEAD</tag>
     </scm>
 

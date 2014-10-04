@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright (c) Cohesive Integrations, LLC
+ *
+ * This is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or any later version. 
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details. A copy of the GNU Lesser General Public License is distributed along with this program and can be found at
+ * <http://www.gnu.org/licenses/lgpl.html>.
+ * 
+ **/
+ -->
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.0.0">
+
+    <service id="atomConfigWatcher" ref="configurationWatcherAtom" interface="org.codice.ddf.configuration.ConfigurationWatcher" />
+    <!-- <service id="atomConfigWatcher" ref="configurationWatcherAtom" interface="ddf.catalog.util.DdfConfigurationWatcher"/> -->
+    <bean id="configurationWatcherAtom" class="org.codice.ddf.configuration.impl.ConfigurationWatcherImpl" />
+
+    <reference id="viewMetacardActionProvider" interface="ddf.action.ActionProvider" filter="(id=catalog.data.metacard.view)"
+        availability="optional" />
+    <reference id="resourceActionProvider" interface="ddf.action.ActionProvider" filter="(id=catalog.data.metacard.resource)"
+        availability="optional" />
+    <reference id="thumbnailActionProvider" interface="ddf.action.ActionProvider" filter="(id=catalog.data.metacard.thumbnail)"
+        availability="optional" />
+
+    <bean id="jpegMimeType" class="javax.activation.MimeType">
+        <argument value="image/jpeg" />
+    </bean>
+
+    <bean id="htmlMimeType" class="javax.activation.MimeType">
+        <argument value="text/html" />
+    </bean>
+
+    <bean id="ddms20AtomTransformer" class="net.di2e.ecdr.search.transform.atom.AtomTransformerWithPayload">
+        <argument ref="configurationWatcherAtom" />
+        <argument ref="viewMetacardActionProvider" />
+        <argument ref="resourceActionProvider" />
+        <argument ref="thumbnailActionProvider" />
+        <argument ref="jpegMimeType" />
+        <argument ref="htmlMimeType" />
+    </bean>
+
+    <service ref="ddms20AtomTransformer" interface="ddf.catalog.transform.QueryResponseTransformer" ranking="5">
+        <service-properties>
+            <entry key="id" value="atom-ddms-2.0" />
+            <entry key="shortname" value="atom-ddms-2.0" />
+            <entry key="mime-type" value="application/atom+xml" />
+        </service-properties>
+    </service>
+
+    <service ref="ddms20AtomTransformer" interface="ddf.catalog.transform.MetacardTransformer" ranking="5">
+        <service-properties>
+            <entry key="id" value="atom-ddms-2.0" />
+            <entry key="shortname" value="atom-ddms-2.0" />
+            <entry key="mime-type" value="application/atom+xml" />
+        </service-properties>
+    </service>
+    
+    <service ref="ddms20AtomTransformer" interface="ddf.catalog.transform.QueryResponseTransformer" ranking="5">
+        <service-properties>
+            <entry key="id" value="atom-ddms" />
+            <entry key="shortname" value="atom-ddms" />
+            <entry key="mime-type" value="application/atom+xml" />
+        </service-properties>
+    </service>
+
+    <service ref="ddms20AtomTransformer" interface="ddf.catalog.transform.MetacardTransformer" ranking="5">
+        <service-properties>
+            <entry key="id" value="atom-ddms" />
+            <entry key="shortname" value="atom-ddms" />
+            <entry key="mime-type" value="application/atom+xml" />
+        </service-properties>
+    </service>
+
+    <bean id="atomTransformer" class="net.di2e.ecdr.search.transform.atom.AtomTransformer">
+        <argument ref="configurationWatcherAtom" />
+        <argument ref="viewMetacardActionProvider" />
+        <argument ref="resourceActionProvider" />
+        <argument ref="thumbnailActionProvider" />
+        <argument ref="jpegMimeType" />
+        <argument ref="htmlMimeType" />
+    </bean>
+
+    <service ref="atomTransformer" interface="ddf.catalog.transform.QueryResponseTransformer" ranking="5">
+        <service-properties>
+            <entry key="id" value="atom" />
+            <entry key="shortname" value="atom" />
+            <entry key="mime-type" value="application/atom+xml" />
+        </service-properties>
+    </service>
+
+    <service ref="atomTransformer" interface="ddf.catalog.transform.MetacardTransformer" ranking="5">
+        <service-properties>
+            <entry key="id" value="atom" />
+            <entry key="shortname" value="atom" />
+            <entry key="mime-type" value="application/atom+xml" />
+        </service-properties>
+    </service>
+
+
+</blueprint>
