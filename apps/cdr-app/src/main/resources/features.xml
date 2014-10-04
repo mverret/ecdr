@@ -16,7 +16,7 @@
 <features name="${project.artifactId}-${project.version}">
 
 
-    <feature name="cdr-atom-result-xformer-1.0" install="manual" version="${project.version}"
+    <feature name="cdr-atom-result-xformer" install="manual" version="${project.version}"
         description="Atom Metacard and Query Response Transformer">
         <bundle>mvn:net.di2e.ecdr.transformer/cdr-atom-result-xformer-1.0/${project.version}</bundle>
     </feature>
