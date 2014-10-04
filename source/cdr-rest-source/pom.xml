@@ -37,7 +37,7 @@
 
         <dependency>
             <groupId>net.di2e.ecdr.transformer</groupId>
-            <artifactId>cdr-atom-result-xformer-1.0</artifactId>
+            <artifactId>cdr-atom-result-xformer</artifactId>
             <version>${project.version}</version>
         </dependency>
 
