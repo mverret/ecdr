@@ -18,7 +18,7 @@
 
     <feature name="cdr-atom-result-xformer" install="manual" version="${project.version}"
         description="Atom Metacard and Query Response Transformer">
-        <bundle>mvn:net.di2e.ecdr.transformer/cdr-atom-result-xformer-1.0/${project.version}</bundle>
+        <bundle>mvn:net.di2e.ecdr.transformer/cdr-atom-result-xformer/${project.version}</bundle>
     </feature>
 
     <feature name="cdr-rest-search-endpoint" install="manual" version="${project.version}" description="CDR REST Search endpoint.">
@@ -43,7 +43,7 @@
         <feature>catalog-app</feature>
         <feature>cdr-rest-search-endpoint</feature>
         <feature>cdr-rest-broker-endpoint</feature>
-        <feature>cdr-atom-result-xformer-1.0</feature>
+        <feature>cdr-atom-result-xformer</feature>
         <feature>cdr-rest-source</feature>
     </feature>
 
