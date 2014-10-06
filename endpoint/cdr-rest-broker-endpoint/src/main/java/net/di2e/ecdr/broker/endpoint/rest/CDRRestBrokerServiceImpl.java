@@ -129,8 +129,8 @@ public class CDRRestBrokerServiceImpl {
                     : sortedFedStrategy );
             String format = query.getResponseFormat();
 
-            Map<String, Serializable> transformerProperties = QueryHelper.getTransformLinkProperties( uriInfo, query, queryResponse, platformConfig.getProtocol(), platformConfig.getHostname(),
-                    platformConfig.getPort() );
+            Map<String, Serializable> transformerProperties = QueryHelper.getTransformLinkProperties( uriInfo, query, queryResponse, platformConfig.getSchemeFromProtocol(),
+                    platformConfig.getHostname(), platformConfig.getPort() );
             transformerProperties.put( SearchConstants.FEED_TITLE, "Atom Search Results from '" + localSourceId + "' for Query: " + query.getHumanReadableQuery().trim() );
             transformerProperties.put( SearchConstants.FORMAT_PARAMETER, format );
             // Broker Specific

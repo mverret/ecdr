@@ -113,8 +113,9 @@ public class CDRRestSearchServiceImpl {
             QueryResponse queryResponse = catalogFramework.query(
                     new QueryRequestImpl( query, false, query.getSiteNames(), queryParser.getQueryProperties( queryParameters, platformConfig.getSiteName() ) ), fifoFedStrategy );
 
-            Map<String, Serializable> transformProperties = QueryHelper.getTransformLinkProperties( uriInfo, query, queryResponse, platformConfig.getProtocol(), platformConfig.getHostname(),
-                    platformConfig.getPort() );
+            // Move the specific links into Atom Transformer if possible
+            Map<String, Serializable> transformProperties = QueryHelper.getTransformLinkProperties( uriInfo, query, queryResponse, platformConfig.getSchemeFromProtocol(),
+                    platformConfig.getHostname(), platformConfig.getPort() );
             transformProperties.put( SearchConstants.FEED_TITLE, "Atom Search Results from '" + platformConfig.getSiteName() + "' for Query: " + query.getHumanReadableQuery().trim() );
             transformProperties.put( SearchConstants.FORMAT_PARAMETER, query.getResponseFormat() );
             transformProperties.put( SearchConstants.STATUS_PARAMETER, Boolean.valueOf( queryParser.isIncludeStatus( queryParameters ) ) );

@@ -37,7 +37,7 @@
         <dependency>
             <groupId>org.codice.ddf</groupId>
             <artifactId>platform-configuration-impl</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>${ddf.libs.platform-config-impl.version}</version>
         </dependency>
 
         <dependency>

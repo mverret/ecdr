@@ -97,6 +97,11 @@
         <maven.compiler.target>1.7</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         
+        <!--  DDF Dependency Versions -->
+        <ddf.catalog.version>2.4.1</ddf.catalog.version>
+        <ddf.action.version>2.4.0</ddf.action.version>
+        <ddf.libs.platform-config-impl.version>1.0.0</ddf.libs.platform-config-impl.version>
+        
        <!--  <checkstyle.config.location>src/main/resources/cdr-checkstyle.xml</checkstyle.config.location>
          <checkstyle.header.location>src/main/resources/header.txt</checkstyle.header.location>-->
     </properties>
@@ -523,7 +528,7 @@
             <name>Codice Repository</name>
             <url>http://artifacts.codice.org/content/groups/public/</url>
             <snapshots>
-                <enabled>true</enabled>
+                <enabled>false</enabled>
             </snapshots>
         </repository>
     </repositories>
