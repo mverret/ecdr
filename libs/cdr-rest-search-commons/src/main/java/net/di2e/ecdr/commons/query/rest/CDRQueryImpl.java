@@ -41,8 +41,8 @@ import org.parboiled.parserunners.ParseRunner;
 import org.parboiled.parserunners.RecoveringParseRunner;
 import org.parboiled.parserunners.ReportingParseRunner;
 import org.parboiled.support.ParsingResult;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.ext.XLogger;
 
 import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.io.WKTWriter;
@@ -58,7 +58,7 @@ public class CDRQueryImpl implements Query {
 
     // public static final String INCLUDE_THUMBNAIL = "include-thumbnail";
 
-    private static final XLogger LOGGER = new XLogger( LoggerFactory.getLogger( CDRQueryImpl.class ) );
+    private static final Logger LOGGER = LoggerFactory.getLogger( CDRQueryImpl.class );
 
     private Filter queryFilter;
     private QueryParser queryParser;

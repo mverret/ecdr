@@ -8,7 +8,7 @@
  * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  * details. A copy of the GNU Lesser General Public License is distributed along with this program and can be found at
  * <http://www.gnu.org/licenses/lgpl.html>.
- * 
+ *
  **/
 package net.di2e.ecdr.commons.filter;
 
@@ -22,8 +22,8 @@ import net.di2e.ecdr.commons.util.SearchConstants;
 
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.ext.XLogger;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -36,7 +36,7 @@ import ddf.catalog.data.Result;
 
 public class StrictFilterDelegate extends AbstractFilterDelegate<Map<String, String>> {
 
-    private static final XLogger LOGGER = new XLogger( LoggerFactory.getLogger( StrictFilterDelegate.class ) );
+    private static final Logger LOGGER = LoggerFactory.getLogger( StrictFilterDelegate.class );
 
     private static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory();
     private static final DateTimeFormatter DATE_FORMATTER = ISODateTimeFormat.basicDateTime();

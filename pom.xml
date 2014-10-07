@@ -475,11 +475,27 @@
 
 		
 
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.codice.ddf</groupId>
+                <artifactId>platform-configuration-impl</artifactId>
+                <version>${ddf.libs.platform-config-impl.version}</version>
+            </dependency>
+        </dependencies>
+
+    </dependencyManagement>
   <!--
     Dependencies listed here will always be used in all sub poms. 
     You should not redeclare them in the sub pom's dependencies section.
     -->
     <dependencies>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.6</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

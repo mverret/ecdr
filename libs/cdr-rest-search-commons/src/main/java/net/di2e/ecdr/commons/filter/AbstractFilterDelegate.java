@@ -15,8 +15,8 @@ package net.di2e.ecdr.commons.filter;
 import java.util.Date;
 import java.util.List;
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.ext.XLogger;
 
 import ddf.catalog.filter.FilterDelegate;
 
@@ -34,7 +34,7 @@ public abstract class AbstractFilterDelegate<T> extends FilterDelegate<T> {
         WITHIN, BEYOND
     }
 
-    private static final XLogger LOGGER = new XLogger( LoggerFactory.getLogger( StrictFilterDelegate.class ) );
+    private static final Logger LOGGER = LoggerFactory.getLogger( StrictFilterDelegate.class );
     private double defaultRadiusforNN = 0;
 
     public AbstractFilterDelegate( double defaultRadiusforNN ) {
