@@ -79,6 +79,7 @@ public class CDRRestSource extends MaskableImpl implements FederatedSource, Conn
     private long availableCheckCacheTime = 60000;
     private Date lastAvailableCheckDate = null;
     private boolean isCurrentlyAvailable = false;
+    private boolean httpPing = true;
     private String defaultResponseFormat = null;
 
     private WebClient cdrRestClient = null;
@@ -118,28 +119,36 @@ public class CDRRestSource extends MaskableImpl implements FederatedSource, Conn
     @Override
     public boolean isAvailable() {
         LOGGER.debug( "isAvailable method called on CDR Rest Source named [{}], determining whether to check availability or pull from cache", getId() );
-        if ( !isCurrentlyAvailable || (lastAvailableCheckDate.getTime() < System.currentTimeMillis() - availableCheckCacheTime) ) {
-            LOGGER.debug( "Checking availability on CDR Rest Source named [{}] in real time by calling endpoint [{}]", getId(), cdrRestClient.getBaseURI() );
-            try {
-                Response response = cdrRestClient.head();
-                if ( response.getStatus() == Status.OK.getStatusCode() || response.getStatus() == Status.ACCEPTED.getStatusCode() ) {
-                    isCurrentlyAvailable = true;
-                    lastAvailableCheckDate = new Date();
-                } else {
-                    isCurrentlyAvailable = false;
+        if ( httpPing ) {
+            if ( !isCurrentlyAvailable || (lastAvailableCheckDate.getTime() < System.currentTimeMillis() - availableCheckCacheTime) ) {
+                LOGGER.debug( "Checking availability on CDR Rest Source named [{}] in real time by calling endpoint [{}]", getId(), cdrRestClient.getBaseURI() );
+                try {
+                    Response response = cdrRestClient.head();
+                    if ( response.getStatus() == Status.OK.getStatusCode() || response.getStatus() == Status.ACCEPTED.getStatusCode() ) {
+                        isCurrentlyAvailable = true;
+                        lastAvailableCheckDate = new Date();
+                    } else {
+                        isCurrentlyAvailable = false;
+                    }
+                } catch ( Exception e ) {
+                    LOGGER.warn( "CDR Rest Source named [" + getId() + "] encountered error while executing HTTP Head at URL [" + cdrRestClient.getBaseURI() + "]:" + e.getMessage() );
                 }
-            } catch ( Exception e ) {
-                LOGGER.warn( "CDR Rest Source named [" + getId() + "] encountered error while executing HTTP Head at URL [" + cdrRestClient.getBaseURI() + "]:" + e.getMessage() );
-            }
 
-        } else {
-            LOGGER.debug( "Pulling availability f CDR Rest Federated Source named [{}] from cache, isAvaialble=[{}]", getId(), isCurrentlyAvailable );
-        }
-        if ( siteAvailabilityCallback != null ) {
-            if ( isCurrentlyAvailable ) {
-                siteAvailabilityCallback.setAvailable();
             } else {
-                siteAvailabilityCallback.setUnavailable();
+                LOGGER.debug( "Pulling availability f CDR Rest Federated Source named [{}] from cache, isAvaialble=[{}]", getId(), isCurrentlyAvailable );
+            }
+            if ( siteAvailabilityCallback != null ) {
+                if ( isCurrentlyAvailable ) {
+                    siteAvailabilityCallback.setAvailable();
+                } else {
+                    siteAvailabilityCallback.setUnavailable();
+                }
+            }
+        } else {
+            LOGGER.debug( "HTTP Ping is set to false so not checking the sites availablility, just setting ot available" );
+            isCurrentlyAvailable = true;
+            if ( siteAvailabilityCallback != null ) {
+                siteAvailabilityCallback.setAvailable();
             }
         }
         return isCurrentlyAvailable;
@@ -268,17 +277,24 @@ public class CDRRestSource extends MaskableImpl implements FederatedSource, Conn
         this.filterAdapter = adapter;
     }
 
+    // Not used right not since using container managed bean
     public void refresh( Map<String, Object> properties ) {
 
     }
 
     public void setEndpointUrl( String url ) {
+        LOGGER.debug( "Updating the endpoint url value from [{}] to [{}]", endpointUrl, url );
         this.endpointUrl = url;
         updateQueryUrl();
     }
 
     public void setDefaultResponseFormat( String defaultFormat ) {
         this.defaultResponseFormat = defaultFormat;
+    }
+
+    public void setHttpPing( boolean doPing ) {
+        LOGGER.debug( "Updating the httpPing value from [{}] to [{}]", httpPing, doPing );
+        this.httpPing = doPing;
     }
 
     protected void updateQueryUrl() {

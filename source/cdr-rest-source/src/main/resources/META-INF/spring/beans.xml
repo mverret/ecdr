@@ -28,17 +28,18 @@
     <osgi:reference id="filterAdapter" interface="ddf.catalog.filter.FilterAdapter" />
 
     <osgix:managed-service-factory id="net.di2e.ecdr.source.rest.CDRRestSource" factory-pid="CDRRestSource"
-        update-strategy="bean-managed" update-method="refresh">
+        update-strategy="container-managed">
 
         <osgix:interfaces>
             <beans:value>ddf.catalog.source.FederatedSource</beans:value>
         </osgix:interfaces>
 
         <beans:bean id="MySearchSource" class="net.di2e.ecdr.source.rest.CDRRestSource" init-method="init"
-            destroy-method="destroy">
+            destroy-method="destroy" >
             <beans:constructor-arg ref="filterAdapter" />
             <beans:property name="id" value="cdr-source" />
             <beans:property name="endpointUrl" value="http://localhost:8181/services/cdr/search/rest" />
+            <beans:property name="httpPing" value="true" />
             <beans:property name="defaultResponseFormat" value="atom-ddms" />
             <beans:property name="title" value="CDR REST Federation" />
             <beans:property name="description" value="CDR REST Federated Source v3.0" />
