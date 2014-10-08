@@ -12,10 +12,14 @@
  **/
 package net.di2e.ecdr.source.rest;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URI;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -26,6 +30,8 @@ import java.util.Set;
 
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.TrustManager;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -34,9 +40,18 @@ import net.di2e.ecdr.commons.filter.StrictFilterDelegate;
 import net.di2e.ecdr.commons.util.SearchConstants;
 import net.di2e.ecdr.search.transform.atom.response.AtomResponseTransformer;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.net.util.KeyManagerUtils;
+import org.apache.commons.net.util.TrustManagerUtils;
+import org.apache.cxf.configuration.jsse.TLSClientParameters;
+import org.apache.cxf.configuration.security.FiltersType;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.cxf.jaxrs.ext.multipart.ContentDisposition;
+import org.apache.cxf.transport.http.HTTPConduit;
+import org.apache.tika.io.IOUtils;
+import org.codice.ddf.configuration.ConfigurationManager;
+import org.codice.ddf.configuration.ConfigurationWatcher;
 import org.opengis.filter.sort.SortBy;
 import org.opengis.filter.sort.SortOrder;
 import org.slf4j.Logger;
@@ -61,7 +76,7 @@ import ddf.catalog.source.SourceMonitor;
 import ddf.catalog.source.UnsupportedQueryException;
 import ddf.catalog.util.impl.MaskableImpl;
 
-public class CDRRestSource extends MaskableImpl implements FederatedSource, ConnectedSource {
+public class CDRRestSource extends MaskableImpl implements FederatedSource, ConnectedSource, ConfigurationWatcher {
 
     private static final transient Logger LOGGER = LoggerFactory.getLogger( CDRRestSource.class );
 
@@ -135,7 +150,7 @@ public class CDRRestSource extends MaskableImpl implements FederatedSource, Conn
                 }
 
             } else {
-                LOGGER.debug( "Pulling availability f CDR Rest Federated Source named [{}] from cache, isAvaialble=[{}]", getId(), isCurrentlyAvailable );
+                LOGGER.debug( "Pulling availability of CDR Rest Federated Source named [{}] from cache, isAvaialble=[{}]", getId(), isCurrentlyAvailable );
             }
             if ( siteAvailabilityCallback != null ) {
                 if ( isCurrentlyAvailable ) {
@@ -282,6 +297,15 @@ public class CDRRestSource extends MaskableImpl implements FederatedSource, Conn
 
     }
 
+    /**
+     * Sets the time that availability should be cached (that is, the minimum amount of time to perform availability checks)
+     *
+     * @param newCacheTime New time period, in milliseconds, to check the availability of the federated source.
+     */
+    public void setAvailableCheckCacheTime(long newCacheTime) {
+        this.availableCheckCacheTime = newCacheTime;
+    }
+
     public void setEndpointUrl( String url ) {
         LOGGER.debug( "Updating the endpoint url value from [{}] to [{}]", endpointUrl, url );
         this.endpointUrl = url;
@@ -317,7 +341,7 @@ public class CDRRestSource extends MaskableImpl implements FederatedSource, Conn
         Map<String, Serializable> queryRequestProps = request.getProperties();
 
         if ( LOGGER.isDebugEnabled() ) {
-            LOGGER.debug( "CDR REST Source recieved Query: " + ToStringBuilder.reflectionToString( request.getQuery() ) );
+            LOGGER.debug( "CDR REST Source received Query: {}", ToStringBuilder.reflectionToString( request.getQuery() ) );
         }
 
         // include format parameter
@@ -381,4 +405,62 @@ public class CDRRestSource extends MaskableImpl implements FederatedSource, Conn
         return returnUri;
     }
 
+    @Override
+    public void configurationUpdateCallback(Map<String, String> updatedConfiguration) {
+        // the configuration was changed, update the keystores for the webclient (if there are any)
+        String keystoreLocation = updatedConfiguration.get(ConfigurationManager.KEY_STORE);
+        String keystorePassword = updatedConfiguration.get(ConfigurationManager.KEY_STORE_PASSWORD);
+        String trustStoreLocation = updatedConfiguration.get(ConfigurationManager.TRUST_STORE);
+        String trustStorePassword = updatedConfiguration.get(ConfigurationManager.TRUST_STORE_PASSWORD);
+
+        HTTPConduit conduit = WebClient.getConfig(cdrRestClient).getHttpConduit();
+        TLSClientParameters tlsClientParameters = new TLSClientParameters();
+
+        // set keystore
+        KeyManager[] keyManagers = null;
+        if (StringUtils.isNotBlank(keystoreLocation) && keystorePassword != null) {
+            try {
+                keyManagers = new KeyManager[] {KeyManagerUtils.createClientKeyManager(new File(keystoreLocation), keystorePassword)};
+            } catch (IOException|GeneralSecurityException ex) {
+                LOGGER.debug("Could not access keystore {}, using default java keystore.", keystoreLocation);
+            }
+        }
+
+        // set truststore
+        TrustManager[] trustManagers = null;
+        if (StringUtils.isNotBlank(trustStoreLocation) && trustStorePassword != null) {
+            FileInputStream fis = null;
+            try {
+                KeyStore trustStore = KeyStore.getInstance(KeyStore.getDefaultType());
+                fis = new FileInputStream(trustStoreLocation);
+                try {
+                    trustStore.load(fis, StringUtils.isNotEmpty(trustStorePassword) ? trustStorePassword.toCharArray() : null);
+                    trustManagers = new TrustManager[] {TrustManagerUtils.getDefaultTrustManager(trustStore)};
+                } catch (IOException ioe) {
+                    LOGGER.debug("Could not load truststore {}, using default java truststore");
+                }
+            } catch (IOException|GeneralSecurityException ex) {
+                LOGGER.debug("Could not access truststore {}, using default java truststore.", trustStoreLocation);
+            } finally {
+                IOUtils.closeQuietly(fis);
+            }
+
+        }
+
+        tlsClientParameters.setKeyManagers(keyManagers);
+        tlsClientParameters.setTrustManagers(trustManagers);
+
+        FiltersType filtersType = new FiltersType();
+        filtersType.getInclude().add(".*_WITH_AES_.*");
+        filtersType.getInclude().add(".*_EXPORT_.*");
+        filtersType.getInclude().add(".*_EXPORT1024_.*");
+        filtersType.getInclude().add(".*_WITH_DES_.*");
+        filtersType.getInclude().add(".*_WITH_NULL_.*");
+        filtersType.getExclude().add(".*_DH_anon_.*");
+        tlsClientParameters.setCipherSuitesFilter(filtersType);
+
+        LOGGER.debug("Setting up SSL settings for client.");
+        conduit.setTlsClientParameters(tlsClientParameters);
+
+    }
 }

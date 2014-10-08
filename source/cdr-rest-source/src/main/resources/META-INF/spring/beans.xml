@@ -32,6 +32,7 @@
 
         <osgix:interfaces>
             <beans:value>ddf.catalog.source.FederatedSource</beans:value>
+            <beans:value>org.codice.ddf.configuration.ConfigurationWatcher</beans:value>
         </osgix:interfaces>
 
         <beans:bean id="MySearchSource" class="net.di2e.ecdr.source.rest.CDRRestSource" init-method="init"
