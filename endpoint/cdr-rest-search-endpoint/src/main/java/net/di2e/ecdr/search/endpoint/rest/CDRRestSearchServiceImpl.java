@@ -88,6 +88,7 @@ public class CDRRestSearchServiceImpl {
     @HEAD
     public Response ping( @Context UriInfo uriInfo, @HeaderParam( "Accept-Encoding" ) String encoding, @HeaderParam( "Authorization" ) String auth ) {
         boolean isValid = queryParser.isValidQuery( uriInfo.getQueryParameters(), platformConfig.getSiteName() );
+        LOGGER.debug( "Ping (HTTP HEAD) was called to check if the CDR endpoint is available, result is [{}]", isValid );
         return isValid ? Response.ok().build() : Response.status( Response.Status.BAD_REQUEST ).build();
     }
 

@@ -25,10 +25,12 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.ext.XLogger;
 
 import ddf.catalog.data.Attribute;
+import ddf.catalog.data.impl.AttributeImpl;
 import ddf.catalog.data.Metacard;
 import ddf.catalog.data.MetacardType;
+import ddf.catalog.data.impl.MetacardImpl;
 
-public class CDRMetacard implements Metacard {
+public class CDRMetacard extends MetacardImpl {
 
     public static final String LINK_REL_PREVIEW = "preview";
 
@@ -85,7 +87,8 @@ public class CDRMetacard implements Metacard {
     }
 
     public boolean hasThumbnail() {
-        // ORder is import here especially if the original Metacard is using Thumbnail links and doesn't pull the
+        // ORder is import here especially if the original Metacard is using
+        // Thumbnail links and doesn't pull the
         // thumbnail until the getThumbnail method is called
         return originalMetacard.getAttribute( THUMBNAIL_LINK ) != null || originalMetacard.getThumbnail() != null;
     }
@@ -105,6 +108,14 @@ public class CDRMetacard implements Metacard {
 
     public String getAtomId() {
         return "urn:catalog:id:" + originalMetacard.getId();
+    }
+
+    public URI getMetadataURL() {
+        Attribute attribute = originalMetacard.getAttribute( "METADATA_LINK" );
+        if ( attribute != null ) {
+            return (URI) attribute.getValue();
+        }
+        return null;
     }
 
     public URI getThumbnailURL() {
@@ -133,7 +144,13 @@ public class CDRMetacard implements Metacard {
 
     @Override
     public Attribute getAttribute( String attributeName ) {
-        return originalMetacard.getAttribute( attributeName );
+        if ( Metacard.THUMBNAIL.equals( attributeName ) ) {
+            return new AttributeImpl( attributeName, this.getThumbnail() );
+        } else if ( Metacard.METADATA.equals( attributeName ) ) {
+            return new AttributeImpl( attributeName, this.getMetadata() );
+        } else {
+            return originalMetacard.getAttribute( attributeName );
+        }
     }
 
     @Override
@@ -185,7 +202,19 @@ public class CDRMetacard implements Metacard {
 
     @Override
     public String getMetadata() {
-        return originalMetacard.getMetadata();
+        String metadata = originalMetacard.getMetadata();
+        if ( StringUtils.isBlank( metadata ) ) {
+            URI metadataURI = getMetadataURL();
+            if ( metadataURI != null ) {
+                try ( InputStream in = metadataURI.toURL().openStream() ) {
+                    metadata = IOUtils.toString( in );
+                    originalMetacard.setAttribute( new AttributeImpl( Metacard.METADATA, metadata ) );
+                } catch ( Exception e ) {
+                    LOGGER.warn( "Could not read thumbnail from remote URL[" + metadataURI + "] due to: " + e.getMessage(), e );
+                }
+            }
+        }
+        return metadata;
     }
 
     @Override
@@ -218,6 +247,7 @@ public class CDRMetacard implements Metacard {
             if ( thumbnailURI != null ) {
                 try ( InputStream in = thumbnailURI.toURL().openStream() ) {
                     thumbnail = IOUtils.toByteArray( in );
+                    originalMetacard.setAttribute( new AttributeImpl( Metacard.THUMBNAIL, thumbnail ) );
                 } catch ( Exception e ) {
                     LOGGER.warn( "Could not read thumbnail from remote URL[" + thumbnailURI + "] due to: " + e.getMessage(), e );
                 }

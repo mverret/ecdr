@@ -34,6 +34,7 @@ import org.apache.abdera.ext.geo.GeoHelper;
 import org.apache.abdera.ext.geo.Point;
 import org.apache.abdera.ext.geo.Position;
 import org.apache.abdera.ext.opensearch.OpenSearchConstants;
+import org.apache.abdera.i18n.iri.IRI;
 import org.apache.abdera.model.Category;
 import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Element;
@@ -42,11 +43,13 @@ import org.apache.abdera.model.ExtensibleElement;
 import org.apache.abdera.model.Feed;
 import org.apache.abdera.model.Link;
 import org.apache.abdera.parser.Parser;
+import org.apache.commons.lang.StringUtils;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ddf.catalog.data.Metacard;
 import ddf.catalog.data.Result;
 import ddf.catalog.data.impl.MetacardImpl;
 import ddf.catalog.data.impl.ResultImpl;
@@ -83,7 +86,8 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
 
         List<Entry> entries = feed.getEntries();
         for ( Entry entry : entries ) {
-            resultList.add( createResponseFromEntry( entry, siteName ) );
+            Metacard metacard = entryToMetacard( entry, siteName );
+            resultList.add( metacardToResult( entry, metacard ) );
         }
 
         long totalResults = entries.size();
@@ -96,41 +100,48 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
                 LOGGER.warn( "Received invalid number of results from Atom response [" + totalResultsElement.getText() + "]", e );
             }
         }
-
         return new SourceResponseImpl( request, resultList, totalResults );
     }
 
-    private Result createResponseFromEntry( Entry entry, String siteName ) {
-
+    private Metacard entryToMetacard( Entry entry, String siteName ) {
         MetacardImpl metacard = new MetacardImpl();
 
         String id = entry.getIdElement().getText();
         // id may be formatted catalog:id:<id>, so we parse out the <id>
-        if ( id != null && id.contains( ":" ) ) {
+        if ( StringUtils.isNotBlank( id ) && (id.startsWith( "urn:uuid:" ) || id.startsWith( "urn:catalog:id:" )) ) {
             id = id.substring( id.lastIndexOf( ':' ) + 1 );
         }
         metacard.setId( id );
 
         // Set the source to the original source name
-        String resultSource = entry.getSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, AtomResponseConstants.RESULT_SOURCE_ELEMENT, AtomResponseConstants.CDRB_NAMESPACE_PREFIX );
-        metacard.setSourceId( resultSource == null ? siteName : resultSource );
+        // TODO revist this
+        String resultSource = entry.getSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, AtomResponseConstants.RESULT_SOURCE_ELEMENT,
+                AtomResponseConstants.CDRB_NAMESPACE_PREFIX );
+        // metacard.setSourceId( resultSource == null ? siteName : resultSource
+        // );
+        metacard.setSourceId( siteName );
 
         List<Category> categories = entry.getCategories();
         if ( categories != null && !categories.isEmpty() ) {
             Category category = categories.get( 0 );
             metacard.setContentTypeName( category.getTerm() );
-            metacard.setContentTypeVersion( category.getScheme().toString() );
+            IRI scheme = category.getScheme();
+            if ( scheme != null ) {
+                metacard.setContentTypeVersion( scheme.toString() );
+            }
         }
 
         metacard.setModifiedDate( entry.getUpdated() );
         metacard.setEffectiveDate( entry.getPublished() );
 
-        String createdDate = entry.getSimpleExtension( new QName( AtomResponseConstants.METACARD_ATOM_NAMESPACE, AtomResponseConstants.METACARD_CREATED_DATE_ELEMENT ) );
+        String createdDate = entry.getSimpleExtension( new QName( AtomResponseConstants.METACARD_ATOM_NAMESPACE,
+                AtomResponseConstants.METACARD_CREATED_DATE_ELEMENT ) );
         if ( createdDate != null ) {
             metacard.setCreatedDate( new Date( DATE_FORMATTER.parseMillis( createdDate ) ) );
         }
 
-        String expirationDate = entry.getSimpleExtension( new QName( AtomResponseConstants.METACARD_ATOM_NAMESPACE, AtomResponseConstants.METADATA_EXPIRATION_DATE_ELEMENT ) );
+        String expirationDate = entry.getSimpleExtension( new QName( AtomResponseConstants.METACARD_ATOM_NAMESPACE,
+                AtomResponseConstants.METADATA_EXPIRATION_DATE_ELEMENT ) );
         if ( expirationDate != null ) {
             metacard.setExpirationDate( new Date( DATE_FORMATTER.parseMillis( expirationDate ) ) );
         }
@@ -145,6 +156,7 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
         // }
         Link productLink = entry.getAlternateLink();
         if ( productLink != null ) {
+
             metacard.setResourceURI( URI.create( productLink.getHref().toASCIIString() ) );
             long resourceSize = productLink.getLength();
             if ( resourceSize > 0 ) {
@@ -179,6 +191,7 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
 
         metacard.setTitle( entry.getTitle() );
 
+        boolean isMetadataSet = false;
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         try {
 
@@ -190,6 +203,8 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
                     try {
                         element.writeTo( writer );
                         metacard.setMetadata( writer.toString() );
+                        isMetadataSet = true;
+                        break;
                     } catch ( IOException e ) {
                         LOGGER.error( "Could not convert Metadata String value from Atom to Metacard.METADATA attribute", e );
                     }
@@ -201,9 +216,28 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
             Thread.currentThread().setContextClassLoader( tccl );
         }
 
-        // populate the relevance
+        if ( !isMetadataSet ) {
+            // TODO fix this
+            List<Link> metadataLinks = entry.getLinks( "http://esip.org/ns/fedsearch/1.0/metadata#" );
+            String metadataLink = null;
+            for ( Link link : metadataLinks ) {
+                MimeType mimeType = link.getMimeType();
+                if ( mimeType != null ) {
+                    if ( mimeType.getSubType().contains( "xml" ) ) {
+                        metadataLink = link.getHref().toASCIIString();
+                        metacard.setAttribute( "METADATA_LINK", URI.create( metadataLink ) );
+                    }
+                }
+            }
+        }
+
+        return new CDRMetacard( metacard );
+    }
+
+    protected Result metacardToResult( Entry entry, Metacard metacard ) {
         ResultImpl result = new ResultImpl( metacard );
-        String relevance = entry.getSimpleExtension( AtomResponseConstants.RELEVANCE_NAMESPACE, AtomResponseConstants.RELEVANCE_ELEMENT, AtomResponseConstants.RELEVANCE_NAMESPACE_PREFIX );
+        String relevance = entry.getSimpleExtension( AtomResponseConstants.RELEVANCE_NAMESPACE, AtomResponseConstants.RELEVANCE_ELEMENT,
+                AtomResponseConstants.RELEVANCE_NAMESPACE_PREFIX );
         if ( relevance != null ) {
             try {
                 result.setRelevanceScore( Double.parseDouble( relevance ) );
@@ -212,10 +246,11 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
             }
         }
 
-        String distance = entry.getSimpleExtension( AtomResponseConstants.CDRS_EXT_NAMESPACE, AtomResponseConstants.DISTANCE_ELEMENT, AtomResponseConstants.CDRS_EXT_NAMESPACE_PREFIX );
+        String distance = entry.getSimpleExtension( AtomResponseConstants.CDRS_EXT_NAMESPACE, AtomResponseConstants.DISTANCE_ELEMENT,
+                AtomResponseConstants.CDRS_EXT_NAMESPACE_PREFIX );
         if ( distance != null ) {
             try {
-                result.setDistanceInMeters( Double.parseDouble( relevance ) );
+                result.setDistanceInMeters( Double.parseDouble( distance ) );
             } catch ( NumberFormatException e ) {
                 LOGGER.warn( "Received invalid number for distance from Atom response [" + distance + "]", e );
             }

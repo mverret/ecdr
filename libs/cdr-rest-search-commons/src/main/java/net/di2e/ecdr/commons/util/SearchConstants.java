@@ -33,6 +33,7 @@ public final class SearchConstants {
     
     public static final String FEED_TITLE = "feed-title";
     
+    //Parameters
     public static final String KEYWORD_PARAMETER = "q";
     public static final String CASESENSITIVE_PARAMETER = "caseSensitive";
     
