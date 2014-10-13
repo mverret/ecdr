@@ -535,6 +535,33 @@
     </dependencies>
     <repositories>
         <repository>
+            <id>shibboleth-public</id>
+            <name>Shibboleth Public</name>
+            <url>https://build.shibboleth.net/nexus/content/repositories/public</url>
+            <layout>default</layout>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>shibboleth-thirdparty</id>
+            <name>Shibboleth Thirdparty</name>
+            <url>https://build.shibboleth.net/nexus/content/repositories/thirdparty</url>
+            <layout>default</layout>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>shibboleth-releases</id>
+            <name>Shibboleth Releases</name>
+            <url>https://build.shibboleth.net/nexus/content/repositories/releases</url>
+            <layout>default</layout>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
             <id>central</id>
             <name>Central Repository</name>
             <url>https://repo.maven.apache.org/maven2</url>
@@ -543,6 +570,7 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
+        
         <!--<repository>
             <id>maven2-repository.dev.java.net</id>
             <name>Java.net repository</name>
@@ -550,14 +578,23 @@
         </repository>-->
         <repository>
             <id>codice</id>
-            <name>Codice Repository</name>
-            <url>http://artifacts.codice.org/content/groups/public/</url>
+            <name>Codice Releases</name>
+            <url>http://artifacts.codice.org/content/repositories/releases</url>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
         </repository>
     </repositories>
     <pluginRepositories>
+        <pluginRepository>
+            <id>shibboleth-public</id>
+            <name>Central Repository</name>
+            <url>https://build.shibboleth.net/nexus/content/repositories/public</url>
+            <layout>default</layout>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
         <pluginRepository>
             <id>central</id>
             <name>Central Repository</name>
