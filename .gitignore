@@ -17,4 +17,3 @@ node_modules/
 bin/
 atlassian-ide-plugin.xml
 *.sonar-ide.properties
-*.jar

@@ -43,12 +43,18 @@
         <bundle>mvn:net.di2e.ecdr.federation/cdr-federation-strategies/${project.version}</bundle>
     </feature>
 
+    <feature name="cdr-exi-result-xformer" install="manual" version="${project.version}"
+             description="EXI Query Response transformer. Encodes a query response using EXI compression">
+        <bundle>mvn:net.di2e.ecdr.transformer/cdr-exi-result-xformer/${project.version}</bundle>
+    </feature>
+
     <feature name="cdr-app" install="auto" version="${project.version}"
         description="Enterprise CDR (Content Discovery and Retrieval) is used for discovering data using the CDR Interfaces.::Enterprise CDR">
         <feature>catalog-app</feature>
         <feature>cdr-rest-search-endpoint</feature>
         <feature>cdr-rest-broker-endpoint</feature>
         <feature>cdr-atom-result-xformer</feature>
+        <feature>cdr-exi-result-xformer</feature>
         <feature>cdr-rest-source</feature>
         <feature>cdr-opensearch-source</feature>
     </feature>
