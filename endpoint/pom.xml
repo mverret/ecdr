@@ -23,7 +23,7 @@
     <groupId>net.di2e.ecdr</groupId>
     <artifactId>endpoint</artifactId>
     <packaging>pom</packaging>
-    <name>Enterprise CDR :: Endpoints</name>
+    <name>Enterprise CDR Endpoints</name>
 
     <modules>
         <module>cdr-rest-search-endpoint</module>

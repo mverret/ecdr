@@ -22,8 +22,8 @@ import javax.ws.rs.core.UriInfo;
 import net.di2e.ecdr.commons.util.SearchConstants;
 
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.ext.XLogger;
 
 import ddf.catalog.operation.Query;
 import ddf.catalog.operation.QueryResponse;
@@ -33,7 +33,7 @@ public final class QueryHelper {
     private QueryHelper() {
     }
 
-    private static final XLogger LOGGER = new XLogger( LoggerFactory.getLogger( QueryHelper.class ) );
+    private static final Logger LOGGER = LoggerFactory.getLogger( QueryHelper.class );
 
     public static Map<String, Serializable> getTransformLinkProperties( UriInfo uriInfo, Query query, QueryResponse response, String scheme, String host, Integer port ) {
         Map<String, Serializable> properties = new HashMap<String, Serializable>();

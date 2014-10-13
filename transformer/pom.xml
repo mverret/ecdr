@@ -23,7 +23,7 @@
     <groupId>net.di2e.ecdr</groupId>
     <artifactId>transformer</artifactId>
     <packaging>pom</packaging>
-    <name>Enterprise CDR :: Transformers</name>
+    <name>Enterprise CDR Transformers</name>
 
     <modules>
         <module>cdr-atom-result-xformer</module>

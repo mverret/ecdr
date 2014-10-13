@@ -23,7 +23,7 @@
     <groupId>net.di2e.ecdr</groupId>
     <artifactId>source</artifactId>
     <packaging>pom</packaging>
-    <name>Enterprise CDR :: Data Sources</name>
+    <name>Enterprise CDR Data Sources</name>
 
     <modules>
         <module>cdr-rest-source</module>

@@ -29,9 +29,10 @@ import net.di2e.ecdr.commons.query.rest.parsers.QueryParser;
 import net.di2e.ecdr.commons.query.util.QueryHelper;
 import net.di2e.ecdr.commons.util.SearchConstants;
 
+import org.apache.commons.lang.StringUtils;
 import org.codice.ddf.configuration.impl.ConfigurationWatcherImpl;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.ext.XLogger;
 
 import ddf.catalog.CatalogFramework;
 import ddf.catalog.data.BinaryContent;
@@ -49,11 +50,15 @@ import ddf.catalog.transform.CatalogTransformerException;
  * 
  * @author Jeff Vettraino
  */
-// @OutInterceptors( interceptors = "com.cohesive.ddf.util.exi.EXIStaxOutInterceptor" } )
 @Path( "/" )
 public class CDRRestSearchServiceImpl {
 
-    private static final XLogger LOGGER = new XLogger( LoggerFactory.getLogger( CDRRestSearchServiceImpl.class ) );
+    private static final Logger LOGGER = LoggerFactory.getLogger( CDRRestSearchServiceImpl.class );
+
+    private static final String XML_FORMAT_KEY = "XML_FORMAT";
+
+    private static final String EXI_FORMAT = "exi";
+    private static final String DEFAULT_FORMAT = "atom";
 
     private CatalogFramework catalogFramework = null;
     private ConfigurationWatcherImpl platformConfig = null;
@@ -104,7 +109,7 @@ public class CDRRestSearchServiceImpl {
      */
     @GET
     public Response search( @Context UriInfo uriInfo, @HeaderParam( "Accept-Encoding" ) String encoding, @HeaderParam( "Authorization" ) String auth ) {
-        LOGGER.debug( "Query received: " + uriInfo.getRequestUri() );
+        LOGGER.debug( "Query received: {}", uriInfo.getRequestUri() );
 
         Response response = null;
         try {
@@ -122,7 +127,19 @@ public class CDRRestSearchServiceImpl {
             transformProperties.put( SearchConstants.STATUS_PARAMETER, Boolean.valueOf( queryParser.isIncludeStatus( queryParameters ) ) );
             transformProperties.put( SearchConstants.LOCAL_SOURCE_ID, catalogFramework.getId() );
             String format = query.getResponseFormat();
-            BinaryContent content = catalogFramework.transform( queryResponse, format == null ? "atom" : format, transformProperties );
+
+            if (StringUtils.isBlank(format)) {
+                format = DEFAULT_FORMAT;
+            }
+
+            if (encoding.contains("x-exi")) {
+                // transform into EXI-encoded response
+                LOGGER.debug("Transforming results into exi-encoding and {} underlying xml format.", format);
+                transformProperties.put(XML_FORMAT_KEY, format);
+                format = EXI_FORMAT;
+            }
+
+            BinaryContent content = catalogFramework.transform( queryResponse, format, transformProperties );
 
             response = Response.ok( content.getInputStream(), content.getMimeTypeValue() ).build();
 

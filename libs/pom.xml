@@ -23,7 +23,7 @@
     <groupId>net.di2e.ecdr</groupId>
     <artifactId>libs</artifactId>
     <packaging>pom</packaging>
-    <name>Enterprise CDR :: Libs</name>
+    <name>Enterprise CDR Libs</name>
 
     <modules>
         <module>cdr-rest-search-commons</module>

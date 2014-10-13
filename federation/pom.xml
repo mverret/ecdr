@@ -23,7 +23,7 @@
     <groupId>net.di2e.ecdr</groupId>
     <artifactId>federation</artifactId>
     <packaging>pom</packaging>
-    <name>Enterprise CDR :: Federation Strategies</name>
+    <name>Enterprise CDR Federation Strategies</name>
 
     <modules>
         <module>cdr-federation-strategies</module>
