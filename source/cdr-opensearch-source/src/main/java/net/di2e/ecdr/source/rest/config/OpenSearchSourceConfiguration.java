@@ -12,12 +12,30 @@
  **/
 package net.di2e.ecdr.source.rest.config;
 
-public class SourceConfiguration {
+import java.util.Map;
 
-    private String queryUrl = "http://blah:8181";
+import net.di2e.ecdr.source.rest.AbstractOpenSearchSource.PingMethod;
 
-    public String getQueryUrl() {
-        return queryUrl;
-    }
+public interface OpenSearchSourceConfiguration {
+
+    void setSourceConfigurationListener( SourceConfigurationListener listener );
+
+    String getEndpointURL();
+
+    String getPingUrl();
+
+    PingMethod getPingMethod();
+
+    String getSourceId();
+
+    String getDefaultResponseFormat();
+
+    long getSourceAvailCheckMillis();
+
+    Map<String, String> getDynamicUrlParameterMap();
+
+    Map<String, String> getStaticUrlQueryValues();
+
+    void updateConfiguration( Map<String, Object> configProperties );
 
 }

@@ -15,8 +15,13 @@ package net.di2e.ecdr.commons.filter;
 import java.util.Date;
 import java.util.List;
 
+import net.di2e.ecdr.commons.filter.config.FilterConfig;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKTReader;
 
 import ddf.catalog.filter.FilterDelegate;
 
@@ -27,7 +32,7 @@ public abstract class AbstractFilterDelegate<T> extends FilterDelegate<T> {
     }
 
     public enum GeospatialFilterOptions {
-        CONTAINS, CROSSES, DISJOINT, INTERSECTS, WITHIN, TOUCHES, OVERLAPS
+        CONTAINS, CROSSES, DISJOINT, INTERSECTS, WITHIN, TOUCHES, OVERLAPS, BBOX
     }
 
     public enum GeospatialDistanceFilterOptions {
@@ -37,8 +42,11 @@ public abstract class AbstractFilterDelegate<T> extends FilterDelegate<T> {
     private static final Logger LOGGER = LoggerFactory.getLogger( StrictFilterDelegate.class );
     private double defaultRadiusforNN = 0;
 
-    public AbstractFilterDelegate( double defaultRadiusforNN ) {
+    private FilterConfig filterConfig = null;
+
+    public AbstractFilterDelegate( double defaultRadiusforNN, FilterConfig config ) {
         this.defaultRadiusforNN = defaultRadiusforNN;
+        this.filterConfig = config;
     }
 
     public abstract T handlePropertyLike( String propertyName, String pattern, StringFilterOptions options );
@@ -82,6 +90,10 @@ public abstract class AbstractFilterDelegate<T> extends FilterDelegate<T> {
     public abstract T handleOr( List<T> operands );
 
     public abstract T handleNot( T operand );
+
+    public FilterConfig getFilterConfig() {
+        return filterConfig;
+    }
 
     @Override
     public T and( List<T> operands ) {
@@ -560,7 +572,14 @@ public abstract class AbstractFilterDelegate<T> extends FilterDelegate<T> {
     @Override
     public T intersects( String propertyName, String wkt ) {
         logEntry( "intersects", propertyName, wkt );
-        return handleGeospatial( propertyName, wkt, GeospatialFilterOptions.INTERSECTS );
+        boolean isBbox = false;
+        try {
+            WKTReader reader = new WKTReader();
+            isBbox = reader.read( wkt ).isRectangle();
+        } catch ( ParseException e ) {
+            LOGGER.warn( "WKT could not be parsed into geometry object [{}]: " + e.getMessage() );
+        }
+        return handleGeospatial( propertyName, wkt, isBbox ? GeospatialFilterOptions.BBOX : GeospatialFilterOptions.INTERSECTS );
     }
 
     @Override

@@ -25,9 +25,9 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.ext.XLogger;
 
 import ddf.catalog.data.Attribute;
-import ddf.catalog.data.impl.AttributeImpl;
 import ddf.catalog.data.Metacard;
 import ddf.catalog.data.MetacardType;
+import ddf.catalog.data.impl.AttributeImpl;
 import ddf.catalog.data.impl.MetacardImpl;
 
 public class CDRMetacard extends MetacardImpl {
@@ -41,6 +41,8 @@ public class CDRMetacard extends MetacardImpl {
     public static final String THUMBNAIL_LENGTH = "thumbnail-length";
     public static final String THUMBNAIL_MIMETYPE = "thumbnail-mimetype";
     public static final String THUMBNAIL_LINK_TITLE = "thumbnail-link-title";
+    
+    public static final String METADATA_LINK = "metadata-link";
 
     private static final XLogger LOGGER = new XLogger( LoggerFactory.getLogger( CDRMetacard.class ) );
 
@@ -111,7 +113,7 @@ public class CDRMetacard extends MetacardImpl {
     }
 
     public URI getMetadataURL() {
-        Attribute attribute = originalMetacard.getAttribute( "METADATA_LINK" );
+        Attribute attribute = originalMetacard.getAttribute( METADATA_LINK );
         if ( attribute != null ) {
             return (URI) attribute.getValue();
         }

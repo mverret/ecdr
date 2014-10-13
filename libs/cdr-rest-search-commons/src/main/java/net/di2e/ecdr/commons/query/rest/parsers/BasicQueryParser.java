@@ -24,6 +24,7 @@ import javax.ws.rs.core.MultivaluedMap;
 
 import net.di2e.ecdr.commons.query.GeospatialCriteria;
 import net.di2e.ecdr.commons.query.PropertyCriteria;
+import net.di2e.ecdr.commons.query.PropertyCriteria.Operator;
 import net.di2e.ecdr.commons.query.TemporalCriteria;
 import net.di2e.ecdr.commons.query.TextualCriteria;
 import net.di2e.ecdr.commons.query.cache.QueryRequestCache;
@@ -313,7 +314,14 @@ public class BasicQueryParser implements QueryParser {
 
     @Override
     public List<PropertyCriteria> getPropertyCriteria( MultivaluedMap<String, String> queryParameters ) {
-        return null;
+        List<PropertyCriteria> criteriaList = new ArrayList<PropertyCriteria>();
+        if ( queryParameters.containsKey( SearchConstants.UID_PARAMETER ) ) {
+            String id = queryParameters.getFirst( SearchConstants.UID_PARAMETER );
+            if ( StringUtils.isNotEmpty( id ) ) {
+                criteriaList.add( new PropertyCriteria( Metacard.ID, id, Operator.EQUALS ) );
+            }
+        }
+        return criteriaList;
     }
 
     protected QueryRequestCache getQueryRequestCache() {

@@ -37,6 +37,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import net.di2e.ecdr.commons.filter.StrictFilterDelegate;
+import net.di2e.ecdr.commons.filter.config.FilterConfig;
 import net.di2e.ecdr.commons.util.SearchConstants;
 import net.di2e.ecdr.search.transform.atom.response.AtomResponseTransformer;
 
@@ -101,28 +102,25 @@ public class CDRRestSource extends MaskableImpl implements FederatedSource, Conn
     private String endpointUrl = null;
 
     public CDRRestSource( FilterAdapter filterAdapter ) {
-
         this.filterAdapter = filterAdapter;
     }
 
     public void init() {
-
         updateQueryUrl();
     }
 
     public void destroy() {
-
     }
 
     @Override
     public SourceResponse query( QueryRequest queryRequest ) throws UnsupportedQueryException {
         try {
             Query query = queryRequest.getQuery();
-            Map<String, String> filterParameters = filterAdapter.adapt( query, new StrictFilterDelegate( false, 50000.00 ) );
+            Map<String, String> filterParameters = filterAdapter.adapt( query, new StrictFilterDelegate( false, 50000.00, new FilterConfig() ) );
             filterParameters.putAll( getIntialFilterParameters( queryRequest ) );
             setURLQueryString( filterParameters );
             Response response = cdrRestClient.get();
-            AtomResponseTransformer transformer = new AtomResponseTransformer();
+            AtomResponseTransformer transformer = new AtomResponseTransformer( new FilterConfig() );
             SourceResponse sourceResponse = transformer.processSearchResponse( (InputStream) response.getEntity(), "atom", queryRequest, getId() );
             return sourceResponse;
         } catch ( Exception e ) {
@@ -396,7 +394,7 @@ public class CDRRestSource extends MaskableImpl implements FederatedSource, Conn
         uriMap.put( Metacard.RESOURCE_URI, uri.toString() );
         setURLQueryString( uriMap );
         Response response = cdrRestClient.get();
-        AtomResponseTransformer transformer = new AtomResponseTransformer();
+        AtomResponseTransformer transformer = new AtomResponseTransformer( new FilterConfig() );
         SourceResponse sourceResponse = transformer.processSearchResponse( (InputStream) response.getEntity(), "atom", null, getId() );
         List<Result> results = sourceResponse.getResults();
         if ( !results.isEmpty() ) {

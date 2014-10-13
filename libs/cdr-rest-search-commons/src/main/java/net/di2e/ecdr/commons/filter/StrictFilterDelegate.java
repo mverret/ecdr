@@ -18,6 +18,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.di2e.ecdr.commons.filter.config.FilterConfig;
+import net.di2e.ecdr.commons.filter.config.FilterConfig.SingleRecordQueryMethod;
 import net.di2e.ecdr.commons.util.SearchConstants;
 
 import org.joda.time.format.DateTimeFormatter;
@@ -25,6 +27,7 @@ import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vividsolutions.jts.geom.Envelope;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.Point;
@@ -39,7 +42,7 @@ public class StrictFilterDelegate extends AbstractFilterDelegate<Map<String, Str
     private static final Logger LOGGER = LoggerFactory.getLogger( StrictFilterDelegate.class );
 
     private static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory();
-    private static final DateTimeFormatter DATE_FORMATTER = ISODateTimeFormat.basicDateTime();
+    private static final DateTimeFormatter DATE_FORMATTER = ISODateTimeFormat.dateTime();;
 
     private static final Map<String, String> DATETYPE_MAP = new HashMap<String, String>();
     public static final Map<String, String> SORTKEYS_MAP = new HashMap<String, String>();
@@ -61,10 +64,9 @@ public class StrictFilterDelegate extends AbstractFilterDelegate<Map<String, Str
 
     }
 
-    public StrictFilterDelegate( boolean strictMode, double defaultRadiusforNN ) {
-        super( defaultRadiusforNN );
+    public StrictFilterDelegate( boolean strictMode, double defaultRadiusforNN, FilterConfig config ) {
+        super( defaultRadiusforNN, config );
         this.strictMode = strictMode;
-
     }
 
     @Override
@@ -168,14 +170,22 @@ public class StrictFilterDelegate extends AbstractFilterDelegate<Map<String, Str
 
     @Override
     public Map<String, String> handlePropertyEqualToString( String propertyName, String literal, StringFilterOptions options ) {
-
         Map<String, String> filterContainer = new HashMap<String, String>();
-        if ( handleKeyword( propertyName, literal, filterContainer ) ) {
-            if ( StringFilterOptions.CASE_SENSITIVE.equals( options ) ) {
-                filterContainer.put( SearchConstants.CASESENSITIVE_PARAMETER, "1" );
-            }
+        if ( SingleRecordQueryMethod.ID_ELEMENT_URL.equals( getFilterConfig().getSingleRecordQueryMethod() ) && Metacard.ID.equals( propertyName ) ) {
+            filterContainer.put( SingleRecordQueryMethod.ID_ELEMENT_URL.toString(), literal );
         } else {
-            filterContainer.put( propertyName, literal );
+            if ( handleKeyword( propertyName, literal, filterContainer ) ) {
+                if ( StringFilterOptions.CASE_SENSITIVE.equals( options ) ) {
+                    filterContainer.put( SearchConstants.CASESENSITIVE_PARAMETER, "1" );
+                }
+            } else {
+                // The geo:uis parameter is used to uniquely find an entry so we must map the Metacard.ID to geo:uid
+                if ( Metacard.ID.equals( propertyName ) ) {
+                    filterContainer.put( SearchConstants.UID_PARAMETER, literal );
+                } else {
+                    filterContainer.put( propertyName, literal );
+                }
+            }
         }
         return filterContainer;
     }
@@ -280,17 +290,26 @@ public class StrictFilterDelegate extends AbstractFilterDelegate<Map<String, Str
 
     @Override
     public Map<String, String> handleGeospatial( String propertyName, String wkt, GeospatialFilterOptions options ) {
-        if ( options != null && !GeospatialFilterOptions.INTERSECTS.equals( options ) && !GeospatialFilterOptions.WITHIN.equals( options ) ) {
+        Map<String, String> filterContainer = new HashMap<String, String>();
+        if ( GeospatialFilterOptions.BBOX.equals( options ) ) {
+            try {
+                WKTReader reader = new WKTReader( GEOMETRY_FACTORY );
+                Envelope envelope = reader.read( wkt ).getEnvelopeInternal();
+                filterContainer.put( SearchConstants.BOX_PARAMETER, envelope.getMinX() + "," + envelope.getMinY() + "," + envelope.getMaxX() + "," + envelope.getMaxY() );
+            } catch ( ParseException e ) {
+                throw new UnsupportedOperationException( "Bounding box parameter was not formated correctly" );
+            }
+        } else {
+            if ( !GeospatialFilterOptions.INTERSECTS.equals( options ) && !GeospatialFilterOptions.WITHIN.equals( options ) ) {
+                failIfStrictMode( "handleGeospatial" );
+            }
+            if ( isKnownGeometryProperty( propertyName ) ) {
+                filterContainer.put( SearchConstants.GEOMETRY_PARAMETER, wkt );
+                return filterContainer;
+            }
+            LOGGER.info( "Unsupported geospatial query sent in with wkt[{}], propertyName=[{}] and type=[{}]", wkt, propertyName, options );
             failIfStrictMode( "handleGeospatial" );
         }
-        if ( isKnownGeometryProperty( propertyName ) ) {
-            Map<String, String> filterContainer = new HashMap<String, String>();
-            filterContainer.put( SearchConstants.GEOMETRY_PARAMETER, wkt );
-            return filterContainer;
-        }
-        Map<String, String> filterContainer = new HashMap<String, String>();
-        LOGGER.info( "Unsupported geospatial query sent in with wkt[{}], propertyName=[{}] and type=[{}]", wkt, propertyName, options );
-        failIfStrictMode( "handleGeospatial" );
         return filterContainer;
     }
 

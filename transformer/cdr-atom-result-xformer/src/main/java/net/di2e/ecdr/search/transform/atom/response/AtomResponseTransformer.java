@@ -17,6 +17,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -25,6 +26,7 @@ import javax.activation.MimeType;
 import javax.xml.namespace.QName;
 
 import net.di2e.ecdr.commons.CDRMetacard;
+import net.di2e.ecdr.commons.filter.config.FilterConfig;
 import net.di2e.ecdr.commons.response.SearchResponseTransformer;
 import net.di2e.ecdr.search.transform.atom.constants.AtomResponseConstants;
 
@@ -61,9 +63,16 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
 
     private static final transient Logger LOGGER = LoggerFactory.getLogger( AtomResponseTransformer.class );
     private static final String METADATA_ELEMENT_NAME = "Resource";
+
     private static final DateTimeFormatter DATE_FORMATTER = ISODateTimeFormat.dateTimeParser();
 
     private static final Abdera ABDERA = Abdera.getInstance();
+
+    private FilterConfig filterConfig = null;
+
+    public AtomResponseTransformer( FilterConfig config ) {
+        this.filterConfig = config;
+    }
 
     @Override
     public SourceResponse processSearchResponse( InputStream inputStream, String format, QueryRequest request, String siteName ) {
@@ -111,12 +120,11 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
         if ( StringUtils.isNotBlank( id ) && (id.startsWith( "urn:uuid:" ) || id.startsWith( "urn:catalog:id:" )) ) {
             id = id.substring( id.lastIndexOf( ':' ) + 1 );
         }
-        metacard.setId( id );
+        metacard.setId( URLEncoder.encode( id ) );
 
         // Set the source to the original source name
         // TODO revist this
-        String resultSource = entry.getSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, AtomResponseConstants.RESULT_SOURCE_ELEMENT,
-                AtomResponseConstants.CDRB_NAMESPACE_PREFIX );
+        String resultSource = entry.getSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, AtomResponseConstants.RESULT_SOURCE_ELEMENT, AtomResponseConstants.CDRB_NAMESPACE_PREFIX );
         // metacard.setSourceId( resultSource == null ? siteName : resultSource
         // );
         metacard.setSourceId( siteName );
@@ -134,14 +142,12 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
         metacard.setModifiedDate( entry.getUpdated() );
         metacard.setEffectiveDate( entry.getPublished() );
 
-        String createdDate = entry.getSimpleExtension( new QName( AtomResponseConstants.METACARD_ATOM_NAMESPACE,
-                AtomResponseConstants.METACARD_CREATED_DATE_ELEMENT ) );
+        String createdDate = entry.getSimpleExtension( new QName( AtomResponseConstants.METACARD_ATOM_NAMESPACE, AtomResponseConstants.METACARD_CREATED_DATE_ELEMENT ) );
         if ( createdDate != null ) {
             metacard.setCreatedDate( new Date( DATE_FORMATTER.parseMillis( createdDate ) ) );
         }
 
-        String expirationDate = entry.getSimpleExtension( new QName( AtomResponseConstants.METACARD_ATOM_NAMESPACE,
-                AtomResponseConstants.METADATA_EXPIRATION_DATE_ELEMENT ) );
+        String expirationDate = entry.getSimpleExtension( new QName( AtomResponseConstants.METACARD_ATOM_NAMESPACE, AtomResponseConstants.METADATA_EXPIRATION_DATE_ELEMENT ) );
         if ( expirationDate != null ) {
             metacard.setExpirationDate( new Date( DATE_FORMATTER.parseMillis( expirationDate ) ) );
         }
@@ -154,7 +160,7 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
         // if ( position != null ){
         // metacard.setLocation( toWKT( position ) );
         // }
-        Link productLink = entry.getAlternateLink();
+        Link productLink = entry.getLink( filterConfig.getProductLinkRelation() );
         if ( productLink != null ) {
 
             metacard.setResourceURI( URI.create( productLink.getHref().toASCIIString() ) );
@@ -217,15 +223,17 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
         }
 
         if ( !isMetadataSet ) {
-            // TODO fix this
-            List<Link> metadataLinks = entry.getLinks( "http://esip.org/ns/fedsearch/1.0/metadata#" );
-            String metadataLink = null;
-            for ( Link link : metadataLinks ) {
-                MimeType mimeType = link.getMimeType();
-                if ( mimeType != null ) {
-                    if ( mimeType.getSubType().contains( "xml" ) ) {
-                        metadataLink = link.getHref().toASCIIString();
-                        metacard.setAttribute( "METADATA_LINK", URI.create( metadataLink ) );
+            String metadataLinkRel = filterConfig.getMetadataLinkRelation();
+            if ( metadataLinkRel != null ) {
+                List<Link> metadataLinks = entry.getLinks( metadataLinkRel );
+                String metadataLink = null;
+                for ( Link link : metadataLinks ) {
+                    MimeType mimeType = link.getMimeType();
+                    if ( mimeType != null ) {
+                        if ( mimeType.getSubType().contains( "xml" ) ) {
+                            metadataLink = link.getHref().toASCIIString();
+                            metacard.setAttribute( CDRMetacard.METADATA_LINK, URI.create( metadataLink ) );
+                        }
                     }
                 }
             }
@@ -236,8 +244,7 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
 
     protected Result metacardToResult( Entry entry, Metacard metacard ) {
         ResultImpl result = new ResultImpl( metacard );
-        String relevance = entry.getSimpleExtension( AtomResponseConstants.RELEVANCE_NAMESPACE, AtomResponseConstants.RELEVANCE_ELEMENT,
-                AtomResponseConstants.RELEVANCE_NAMESPACE_PREFIX );
+        String relevance = entry.getSimpleExtension( AtomResponseConstants.RELEVANCE_NAMESPACE, AtomResponseConstants.RELEVANCE_ELEMENT, AtomResponseConstants.RELEVANCE_NAMESPACE_PREFIX );
         if ( relevance != null ) {
             try {
                 result.setRelevanceScore( Double.parseDouble( relevance ) );
@@ -246,8 +253,7 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
             }
         }
 
-        String distance = entry.getSimpleExtension( AtomResponseConstants.CDRS_EXT_NAMESPACE, AtomResponseConstants.DISTANCE_ELEMENT,
-                AtomResponseConstants.CDRS_EXT_NAMESPACE_PREFIX );
+        String distance = entry.getSimpleExtension( AtomResponseConstants.CDRS_EXT_NAMESPACE, AtomResponseConstants.DISTANCE_ELEMENT, AtomResponseConstants.CDRS_EXT_NAMESPACE_PREFIX );
         if ( distance != null ) {
             try {
                 result.setDistanceInMeters( Double.parseDouble( distance ) );

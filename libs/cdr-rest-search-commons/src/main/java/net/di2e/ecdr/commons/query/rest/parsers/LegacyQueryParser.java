@@ -15,14 +15,13 @@ package net.di2e.ecdr.commons.query.rest.parsers;
 import java.net.URI;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.core.MultivaluedMap;
 
 import net.di2e.ecdr.commons.query.GeospatialCriteria;
-import net.di2e.ecdr.commons.query.PropertyCriteria;
 import net.di2e.ecdr.commons.query.GeospatialCriteria.SpatialOperator;
+import net.di2e.ecdr.commons.query.PropertyCriteria;
 import net.di2e.ecdr.commons.query.PropertyCriteria.Operator;
 import net.di2e.ecdr.commons.util.SearchConstants;
 
@@ -58,13 +57,7 @@ public class LegacyQueryParser extends BasicQueryParser {
     }
 
     public List<PropertyCriteria> getPropertyCriteria( MultivaluedMap<String, String> queryParameters ) {
-        List<PropertyCriteria> criteriaList = new ArrayList<PropertyCriteria>();
-        if ( queryParameters.containsKey( Metacard.ID ) ) {
-            String id = queryParameters.getFirst( Metacard.ID );
-            if ( StringUtils.isNotEmpty( id ) ) {
-                criteriaList.add( new PropertyCriteria( Metacard.ID, id, Operator.EQUALS ) );
-            }
-        }
+        List<PropertyCriteria> criteriaList = super.getPropertyCriteria( queryParameters );
         if ( queryParameters.containsKey( Metacard.RESOURCE_URI ) ) {
             String uriString = queryParameters.getFirst( Metacard.RESOURCE_URI );
 

@@ -532,17 +532,17 @@
         <repository>
             <id>central</id>
             <name>Central Repository</name>
-            <url>http://repo.maven.apache.org/maven2</url>
+            <url>https://repo.maven.apache.org/maven2</url>
             <layout>default</layout>
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
         </repository>
-        <repository>
+        <!--<repository>
             <id>maven2-repository.dev.java.net</id>
             <name>Java.net repository</name>
-            <url>http://download.java.net/maven/2</url>
-        </repository>
+            <url>https://download.java.net/maven/2</url>
+        </repository>-->
         <repository>
             <id>codice</id>
             <name>Codice Repository</name>
@@ -554,9 +554,13 @@
     </repositories>
     <pluginRepositories>
         <pluginRepository>
-            <id>codice</id>
-            <name>Codice Repository</name>
-            <url>http://artifacts.codice.org/content/groups/public/</url>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>https://repo.maven.apache.org/maven2</url>
+            <layout>default</layout>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
         </pluginRepository>
     </pluginRepositories>
 

@@ -26,39 +26,29 @@
         http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <osgi:reference id="filterAdapter" interface="ddf.catalog.filter.FilterAdapter" />
+    
+    
 
-    <osgix:managed-service-factory id="net.di2e.ecdr.source.rest.CDROpenSearchSource" factory-pid="cdr-opnesearch-source"
-        update-strategy="container-managed">
+    <osgix:managed-service-factory id="net.di2e.ecdr.source.rest.ManualConfigOpenSearchSource"
+        factory-pid="cdr-manual-opensearch-source" update-strategy="container-managed">
 
         <osgix:interfaces>
             <beans:value>ddf.catalog.source.FederatedSource</beans:value>
         </osgix:interfaces>
 
-        <beans:bean id="MySearchSource" class="net.di2e.ecdr.source.rest.CDROpenSearchSource" init-method="init"
-            destroy-method="destroy" >
-            <beans:constructor-arg ref="filterAdapter" />
-            <beans:property name="id" value="cdr-source" />
-            <beans:property name="endpointUrl" value="http://localhost:8181/services/cdr/search/rest" />
-            <beans:property name="hardCodedParameters" value=""/>
-            <beans:property name="availabilityUrl" value="" />
-            <beans:property name="availabilityMethod" value="NONE" />
-            <beans:property name="searchTermsParameter" value="q" />
-            <beans:property name="countParameter" value="count" />
-            <beans:property name="startIndexParameter" value="startIndex" />
-            <beans:property name="startTimeParameter" value="dtStart" />
-            <beans:property name="endTimeParameter" value="dtEnd" />
-            <beans:property name="boxParameter" value="box" />
-            <beans:property name="latParameter" value="lat" />
-            <beans:property name="lonParameter" value="lon" />
-            <beans:property name="radiusParameter" value="radius" />
-            <beans:property name="geometryParameter" value="geometry" />
-            <beans:property name="sortKeysParameter" value="sortKeys" />
+
+        <beans:bean id="cdr-manual-opensearch-source" class="net.di2e.ecdr.source.rest.ManualConfigOpenSearchSource">
             
-            <beans:property name="defaultResponseFormat" value="atom-ddms" />
+            <beans:constructor-arg ref="filterAdapter" />
+            
+            <!-- properties supported by Maskable Impl that are not set through Metatype -->  
             <beans:property name="title" value="CDR REST Federation" />
             <beans:property name="description" value="CDR REST Federated Source v3.0" />
-            <beans:property name="organization" value="" />
+            <beans:property name="organization" value="DI2E" />
             <beans:property name="version" value="3.0" />
+            
+            <!-- don't set the metatype properties in here -->
+            
         </beans:bean>
 
     </osgix:managed-service-factory>

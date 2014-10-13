@@ -82,7 +82,7 @@
                             *
                         </Import-Package>
                         <Private-Package>
-                            net.di2e.ecdr.source.*,
+                            net.di2e.ecdr.source.rest*,
                         </Private-Package>
                         <Export-Package />
                     </instructions>

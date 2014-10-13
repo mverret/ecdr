@@ -43,6 +43,7 @@ public final class SearchConstants {
     public static final String BOX_PARAMETER = "box";
     public static final String GEOMETRY_PARAMETER = "geometry";
     public static final String POLYGON_PARAMETER = "polygon";
+    public static final String UID_PARAMETER = "uid";
     
     public static final String STARTDATE_PARAMETER = "dtStart";
     public static final String ENDDATE_PARAMETER = "dtEnd";

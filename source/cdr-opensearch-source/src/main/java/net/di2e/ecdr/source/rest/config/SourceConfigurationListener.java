@@ -12,12 +12,12 @@
  **/
 package net.di2e.ecdr.source.rest.config;
 
-public class SourceConfiguration {
+public interface SourceConfigurationListener {
 
-    private String queryUrl = "http://blah:8181";
+    void configurationUpdated();
 
-    public String getQueryUrl() {
-        return queryUrl;
-    }
+    void pingUrlUpdated();
+
+    void endpointUrlUpdated();
 
 }

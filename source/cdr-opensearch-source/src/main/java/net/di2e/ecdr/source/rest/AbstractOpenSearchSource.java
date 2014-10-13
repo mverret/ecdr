@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URI;
+import java.net.URLDecoder;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -31,9 +32,12 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import net.di2e.ecdr.commons.filter.StrictFilterDelegate;
+import net.di2e.ecdr.commons.filter.config.FilterConfig;
+import net.di2e.ecdr.commons.filter.config.FilterConfig.SingleRecordQueryMethod;
 import net.di2e.ecdr.commons.util.SearchConstants;
 import net.di2e.ecdr.search.transform.atom.response.AtomResponseTransformer;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.cxf.jaxrs.client.WebClient;
@@ -62,11 +66,9 @@ import ddf.catalog.source.SourceMonitor;
 import ddf.catalog.source.UnsupportedQueryException;
 import ddf.catalog.util.impl.MaskableImpl;
 
-public class CDROpenSearchSource extends MaskableImpl implements FederatedSource, ConnectedSource {
+public abstract class AbstractOpenSearchSource extends MaskableImpl implements FederatedSource, ConnectedSource {
 
-    private static final transient Logger LOGGER = LoggerFactory.getLogger( CDROpenSearchSource.class );
-    
-    public enum PingMethod { GET, HEAD, NONE };
+    private static final transient Logger LOGGER = LoggerFactory.getLogger( AbstractOpenSearchSource.class );
 
     private static final String HEADER_ACCEPT_RANGES = "Accept-Ranges";
     private static final String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
@@ -76,68 +78,98 @@ public class CDROpenSearchSource extends MaskableImpl implements FederatedSource
     private static final String BYTES = "bytes";
     private static final String BYTES_EQUAL = "bytes=";
 
-    private SourceMonitor siteAvailabilityCallback = null;
-    private FilterAdapter filterAdapter = null;
+    public enum PingMethod {
+        GET, HEAD, NONE
+    };
 
-    private long availableCheckCacheTime = 60000;
+    private SourceMonitor siteAvailabilityCallback = null;
+
     private Date lastAvailableCheckDate = null;
     private boolean isCurrentlyAvailable = false;
-    private PingMethod pingMethod = PingMethod.NONE;
-    private String defaultResponseFormat = null;
 
     private WebClient cdrRestClient = null;
     private WebClient cdrAvailabilityCheckClient = null;
-    private String queryEndpointUrl = null;
-    private String availabilityEndpointUrl = null;
-    
-    private Map<String,String> parameterMap = new HashMap<String,String>();
-    private Map<String,String> hardCodedParameterMap = new HashMap<String,String>();
 
-    public CDROpenSearchSource( FilterAdapter filterAdapter ) {
+    private FilterAdapter filterAdapter = null;
 
-        this.filterAdapter = filterAdapter;
+    private long receiveTimeout = 0;
+
+    public AbstractOpenSearchSource( FilterAdapter adapter ) {
+
+        this.filterAdapter = adapter;
     }
 
-    public void init() {
+    public abstract PingMethod getPingMethod();
 
-        updateQueryUrl();
-    }
+    public abstract String getEndpointURL();
 
-    public void destroy() {
+    public abstract String getPingUrl();
 
-    }
+    public abstract String getDefaultResponseFormat();
+
+    public abstract long getSourceAvailCheckMillis();
+
+    public abstract Map<String, String> getDynamicUrlParameterMap();
+
+    public abstract Map<String, String> getStaticUrlQueryValues();
+
+    public abstract FilterConfig getFilterConfig();
 
     @Override
     public SourceResponse query( QueryRequest queryRequest ) throws UnsupportedQueryException {
         try {
             Query query = queryRequest.getQuery();
-            Map<String, String> filterParameters = filterAdapter.adapt( query, new StrictFilterDelegate( false, 50000.00 ) );
-            filterParameters.putAll( getIntialFilterParameters( queryRequest ) );
-            setURLQueryString( filterParameters );
-           
-            LOGGER.debug(  "Executing http GET query to source [{}] with url [{}]", getId(), cdrRestClient.getCurrentURI().toString() );
-            Response response = cdrRestClient.get();
-            LOGGER.debug( "Query to source [{}] returned http status code [{}] and media type [{}]", getId(), response.getStatus(), response.getMediaType() );
-            if ( response.getStatus() == Status.OK.getStatusCode() ){
-                AtomResponseTransformer transformer = new AtomResponseTransformer();
+            Map<String, String> filterParameters = filterAdapter.adapt( query, new StrictFilterDelegate( false, 50000.00, getFilterConfig() ) );
+
+            // Check to see if this is a remote Metacard Lookup
+            Response response = getResponseIfRemoteMetacard( filterParameters );
+
+            // go down the normal query path
+            if ( response == null ) {
+                filterParameters.putAll( getIntialFilterParameters( queryRequest ) );
+                setURLQueryString( filterParameters );
+
+                LOGGER.debug( "Executing http GET query to source [{}] with url [{}]", getId(), cdrRestClient.getCurrentURI().toString() );
+                response = cdrRestClient.get();
+                LOGGER.debug( "Query to source [{}] returned http status code [{}] and media type [{}]", getId(), response.getStatus(), response.getMediaType() );
+            }
+
+            if ( response.getStatus() == Status.OK.getStatusCode() ) {
+                AtomResponseTransformer transformer = new AtomResponseTransformer( getFilterConfig() );
                 SourceResponse sourceResponse = transformer.processSearchResponse( (InputStream) response.getEntity(), "atom", queryRequest, getId() );
                 return sourceResponse;
-            }else{
+            } else {
+                Object entity = response.getEntity();
+                if ( entity != null ) {
+                    LOGGER.warn( "Error recieved when querying site [{}] \n[{}]", getId(), IOUtils.toString( (InputStream) entity ) );
+                }
                 throw new UnsupportedQueryException( "Query to remote source returned http status code " + response.getStatus() );
             }
-            
+
         } catch ( Exception e ) {
             LOGGER.error( e.getMessage(), e );
             throw new UnsupportedQueryException( "Could not complete query to site [" + getId() + "] due to: " + e.getMessage(), e );
         }
-        
+
+    }
+
+    private Response getResponseIfRemoteMetacard( Map<String, String> filterParameters ) {
+        Response response = null;
+        String metacardUrl = filterParameters.get( SingleRecordQueryMethod.ID_ELEMENT_URL.toString() );
+        if ( metacardUrl != null ) {
+            metacardUrl = URLDecoder.decode( metacardUrl );
+            LOGGER.debug( "Retreiving the metadata from the following url [{}]", metacardUrl );
+            response = WebClient.create( metacardUrl ).get();
+        }
+        return response;
     }
 
     @Override
     public boolean isAvailable() {
         LOGGER.debug( "isAvailable method called on CDR Rest Source named [{}], determining whether to check availability or pull from cache", getId() );
+        PingMethod pingMethod = getPingMethod();
         if ( !PingMethod.NONE.equals( pingMethod ) && cdrAvailabilityCheckClient != null ) {
-            if ( !isCurrentlyAvailable || (lastAvailableCheckDate.getTime() < System.currentTimeMillis() - availableCheckCacheTime) ) {
+            if ( !isCurrentlyAvailable || (lastAvailableCheckDate.getTime() < System.currentTimeMillis() - getSourceAvailCheckMillis()) ) {
                 LOGGER.debug( "Checking availability on CDR Rest Source named [{}] in real time by calling endpoint [{}]", getId(), cdrAvailabilityCheckClient.getBaseURI() );
                 try {
                     Response response = PingMethod.HEAD.equals( pingMethod ) ? cdrAvailabilityCheckClient.head() : cdrAvailabilityCheckClient.get();
@@ -152,7 +184,7 @@ public class CDROpenSearchSource extends MaskableImpl implements FederatedSource
                 }
 
             } else {
-                LOGGER.debug( "Pulling availability f CDR Rest Federated Source named [{}] from cache, isAvaialble=[{}]", getId(), isCurrentlyAvailable );
+                LOGGER.debug( "Pulling availability of CDR Rest Federated Source named [{}] from cache, isAvaialble=[{}]", getId(), isCurrentlyAvailable );
             }
             if ( siteAvailabilityCallback != null ) {
                 if ( isCurrentlyAvailable ) {
@@ -162,7 +194,7 @@ public class CDROpenSearchSource extends MaskableImpl implements FederatedSource
                 }
             }
         } else {
-            LOGGER.debug( "HTTP Ping is set to false so not checking the sites availablility, just setting ot available" );
+            LOGGER.debug( "HTTP Ping is set to false so not checking the sites availability, just setting to available" );
             isCurrentlyAvailable = true;
             if ( siteAvailabilityCallback != null ) {
                 siteAvailabilityCallback.setAvailable();
@@ -290,139 +322,55 @@ public class CDROpenSearchSource extends MaskableImpl implements FederatedSource
         throw new ResourceNotFoundException( "Could not retrieve resource from source [" + getId() + "] and uri [" + uri + "]" );
     }
 
-    public void setFilterAdapter( FilterAdapter adapter ) {
-        this.filterAdapter = adapter;
-    }
-
-    // Not used right not since using container managed bean
-    public void refresh( Map<String, Object> properties ) {
-
-    }
-
-    public void setEndpointUrl( String url ) {
-        LOGGER.debug( "Updating the endpoint url value from [{}] to [{}]", queryEndpointUrl, url );
-        this.queryEndpointUrl = url;
-        updateQueryUrl();
-    }
-    
-    public void setHardCodedParameters( String parameterString ){
-        hardCodedParameterMap.clear();
-        try{
-            if ( StringUtils.isNotBlank( parameterString ) ){
-                String[] params = parameterString.split( "," );
-                for ( String param : params ) {
-                    String[] singleParam = param.split( "=" );
-                    hardCodedParameterMap.put( singleParam[0], singleParam[1] );
-                }
-            }
-        }catch( Exception e){
-            LOGGER.warn( "Could not update hard coded parameters", e.getMessage(), e );
+    public void setReceiveTimeoutSeconds( Integer seconds ) {
+        seconds = seconds == null ? 0 : seconds;
+        long millis = seconds * 1000L;
+        if ( millis != receiveTimeout ) {
+            LOGGER.debug( "ConfigUpdate: Updating the source endpoint receive timeout value from [{}] to [{}] milliseconds", receiveTimeout, millis );
+            receiveTimeout = millis;
+            endpointUrlUpdated();
         }
     }
-    
-    public void setAvailabilityUrl( String url ) {
-        LOGGER.debug( "Updating the availability check (ping) endpoint url value from [{}] to [{}]", availabilityEndpointUrl, url );
-        this.availabilityEndpointUrl = url;
-        updateAvailabilityUrl();
-    }
 
-    public void setDefaultResponseFormat( String defaultFormat ) {
-        this.defaultResponseFormat = defaultFormat;
-    }
-
-    public void setAvailabilityMethod( String method ) {
-        LOGGER.debug( "Updating the httpPing value from [{}] to [{}]", pingMethod, method );
-        pingMethod = PingMethod.valueOf( method );
-    }
-    
-    public void setSearchTermsParameter( String searchTermsParameter ) {
-        LOGGER.debug( "Updating os:searchTerms parameter from [{}] to [{}]", parameterMap.get( SearchConstants.KEYWORD_PARAMETER ), searchTermsParameter );
-        parameterMap.put( SearchConstants.KEYWORD_PARAMETER, searchTermsParameter );
-    }
-    
-    public void setCountParameter( String parameter ) {
-        LOGGER.debug( "Updating os:count parameter from [{}] to [{}]", parameterMap.get( SearchConstants.COUNT_PARAMETER ), parameter );
-        parameterMap.put( SearchConstants.COUNT_PARAMETER, parameter );
-    }
-    
-    public void setStartIndexParameter( String parameter ) {
-        LOGGER.debug( "Updating os:startIndex parameter from [{}] to [{}]", parameterMap.get( SearchConstants.STARTINDEX_PARAMETER ), parameter );
-        parameterMap.put( SearchConstants.STARTINDEX_PARAMETER, parameter );
-    }
-    
-    public void setStartTimeParameter( String parameter ) {
-        LOGGER.debug( "Updating time:start parameter from [{}] to [{}]", parameterMap.get( SearchConstants.STARTDATE_PARAMETER ), parameter );
-        parameterMap.put( SearchConstants.STARTDATE_PARAMETER, parameter );
-    }
-    
-    public void setEndTimeParameter( String parameter ) {
-        LOGGER.debug( "Updating time:end parameter from [{}] to [{}]", parameterMap.get( SearchConstants.ENDDATE_PARAMETER ), parameter );
-        parameterMap.put( SearchConstants.ENDDATE_PARAMETER, parameter );
-    }
-    
-    public void setBoxParameter( String parameter ) {
-        LOGGER.debug( "Updating geo:box parameter from [{}] to [{}]", parameterMap.get( SearchConstants.BOX_PARAMETER ), parameter );
-        parameterMap.put( SearchConstants.BOX_PARAMETER, parameter );
-    }
-    
-    public void setLatParameter( String parameter ) {
-        LOGGER.debug( "Updating geo:lat parameter from [{}] to [{}]", parameterMap.get( SearchConstants.LATITUDE_PARAMETER ), parameter );
-        parameterMap.put( SearchConstants.LATITUDE_PARAMETER, parameter );
-    }
-    
-    public void setLonParameter( String parameter ) {
-        LOGGER.debug( "Updating geo:lon parameter from [{}] to [{}]", parameterMap.get( SearchConstants.LONGITUDE_PARAMETER ), parameter );
-        parameterMap.put( SearchConstants.LONGITUDE_PARAMETER, parameter );
-    }
-    
-    public void setRadiusParameter( String parameter ) {
-        LOGGER.debug( "Updating geo:radius parameter from [{}] to [{}]", parameterMap.get( SearchConstants.RADIUS_PARAMETER ), parameter );
-        parameterMap.put( SearchConstants.RADIUS_PARAMETER, parameter );
-    }
-    
-    public void setGeometryParameter( String parameter ) {
-        LOGGER.debug( "Updating geo:geometry parameter from [{}] to [{}]", parameterMap.get( SearchConstants.GEOMETRY_PARAMETER ), parameter );
-        parameterMap.put( SearchConstants.GEOMETRY_PARAMETER, parameter );
-    }
-    
-    public void setSortKeysParameter( String parameter ) {
-        LOGGER.debug( "Updating sru:sortKeys parameter from [{}] to [{}]", parameterMap.get( SearchConstants.SORTKEYS_PARAMETER ), parameter );
-        parameterMap.put( SearchConstants.SORTKEYS_PARAMETER, parameter );
-    }
-
-    protected void updateQueryUrl() {
-        if ( StringUtils.isNotBlank( queryEndpointUrl ) ) {
-            cdrRestClient = WebClient.create( queryEndpointUrl, true );
+    public void endpointUrlUpdated() {
+        String endpointUrl = getEndpointURL();
+        if ( StringUtils.isNotBlank( endpointUrl ) ) {
+            cdrRestClient = WebClient.create( endpointUrl, true );
+            WebClient.getConfig( cdrRestClient ).getHttpConduit().getClient().setReceiveTimeout( receiveTimeout );
+        } else {
+            LOGGER.warn( "OpenSearch Source Endpoint URL is not a valid value, so cannot update [{}]", endpointUrl );
         }
     }
-    
-    protected void updateAvailabilityUrl() {
-        if ( StringUtils.isNotBlank( availabilityEndpointUrl ) ) {
-            cdrAvailabilityCheckClient = WebClient.create( availabilityEndpointUrl, true );
-        }else{
+
+    public void pingUrlUpdated() {
+        String pingUrl = getPingUrl();
+        if ( StringUtils.isNotBlank( pingUrl ) ) {
+            cdrAvailabilityCheckClient = WebClient.create( pingUrl, true );
+        } else {
             cdrAvailabilityCheckClient = null;
+            LOGGER.info( "OpenSearch Source site availability ping/check URL is blank so will no longer do site availability checks for source id [{}], defaulting to always available", getId() );
         }
     }
 
     protected void setURLQueryString( Map<String, String> filterParameters ) {
         cdrRestClient.resetQuery();
-        boolean addHardocded = true;
+        Map<String, String> urlParameterMap = getDynamicUrlParameterMap();
         for ( Entry<String, String> entry : filterParameters.entrySet() ) {
-            String parameterName = parameterMap.get( entry.getKey() );
-            System.out.println( "**** Parameter NAme: " + entry.getKey() );
-            if ( StringUtils.isNotBlank( parameterName ) ){
-                //TODO fix this
-                cdrRestClient.replaceQueryParam( parameterName, entry.getKey().equals( SearchConstants.COUNT_PARAMETER ) ?  20 : entry.getValue() );
-            }else if ( Metacard.ID.equals( entry.getKey() ) ){
-                System.out.println( "Retreiveing value: " + entry.getValue() );
-                cdrRestClient = WebClient.create( entry.getValue(), true );
-                addHardocded = false;
+            String parameterName = urlParameterMap.get( entry.getKey() );
+            if ( StringUtils.isNotBlank( parameterName ) ) {
+                // TODO fix this
+                cdrRestClient.replaceQueryParam( parameterName, entry.getValue() );
             }
+            // else if ( Metacard.ID.equals( entry.getKey() ) ) {
+            // System.out.println( "Retreiveing value: " + entry.getValue() );
+            // cdrRestClient = WebClient.create( entry.getValue(), true );
+            // addHardocded = false;
+            // }
         }
-        if ( addHardocded ){
-            for ( Entry<String, String> entry : hardCodedParameterMap.entrySet() ){
-                cdrRestClient.replaceQueryParam( entry.getKey(), entry.getValue() );
-            }
+
+        Map<String, String> hardcodedQueryParams = getStaticUrlQueryValues();
+        for ( Entry<String, String> entry : hardcodedQueryParams.entrySet() ) {
+            cdrRestClient.replaceQueryParam( entry.getKey(), entry.getValue() );
         }
     }
 
@@ -438,8 +386,11 @@ public class CDROpenSearchSource extends MaskableImpl implements FederatedSource
         String format = (String) queryRequestProps.get( SearchConstants.FORMAT_PARAMETER );
         if ( format != null ) {
             filterParameters.put( SearchConstants.FORMAT_PARAMETER, format );
-        } else if ( defaultResponseFormat != null ) {
-            filterParameters.put( SearchConstants.FORMAT_PARAMETER, defaultResponseFormat );
+        } else {
+            String defaultResponseFormat = getDefaultResponseFormat();
+            if ( defaultResponseFormat != null ) {
+                filterParameters.put( SearchConstants.FORMAT_PARAMETER, defaultResponseFormat );
+            }
         }
 
         // Strict Mode
@@ -456,7 +407,8 @@ public class CDROpenSearchSource extends MaskableImpl implements FederatedSource
             filterParameters.put( SearchConstants.TIMEOUT_PARAMETER, String.valueOf( timeout ) );
         }
 
-        filterParameters.put( SearchConstants.COUNT_PARAMETER, String.valueOf( query.getPageSize() ) );
+        // filterParameters.put( SearchConstants.COUNT_PARAMETER, String.valueOf( query.getPageSize() ) );
+        filterParameters.put( SearchConstants.COUNT_PARAMETER, String.valueOf( 10 ) );
 
         filterParameters.put( SearchConstants.STARTINDEX_PARAMETER, String.valueOf( query.getStartIndex() ) );
 
@@ -480,13 +432,12 @@ public class CDROpenSearchSource extends MaskableImpl implements FederatedSource
     }
 
     protected URI getURIFromMetacard( URI uri ) {
-
         URI returnUri = null;
         Map<String, String> uriMap = new HashMap<String, String>( 3 );
         uriMap.put( Metacard.RESOURCE_URI, uri.toString() );
         setURLQueryString( uriMap );
         Response response = cdrRestClient.get();
-        AtomResponseTransformer transformer = new AtomResponseTransformer();
+        AtomResponseTransformer transformer = new AtomResponseTransformer( getFilterConfig() );
         SourceResponse sourceResponse = transformer.processSearchResponse( (InputStream) response.getEntity(), "atom", null, getId() );
         List<Result> results = sourceResponse.getResults();
         if ( !results.isEmpty() ) {
