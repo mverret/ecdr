@@ -54,10 +54,6 @@ import ddf.catalog.transform.CatalogTransformerException;
 public class CDRRestSearchServiceImpl {
 
     private static final Logger LOGGER = LoggerFactory.getLogger( CDRRestSearchServiceImpl.class );
-
-    private static final String XML_FORMAT_KEY = "XML_FORMAT";
-
-    private static final String EXI_FORMAT = "exi";
     private static final String DEFAULT_FORMAT = "atom";
 
     private CatalogFramework catalogFramework = null;
@@ -103,15 +99,15 @@ public class CDRRestSearchServiceImpl {
      * 
      * @param uriInfo
      *            Query parameters obtained by e
-     * @param encoding
-     * @param auth
-     * @return
+     * @param encoding accept-encoding from the client
+     * @param auth Authorization header
+     * @return Response to send back to the calling client
      */
     @GET
     public Response search( @Context UriInfo uriInfo, @HeaderParam( "Accept-Encoding" ) String encoding, @HeaderParam( "Authorization" ) String auth ) {
         LOGGER.debug( "Query received: {}", uriInfo.getRequestUri() );
 
-        Response response = null;
+        Response response;
         try {
             MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
             CDRQueryImpl query = new CDRQueryImpl( filterBuilder, queryParameters, queryParser, true, platformConfig.getSiteName() );
@@ -124,19 +120,12 @@ public class CDRRestSearchServiceImpl {
                     platformConfig.getHostname(), platformConfig.getPort() );
             transformProperties.put( SearchConstants.FEED_TITLE, "Atom Search Results from '" + platformConfig.getSiteName() + "' for Query: " + query.getHumanReadableQuery().trim() );
             transformProperties.put( SearchConstants.FORMAT_PARAMETER, query.getResponseFormat() );
-            transformProperties.put( SearchConstants.STATUS_PARAMETER, Boolean.valueOf( queryParser.isIncludeStatus( queryParameters ) ) );
+            transformProperties.put( SearchConstants.STATUS_PARAMETER, queryParser.isIncludeStatus( queryParameters ) );
             transformProperties.put( SearchConstants.LOCAL_SOURCE_ID, catalogFramework.getId() );
             String format = query.getResponseFormat();
 
             if (StringUtils.isBlank(format)) {
                 format = DEFAULT_FORMAT;
-            }
-
-            if (encoding.contains("x-exi")) {
-                // transform into EXI-encoded response
-                LOGGER.debug("Transforming results into exi-encoding and {} underlying xml format.", format);
-                transformProperties.put(XML_FORMAT_KEY, format);
-                format = EXI_FORMAT;
             }
 
             BinaryContent content = catalogFramework.transform( queryResponse, format, transformProperties );
