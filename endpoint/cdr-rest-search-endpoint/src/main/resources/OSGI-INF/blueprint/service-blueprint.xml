@@ -26,7 +26,8 @@
             <ref component-id="cdrRestSearchService" />
         </jaxrs:serviceBeans>
         <jaxrs:features>
-            <bean id="exiFeature" class="net.di2e.ecdr.search.exi.EXIFeature" />
+            <bean class="net.di2e.ecdr.search.exi.EXIFeature" />
+            <bean class="org.apache.cxf.transport.common.gzip.GZIPFeature"/>
             <cxf:logging />
         </jaxrs:features>
     </jaxrs:server>
