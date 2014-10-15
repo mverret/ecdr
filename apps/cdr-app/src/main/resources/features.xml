@@ -43,9 +43,9 @@
         <bundle>mvn:net.di2e.ecdr.federation/cdr-federation-strategies/${project.version}</bundle>
     </feature>
 
-    <feature name="cdr-exi-result-xformer" install="manual" version="${project.version}"
-             description="EXI Query Response transformer. Encodes a query response using EXI compression">
-        <bundle>mvn:net.di2e.ecdr.transformer/cdr-exi-result-xformer/${project.version}</bundle>
+    <feature name="cdr-libs-compression" install="manual" version="${project.version}"
+             description="Installs compression services that can be used for endpoints and sources. By default comes with EXI and GZIP.">
+        <bundle start-level="70">mvn:net.di2e.ecdr.libs/cdr-libs-compression/${project.version}</bundle>
     </feature>
 
     <feature name="cdr-app" install="auto" version="${project.version}"
@@ -54,7 +54,7 @@
         <feature>cdr-rest-search-endpoint</feature>
         <feature>cdr-rest-broker-endpoint</feature>
         <feature>cdr-atom-result-xformer</feature>
-        <feature>cdr-exi-result-xformer</feature>
+        <feature>cdr-libs-compression</feature>
         <feature>cdr-rest-source</feature>
         <feature>cdr-opensearch-source</feature>
     </feature>

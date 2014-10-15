@@ -27,6 +27,5 @@
 
     <modules>
         <module>cdr-atom-result-xformer</module>
-        <module>cdr-exi-result-xformer</module>
     </modules>
 </project>
