@@ -17,12 +17,12 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>net.di2e.ecdr</groupId>
-        <artifactId>transformer</artifactId>
+        <artifactId>libs</artifactId>
         <version>0.7.0-SNAPSHOT</version>
     </parent>
-    <name>Enterprise CDR :: Transformers :: EXI Result Transformer</name>
-    <groupId>net.di2e.ecdr.transformer</groupId>
-    <artifactId>cdr-exi-result-xformer</artifactId>
+    <name>Enterprise CDR :: Libs :: Compression Services</name>
+    <groupId>net.di2e.ecdr.libs</groupId>
+    <artifactId>cdr-libs-compression</artifactId>
     <packaging>bundle</packaging>
 
 
@@ -50,6 +50,10 @@
             <groupId>ddf.catalog.core</groupId>
             <artifactId>catalog-core-api-impl</artifactId>
             <version>${ddf.catalog.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-bundle</artifactId>
         </dependency>
         <dependency>
             <groupId>xerces</groupId>
@@ -90,7 +94,6 @@
                             nagasena*,
                             catalog-core-api-impl
                         </Embed-Dependency>
-                        <Export-Package />
                     </instructions>
                 </configuration>
             </plugin>
