@@ -17,7 +17,7 @@
     xsi:schemaLocation="http://www.osgi.org/xmlns/metatype/v1.2.0 http://www.osgi.org/xmlns/metatype/v1.2.0"
     xmlns:metatype="http://www.osgi.org/xmlns/metatype/v1.2.0">
 
-    <OCD description="CDR v3.0 REST Federated Source" name="CDR REST (OpenSearch) Federated Source" id="CDRRestSource">
+    <OCD description="CDR Specification v3.0 compliant REST Federated Source" name="CDR REST Federated Source" id="CDRRestSource">
         <AD name="Source Name" id="id" required="true" type="String" default="cdr-source" />
         <AD name="CDR Endpoint URL" id="endpointUrl" required="true" type="String"
             default="http://localhost:8181/services/cdr/search/rest" />

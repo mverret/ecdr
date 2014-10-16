@@ -19,75 +19,79 @@
 
     <OCD description="CDR OpenSearch Federated Source" name="CDR OpenSearch Federated Source" id="cdr-manual-opensearch-source">
         <AD name="Source Name" id="id" required="true" type="String" default="cdr-source" />
-        
+
         <AD name="CDR Endpoint URL" id="endpointUrl" required="true" type="String"
             default="http://localhost:8181/services/catalog/query" />
-            
-        <AD name="Response Timeout" id="receiveTimeoutSeconds" required="true" type="Integer"
-            default="0" description="Number of seconds to wait before for the source to respond before timingout the connection.  0 or null means never timeout."/>
-            
-        <AD name="Hard Coded Query Parameters" id="hardCodedParameters" required="true" type="String" default="" 
-            description="Comma separated query parameter and value pairs (e.g. format=atom,timeout=300000)"/>
-            
-        <AD name="Check Availability URL" id="pingUrl" type="String" default=""
+
+        <AD name="Response Timeout" id="receiveTimeoutSeconds" required="true" type="Integer" default="0"
+            description="Number of seconds to wait before for the source to respond before timingout the connection.  0 or null means never timeout." />
+
+        <AD name="Max Result Count" id="maxResultCount" required="true" type="Integer" default="0"
+            description="The maximum number of records to return. If a client specifies a larger value that value will be overriden with this value.  0 or empty means no override." />
+
+        <AD name="Hard Coded Query Parameters" id="hardCodedParameters" required="true" type="String" default=""
+            description="Comma separated query parameter and value pairs (e.g. format=atom,timeout=300000)" />
+
+        <AD name="Ping URL" id="pingUrl" type="String" default=""
             description="URL to check if the site is up or down.  The Method drop down should also be set to GET or HEAD of this URL is provieded" />
-            
-        <AD name="Check Availability Method" id="sitePingMethod" required="true" type="String" default="NONE"
+
+        <AD name="Ping Method" id="sitePingMethod" required="true" type="String" default="NONE"
             description="The HTTP method that should be used when calling the 'Check Availablity URL' to check status">
             <Option label="Don't Check Availabiility" value="NONE" />
             <Option label="HEAD" value="HEAD" />
             <Option label="GET" value="GET" />
         </AD>
-        
+
         <AD name="Single Record Query Method" id="singleRecordQueryMethod" required="true" type="String" default="ID_URL"
             description="The method to lookup the single metacard entry for ID searches">
             <Option label="ID Element URL" value="ID_ELEMENT_URL" />
+            <Option label="Self Link Releation URL" value="SELF_LINK" />
             <Option label="geo:uid Parameter Search" value="UID_PARAMETER" />
         </AD>
-        
+
         <AD name="Metadata Link Relation" id="metadataLinkRelation" type="String" default="alternate"
             description="The link relation to use to populate the Metacard.METADATA element (leave blank if link relation not used)" />
-        
+
         <AD name="Product Link Relation" id="productLinkRelation" type="String" default="alternate"
             description="The link relation to use to point to the Product" />
-        
+
         <AD name="os:searchTerms" id="searchTermsParameter" type="String" default="q"
             description="HTTP Parameter to use for the os:searchTerms value (empty means it's not supported)" />
-        
+
         <AD name="os:count" id="countParameter" type="String" default="count"
             description="HTTP Parameter to use for the os:count value (empty means it's not supported)" />
-        
+
         <AD name="os:startIndex" id="startIndexParameter" type="String" default="startIndex"
             description="HTTP Parameter to use for the os:startIndex value (empty means it's not supported)" />
-        
+
         <AD name="time:start" id="startTimeParameter" type="String" default="dtStart"
             description="HTTP Parameter to use for the time:start value (empty means it's not supported)" />
-        
+
         <AD name="time:end" id="endTimeParameter" type="String" default="dtEnd"
             description="HTTP Parameter to use for the time:end value (empty means it's not supported)" />
-        
+
         <AD name="geo:uid" id="uidParameter" type="String" default="uid"
             description="HTTP Parameter to use for the geo:uid value which is used to uniquely identity an entry (empty means it's not supported)" />
-        
+
         <AD name="geo:box" id="boxParameter" type="String" default="box"
             description="HTTP Parameter to use for the geo:box value (empty means it's not supported)" />
-        
+
         <AD name="geo:lat" id="latParameter" type="String" default="lat"
             description="HTTP Parameter to use for the geo:lat value (empty means it's not supported)" />
-        
+
         <AD name="geo:lon" id="lonParameter" type="String" default="lon"
             description="HTTP Parameter to use for the geo:lon value (empty means it's not supported)" />
-        
+
         <AD name="geo:radius" id="radiusParameter" type="String" default="radius"
             description="HTTP Parameter to use for the geo:radius value (empty means it's not supported)" />
-        
+
         <AD name="geo:geometry" id="geometryParameter" type="String" default="geometry"
             description="HTTP Parameter to use for the geo:geometry value (empty means it's not supported)" />
-        
+
         <AD name="sru:sortKeys" id="sortKeysParameter" type="String" default="sortKeys"
             description="HTTP Parameter to use for the sru:sortKeys value (empty means it's not supported)" />
-        
-            
+
+
     </OCD>
 
     <Designate pid="cdr-manual-opensearch-source" factoryPid="cdr-manual-opensearch-source">

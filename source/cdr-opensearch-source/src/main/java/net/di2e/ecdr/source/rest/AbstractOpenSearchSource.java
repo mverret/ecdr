@@ -94,6 +94,8 @@ public abstract class AbstractOpenSearchSource extends MaskableImpl implements F
 
     private long receiveTimeout = 0;
 
+    private int maxResultsCount = 0;
+
     public AbstractOpenSearchSource( FilterAdapter adapter ) {
 
         this.filterAdapter = adapter;
@@ -161,6 +163,7 @@ public abstract class AbstractOpenSearchSource extends MaskableImpl implements F
             LOGGER.debug( "Retreiving the metadata from the following url [{}]", metacardUrl );
             response = WebClient.create( metacardUrl ).get();
         }
+        // TODO support self link releation URL
         return response;
     }
 
@@ -332,6 +335,14 @@ public abstract class AbstractOpenSearchSource extends MaskableImpl implements F
         }
     }
 
+    public void setMaxResultCount( Integer count ) {
+        count = count == null ? 0 : count;
+        if ( count != maxResultsCount ) {
+            LOGGER.debug( "ConfigUpdate: Updating the max results count value from [{}] to [{}]", maxResultsCount, count );
+            maxResultsCount = count;
+        }
+    }
+
     public void endpointUrlUpdated() {
         String endpointUrl = getEndpointURL();
         if ( StringUtils.isNotBlank( endpointUrl ) ) {
@@ -407,8 +418,8 @@ public abstract class AbstractOpenSearchSource extends MaskableImpl implements F
             filterParameters.put( SearchConstants.TIMEOUT_PARAMETER, String.valueOf( timeout ) );
         }
 
-        // filterParameters.put( SearchConstants.COUNT_PARAMETER, String.valueOf( query.getPageSize() ) );
-        filterParameters.put( SearchConstants.COUNT_PARAMETER, String.valueOf( 10 ) );
+        int pageSize = query.getPageSize();
+        filterParameters.put( SearchConstants.COUNT_PARAMETER, maxResultsCount > 0 && pageSize > maxResultsCount ? String.valueOf( maxResultsCount ) : String.valueOf( pageSize ) );
 
         filterParameters.put( SearchConstants.STARTINDEX_PARAMETER, String.valueOf( query.getStartIndex() ) );
 
