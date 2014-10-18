@@ -35,6 +35,7 @@
     </bean>
 
     <bean id="ddms20AtomTransformer" class="net.di2e.ecdr.search.transform.atom.AtomTransformerWithPayload">
+        <cm:managed-properties persistent-id="cdr-atom-result-xformer" update-strategy="container-managed"/>
         <argument ref="configurationWatcherAtom" />
         <argument ref="viewMetacardActionProvider" />
         <argument ref="resourceActionProvider" />
@@ -43,15 +44,7 @@
         <argument ref="htmlMimeType" />
     </bean>
 
-    <service ref="ddms20AtomTransformer" interface="ddf.catalog.transform.QueryResponseTransformer" ranking="5">
-        <service-properties>
-            <entry key="id" value="atom-ddms-2.0" />
-            <entry key="shortname" value="atom-ddms-2.0" />
-            <entry key="mime-type" value="application/atom+xml" />
-        </service-properties>
-    </service>
-
-    <service ref="ddms20AtomTransformer" interface="ddf.catalog.transform.MetacardTransformer" ranking="5">
+    <service ref="ddms20AtomTransformer" auto-export="interfaces" ranking="5">
         <service-properties>
             <entry key="id" value="atom-ddms-2.0" />
             <entry key="shortname" value="atom-ddms-2.0" />
@@ -59,15 +52,7 @@
         </service-properties>
     </service>
     
-    <service ref="ddms20AtomTransformer" interface="ddf.catalog.transform.QueryResponseTransformer" ranking="5">
-        <service-properties>
-            <entry key="id" value="atom-ddms" />
-            <entry key="shortname" value="atom-ddms" />
-            <entry key="mime-type" value="application/atom+xml" />
-        </service-properties>
-    </service>
-
-    <service ref="ddms20AtomTransformer" interface="ddf.catalog.transform.MetacardTransformer" ranking="5">
+    <service ref="ddms20AtomTransformer" auto-export="interfaces" ranking="5">
         <service-properties>
             <entry key="id" value="atom-ddms" />
             <entry key="shortname" value="atom-ddms" />
@@ -76,6 +61,7 @@
     </service>
 
     <bean id="atomTransformer" class="net.di2e.ecdr.search.transform.atom.AtomTransformer">
+        <cm:managed-properties persistent-id="cdr-atom-result-xformer" update-strategy="container-managed"/>
         <argument ref="configurationWatcherAtom" />
         <argument ref="viewMetacardActionProvider" />
         <argument ref="resourceActionProvider" />
@@ -84,21 +70,12 @@
         <argument ref="htmlMimeType" />
     </bean>
 
-    <service ref="atomTransformer" interface="ddf.catalog.transform.QueryResponseTransformer" ranking="5">
+    <service ref="atomTransformer" auto-export="interfaces" ranking="5">
         <service-properties>
             <entry key="id" value="atom" />
             <entry key="shortname" value="atom" />
             <entry key="mime-type" value="application/atom+xml" />
         </service-properties>
     </service>
-
-    <service ref="atomTransformer" interface="ddf.catalog.transform.MetacardTransformer" ranking="5">
-        <service-properties>
-            <entry key="id" value="atom" />
-            <entry key="shortname" value="atom" />
-            <entry key="mime-type" value="application/atom+xml" />
-        </service-properties>
-    </service>
-
 
 </blueprint>

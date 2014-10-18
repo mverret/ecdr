@@ -30,10 +30,8 @@ import net.di2e.ecdr.commons.filter.config.FilterConfig;
 import net.di2e.ecdr.commons.response.SearchResponseTransformer;
 import net.di2e.ecdr.search.transform.atom.constants.AtomResponseConstants;
 
+import net.di2e.ecdr.search.transform.atom.geo.AbderaConverter;
 import org.apache.abdera.Abdera;
-import org.apache.abdera.ext.geo.Coordinate;
-import org.apache.abdera.ext.geo.GeoHelper;
-import org.apache.abdera.ext.geo.Point;
 import org.apache.abdera.ext.geo.Position;
 import org.apache.abdera.ext.opensearch.OpenSearchConstants;
 import org.apache.abdera.i18n.iri.IRI;
@@ -41,7 +39,6 @@ import org.apache.abdera.model.Category;
 import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Element;
 import org.apache.abdera.model.Entry;
-import org.apache.abdera.model.ExtensibleElement;
 import org.apache.abdera.model.Feed;
 import org.apache.abdera.model.Link;
 import org.apache.abdera.parser.Parser;
@@ -267,16 +264,10 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
 
     private String getWKT( Entry entry ) {
         String wkt = null;
-        ExtensibleElement geoElement = entry.getExtension( GeoHelper.QNAME_SIMPLE_POINT );
-        if ( geoElement != null ) {
-            Position position = GeoHelper.getAsPosition( geoElement );
-            if ( position instanceof Point ) {
-                Coordinate coord = ((Point) position).getCoordinate();
-                wkt = "POINT(" + coord.getLongitude() + " " + coord.getLatitude() + ")";
-            }
-        } else {
-            geoElement = entry.getExtension( GeoHelper.QNAME_WHERE );
-
+        Position[] positions = net.di2e.ecdr.search.transform.atom.geo.GeoHelper.getPositions(entry);
+        if (positions.length > 0 ) {
+            LOGGER.debug("Found geometry in the current entry, only pulling first geo if more than one are inside.");
+            return AbderaConverter.convertToWKT(positions[0]);
         }
         return wkt;
     }
