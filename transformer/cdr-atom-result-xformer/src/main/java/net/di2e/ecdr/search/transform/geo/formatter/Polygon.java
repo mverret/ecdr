@@ -19,6 +19,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.vividsolutions.jts.geom.Envelope;
+import org.apache.abdera.ext.geo.Box;
 import org.apache.abdera.ext.geo.Position;
 
 import com.vividsolutions.jts.geom.Geometry;
@@ -30,7 +32,6 @@ public class Polygon extends MultiPoint {
 
     public Polygon( Geometry geometry ) {
         super( geometry );
-
     }
 
     /**
@@ -92,9 +93,16 @@ public class Polygon extends MultiPoint {
     @Override
     public List<Position> toGeoRssPositions() {
 
-        org.apache.abdera.ext.geo.Coordinates coords = getPolygonCoordinates( (com.vividsolutions.jts.geom.Polygon) getGeometry() );
+        if (getGeometry().isRectangle()) {
+            Envelope envelope = getGeometry().getEnvelopeInternal();
+            org.apache.abdera.ext.geo.Coordinate upperCorner = new org.apache.abdera.ext.geo.Coordinate(envelope.getMinY(), envelope.getMinX());
+            org.apache.abdera.ext.geo.Coordinate lowerCorner = new org.apache.abdera.ext.geo.Coordinate(envelope.getMaxY(), envelope.getMaxX());
+            return Arrays.asList((Position) (new Box(upperCorner, lowerCorner)));
+        } else {
+            org.apache.abdera.ext.geo.Coordinates coords = getPolygonCoordinates((com.vividsolutions.jts.geom.Polygon) getGeometry());
 
-        return Arrays.asList( (Position) (new org.apache.abdera.ext.geo.Polygon( coords )) );
+            return Arrays.asList((Position) (new org.apache.abdera.ext.geo.Polygon(coords)));
+        }
 
     }
 

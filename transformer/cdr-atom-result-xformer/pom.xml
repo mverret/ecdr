@@ -25,7 +25,6 @@
     <artifactId>cdr-atom-result-xformer</artifactId>
     <packaging>bundle</packaging>
 
-
     <dependencies>
         <dependency>
             <groupId>net.di2e.ecdr.libs</groupId>
@@ -67,8 +66,6 @@
                     <instructions>
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                         <Embed-Transitive>true</Embed-Transitive>
-                        <!-- abdera*;scope=compile|runtime,
-                            axiom*, -->
                         <Embed-Dependency>
                             catalog-core-api-impl,
                             platform-configuration-impl,
@@ -76,10 +73,8 @@
                             axiom*,
                         </Embed-Dependency>
                         <Import-Package>
-
                             !org.apache.commons.codec.*,
                             !org.apache.james.*,
-
                             *,
                         </Import-Package>
                         <Export-Package>
@@ -88,8 +83,8 @@
                         </Export-Package>
                         <Private-Package>
                             net.di2e.ecdr.search.transform.atom,
+                            net.di2e.ecdr.search.transform.atom.geo,
                             org.codice.ddf.configuration.impl,
-
                             org.objectweb.*,
                             org.parboiled.*,
                         </Private-Package>
