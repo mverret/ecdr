@@ -31,11 +31,6 @@
         <bundle>mvn:net.di2e.ecdr.source/cdr-rest-source/${project.version}</bundle>
         <bundle>mvn:net.di2e.ecdr.libs/cdr-rest-search-commons/${project.version}</bundle>
     </feature>
-    
-    <feature name="cdr-opensearch-source" install="manual" version="${project.version}" description="CDR REST Source">
-        <bundle>mvn:net.di2e.ecdr.source/cdr-opensearch-source/${project.version}</bundle>
-        <bundle>mvn:net.di2e.ecdr.libs/cdr-rest-search-commons/${project.version}</bundle>
-    </feature>
 
     <feature name="cdr-rest-broker-endpoint" install="manual" version="${project.version}" description="CDR REST Search endpoint.">
         <bundle>mvn:net.di2e.ecdr.endpoint/cdr-rest-broker-endpoint/${project.version}</bundle>
