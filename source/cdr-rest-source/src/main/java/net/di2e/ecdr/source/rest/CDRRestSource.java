@@ -17,8 +17,6 @@ import java.util.Map;
 
 import net.di2e.ecdr.commons.filter.config.FilterConfig;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.cxf.jaxrs.client.WebClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,7 +55,7 @@ public class CDRRestSource extends AbstractCDRSource {
         LOGGER.debug( "ConfigUpdate: Updating the doSourcePing value from to [{}]", doPing );
         setPingMethod( doPing ? PingMethod.HEAD : PingMethod.NONE );
     }
-    
+
     public void setEndpointUrl( String endpointUrl ) {
         super.setPingUrl( endpointUrl );
         super.setEndpointUrl( endpointUrl );

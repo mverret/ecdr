@@ -340,7 +340,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
             for ( Entry<String, String> entry : filterParameters.entrySet() ) {
                 cdrRestClient.replaceQueryParam( entry.getKey(), entry.getValue() );
             }
-        // Dynamic paraameter map exists so use that and do the mapping
+            // Dynamic paraameter map exists so use that and do the mapping
         } else {
 
             for ( Entry<String, String> entry : filterParameters.entrySet() ) {
@@ -454,7 +454,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
             LOGGER.debug( "ConfigUpdate: Updating the ping (site availability check) endpoint url value from [{}] to [{}]",
                     cdrAvailabilityCheckClient == null ? null : cdrAvailabilityCheckClient.getCurrentURI().toString(), url );
             cdrAvailabilityCheckClient = WebClient.create( url, true );
-            ;
+            
         } else {
             LOGGER.debug( "ConfigUpdate: Updating the ping (site availability check) endpoint url to [null], will not be performing ping checks" );
         }
