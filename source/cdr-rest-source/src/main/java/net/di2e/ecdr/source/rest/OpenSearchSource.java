@@ -99,7 +99,7 @@ public class OpenSearchSource extends AbstractCDRSource {
             // get the existing start index (0 or 1) to use in the log statement
             // after setting the index
             String oldIndex = filterConfig.isZeroBasedStartIndex() ? "0" : "1";
-            filterConfig.setZeroBasedStartIndex( Integer.parseInt( startNumber ) );
+            filterConfig.setZeroBasedStartIndex( Integer.parseInt( startNumber ) == 0 );
             LOGGER.debug( "ConfigUpdate: Updating the Start Index Numbering value from [{}] to [{}]", oldIndex, startNumber );
         } catch ( NumberFormatException e ) {
             LOGGER.warn( "ConfigUpdate Failed: Attempted to update the 'start index number method' due to non valid (must be 1 or 0) start index numbering passed in["

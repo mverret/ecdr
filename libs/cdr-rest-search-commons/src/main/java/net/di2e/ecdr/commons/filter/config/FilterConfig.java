@@ -60,8 +60,8 @@ public class FilterConfig {
         return localUrls;
     }
 
-    public void setZeroBasedStartIndex( int index ) {
-        zeroBasedStartIndex = index == 0;
+    public void setZeroBasedStartIndex( boolean zeroBased ) {
+        zeroBasedStartIndex = zeroBased;
     }
 
     public boolean isZeroBasedStartIndex() {
