@@ -13,15 +13,13 @@
  * 
  **/
  -->
-<metatype:MetaData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.osgi.org/xmlns/metatype/v1.2.0 http://www.osgi.org/xmlns/metatype/v1.2.0"
+<metatype:MetaData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.osgi.org/xmlns/metatype/v1.2.0 http://www.osgi.org/xmlns/metatype/v1.2.0"
     xmlns:metatype="http://www.osgi.org/xmlns/metatype/v1.2.0">
 
-    <OCD description="CDR OpenSearch Federated Source" name="CDR OpenSearch Federated Source" id="cdr-manual-opensearch-source">
-        <AD name="Source Name" id="id" required="true" type="String" default="cdr-source" />
+    <OCD description="CDR OpenSearch Federated Source" name="CDR OpenSearch Federated Source" id="ecdr-opensearch-source">
+        <AD name="Source Name" id="id" required="true" type="String" default="OpenSearch Source" />
 
-        <AD name="CDR Endpoint URL" id="endpointUrl" required="true" type="String"
-            default="http://localhost:8181/services/catalog/query" />
+        <AD name="CDR Endpoint URL" id="endpointUrl" required="true" type="String" default="" />
 
         <AD name="Response Timeout" id="receiveTimeoutSeconds" required="true" type="Integer" default="0"
             description="Number of seconds to wait before for the source to respond before timingout the connection.  0 or null means never timeout." />
@@ -35,12 +33,15 @@
         <AD name="Ping URL" id="pingUrl" type="String" default=""
             description="URL to check if the site is up or down.  The Method drop down should also be set to GET or HEAD of this URL is provieded" />
 
-        <AD name="Ping Method" id="sitePingMethod" required="true" type="String" default="NONE"
+        <AD name="Ping Method" id="pingMethodString" required="true" type="String" default="NONE"
             description="The HTTP method that should be used when calling the 'Check Availablity URL' to check status">
             <Option label="Don't Check Availabiility" value="NONE" />
             <Option label="HEAD" value="HEAD" />
             <Option label="GET" value="GET" />
         </AD>
+        
+        <AD name="Minimum Source Ping Interval" id="availableCheckCacheTime" required="true" type="Integer" default="60"
+            description="The minimum time interval (in seconds) between source availability checks.  Source status will be pulled from cache if the minimum time has not passed." />
 
         <AD name="Single Record Query Method" id="singleRecordQueryMethod" required="true" type="String" default="ID_URL"
             description="The method to lookup the single metacard entry for ID searches">
@@ -55,6 +56,11 @@
         <AD name="Product Link Relation" id="productLinkRelation" type="String" default="alternate"
             description="The link relation to use to point to the Product" />
 
+        <AD name="Proxy URLs through Local Instance" id="proxyUrls" type="Boolean" default="false"
+            description="Check the box if you want all product, metadata, thumbnail URLs to be returned as local URLs referencing the existing server.  This should be checked if it is expected
+            that the client would not be able to directly access URLs that are pointing to the remote data source (e.g. if there were firewalls inplace that would prohibit the access from 
+            the client machine web browser)" />
+
         <AD name="os:searchTerms" id="searchTermsParameter" type="String" default="q"
             description="HTTP Parameter to use for the os:searchTerms value (empty means it's not supported)" />
 
@@ -63,6 +69,12 @@
 
         <AD name="os:startIndex" id="startIndexParameter" type="String" default="startIndex"
             description="HTTP Parameter to use for the os:startIndex value (empty means it's not supported)" />
+
+        <AD name="Start Index Numbering" id="startIndexStartNumber" required="true" type="String" default="1"
+            description="The method to lookup the single metacard entry for ID searches">
+            <Option label="1-Based (Starts at 1)" value="1" />
+            <Option label="0-Based (Starts at 0)" value="0" />
+        </AD>
 
         <AD name="time:start" id="startTimeParameter" type="String" default="dtStart"
             description="HTTP Parameter to use for the time:start value (empty means it's not supported)" />
@@ -94,7 +106,7 @@
 
     </OCD>
 
-    <Designate pid="cdr-manual-opensearch-source" factoryPid="cdr-manual-opensearch-source">
-        <Object ocdref="cdr-manual-opensearch-source" />
+    <Designate pid="ecdr-opensearch-source" factoryPid="ecdr-opensearch-source">
+        <Object ocdref="ecdr-opensearch-source" />
     </Designate>
 </metatype:MetaData>

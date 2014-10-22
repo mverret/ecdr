@@ -66,10 +66,12 @@ import ddf.catalog.source.SourceMonitor;
 import ddf.catalog.source.UnsupportedQueryException;
 import ddf.catalog.util.impl.MaskableImpl;
 
-public abstract class AbstractOpenSearchSource extends MaskableImpl implements FederatedSource, ConnectedSource {
+public abstract class AbstractCDRSource extends MaskableImpl implements FederatedSource, ConnectedSource {
 
-    private static final transient Logger LOGGER = LoggerFactory.getLogger( AbstractOpenSearchSource.class );
+    private static final transient Logger LOGGER = LoggerFactory.getLogger( AbstractCDRSource.class );
 
+    // TODO check the retrieve resuming from previous place capability
+    // compare with existing DDF code as it may have been updated recently
     private static final String HEADER_ACCEPT_RANGES = "Accept-Ranges";
     private static final String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
     private static final String HEADER_RANGE = "Range";
@@ -83,33 +85,29 @@ public abstract class AbstractOpenSearchSource extends MaskableImpl implements F
     };
 
     private SourceMonitor siteAvailabilityCallback = null;
+    private FilterAdapter filterAdapter = null;
 
+    private long availableCheckCacheTime = 60000;
     private Date lastAvailableCheckDate = null;
     private boolean isCurrentlyAvailable = false;
 
     private WebClient cdrRestClient = null;
     private WebClient cdrAvailabilityCheckClient = null;
-
-    private FilterAdapter filterAdapter = null;
+    private PingMethod pingMethod = PingMethod.NONE;
 
     private long receiveTimeout = 0;
-
     private int maxResultsCount = 0;
+    private String defaultResponseFormat = null;
 
-    public AbstractOpenSearchSource( FilterAdapter adapter ) {
+    public AbstractCDRSource( FilterAdapter adapter ) {
 
         this.filterAdapter = adapter;
+        // This will be used in a future ticket, just leaving commented out for
+        // now
+        // MultiThreadedHttpConnectionManager connectionManager = new
+        // MultiThreadedHttpConnectionManager();
+        // cdrAvailabilityCheckClient = new HttpClient( connectionManager );
     }
-
-    public abstract PingMethod getPingMethod();
-
-    public abstract String getEndpointURL();
-
-    public abstract String getPingUrl();
-
-    public abstract String getDefaultResponseFormat();
-
-    public abstract long getSourceAvailCheckMillis();
 
     public abstract Map<String, String> getDynamicUrlParameterMap();
 
@@ -121,12 +119,14 @@ public abstract class AbstractOpenSearchSource extends MaskableImpl implements F
     public SourceResponse query( QueryRequest queryRequest ) throws UnsupportedQueryException {
         try {
             Query query = queryRequest.getQuery();
+            // TODO Add in default radius
             Map<String, String> filterParameters = filterAdapter.adapt( query, new StrictFilterDelegate( false, 50000.00, getFilterConfig() ) );
 
             // Check to see if this is a remote Metacard Lookup
             Response response = getResponseIfRemoteMetacard( filterParameters );
 
-            // go down the normal query path
+            // If the custom metacard lookup didn't produce anything, then down
+            // the normal query path
             if ( response == null ) {
                 filterParameters.putAll( getIntialFilterParameters( queryRequest ) );
                 setURLQueryString( filterParameters );
@@ -138,6 +138,7 @@ public abstract class AbstractOpenSearchSource extends MaskableImpl implements F
 
             if ( response.getStatus() == Status.OK.getStatusCode() ) {
                 AtomResponseTransformer transformer = new AtomResponseTransformer( getFilterConfig() );
+                // TODO check why "atom" is passed in here
                 SourceResponse sourceResponse = transformer.processSearchResponse( (InputStream) response.getEntity(), "atom", queryRequest, getId() );
                 return sourceResponse;
             } else {
@@ -170,10 +171,10 @@ public abstract class AbstractOpenSearchSource extends MaskableImpl implements F
     @Override
     public boolean isAvailable() {
         LOGGER.debug( "isAvailable method called on CDR Rest Source named [{}], determining whether to check availability or pull from cache", getId() );
-        PingMethod pingMethod = getPingMethod();
-        if ( !PingMethod.NONE.equals( pingMethod ) && cdrAvailabilityCheckClient != null ) {
-            if ( !isCurrentlyAvailable || (lastAvailableCheckDate.getTime() < System.currentTimeMillis() - getSourceAvailCheckMillis()) ) {
-                LOGGER.debug( "Checking availability on CDR Rest Source named [{}] in real time by calling endpoint [{}]", getId(), cdrAvailabilityCheckClient.getBaseURI() );
+        if ( pingMethod != null && !PingMethod.NONE.equals( pingMethod ) && cdrAvailabilityCheckClient != null ) {
+            if ( !isCurrentlyAvailable || (lastAvailableCheckDate.getTime() < System.currentTimeMillis() - availableCheckCacheTime) ) {
+                LOGGER.debug( "Checking availability on CDR Rest Source named [{}] in real time by calling endpoint [{}]", getId(),
+                        cdrAvailabilityCheckClient.getBaseURI() );
                 try {
                     Response response = PingMethod.HEAD.equals( pingMethod ) ? cdrAvailabilityCheckClient.head() : cdrAvailabilityCheckClient.get();
                     if ( response.getStatus() == Status.OK.getStatusCode() || response.getStatus() == Status.ACCEPTED.getStatusCode() ) {
@@ -183,7 +184,9 @@ public abstract class AbstractOpenSearchSource extends MaskableImpl implements F
                         isCurrentlyAvailable = false;
                     }
                 } catch ( Exception e ) {
-                    LOGGER.warn( "CDR Rest Source named [" + getId() + "] encountered error while executing HTTP Head at URL [" + cdrAvailabilityCheckClient.getBaseURI() + "]:" + e.getMessage() );
+                    LOGGER.warn( "CDR Rest Source named [" + getId() + "] encountered error while executing HTTP Head at URL ["
+                            + cdrAvailabilityCheckClient.getBaseURI() + "]:" + e.getMessage() );
+
                 }
 
             } else {
@@ -228,10 +231,12 @@ public abstract class AbstractOpenSearchSource extends MaskableImpl implements F
     }
 
     @Override
-    public ResourceResponse retrieveResource( URI uri, Map<String, Serializable> requestProperties ) throws ResourceNotFoundException, ResourceNotSupportedException, IOException {
+    public ResourceResponse retrieveResource( URI uri, Map<String, Serializable> requestProperties ) throws ResourceNotFoundException,
+            ResourceNotSupportedException, IOException {
         LOGGER.debug( "Retrieving Resource from remote CDR Source named [{}] using URI [{}]", getId(), uri );
 
-        // Check to see if the resource-uri value was passed through which is the original metacard uri which
+        // Check to see if the resource-uri value was passed through which is
+        // the original metacard uri which
         // can be different from what was returned or used by the client
         Serializable resourceUriProperty = requestProperties.get( Metacard.RESOURCE_URI );
         if ( resourceUriProperty != null && resourceUriProperty instanceof URI ) {
@@ -274,7 +279,8 @@ public abstract class AbstractOpenSearchSource extends MaskableImpl implements F
             } catch ( MimeTypeParseException e ) {
                 try {
                     mimeType = new MimeType( "application/octet-stream" );
-                    LOGGER.warn( "Creating mime type from CDR Source named [{}] using uri [{}] with value [{}] defaulting to [{}]", getId(), uri, "application/octet-stream" );
+                    LOGGER.warn( "Creating mime type from CDR Source named [{}] using uri [{}] with value [{}] defaulting to [{}]", getId(), uri,
+                            "application/octet-stream" );
                 } catch ( MimeTypeParseException e1 ) {
                     LOGGER.error( "Could not create MIMEType for resource being retrieved", e1 );
                 }
@@ -318,65 +324,38 @@ public abstract class AbstractOpenSearchSource extends MaskableImpl implements F
                         responseProperties.put( BYTES_SKIPPED_RESPONSE, Boolean.TRUE );
                     }
                 }
-                return new ResourceResponseImpl( new ResourceRequestByProductUri( uri, requestProperties ), responseProperties, new ResourceImpl( binaryStream, mimeType, fileName ) );
+                return new ResourceResponseImpl( new ResourceRequestByProductUri( uri, requestProperties ), responseProperties, new ResourceImpl( binaryStream,
+                        mimeType, fileName ) );
             }
         }
         LOGGER.warn( "Could not retrieve resource from CDR Source named [{}] using uri [{}]", getId(), uri );
         throw new ResourceNotFoundException( "Could not retrieve resource from source [" + getId() + "] and uri [" + uri + "]" );
     }
 
-    public void setReceiveTimeoutSeconds( Integer seconds ) {
-        seconds = seconds == null ? 0 : seconds;
-        long millis = seconds * 1000L;
-        if ( millis != receiveTimeout ) {
-            LOGGER.debug( "ConfigUpdate: Updating the source endpoint receive timeout value from [{}] to [{}] milliseconds", receiveTimeout, millis );
-            receiveTimeout = millis;
-            endpointUrlUpdated();
-        }
-    }
-
-    public void setMaxResultCount( Integer count ) {
-        count = count == null ? 0 : count;
-        if ( count != maxResultsCount ) {
-            LOGGER.debug( "ConfigUpdate: Updating the max results count value from [{}] to [{}]", maxResultsCount, count );
-            maxResultsCount = count;
-        }
-    }
-
-    public void endpointUrlUpdated() {
-        String endpointUrl = getEndpointURL();
-        if ( StringUtils.isNotBlank( endpointUrl ) ) {
-            cdrRestClient = WebClient.create( endpointUrl, true );
-            WebClient.getConfig( cdrRestClient ).getHttpConduit().getClient().setReceiveTimeout( receiveTimeout );
-        } else {
-            LOGGER.warn( "OpenSearch Source Endpoint URL is not a valid value, so cannot update [{}]", endpointUrl );
-        }
-    }
-
-    public void pingUrlUpdated() {
-        String pingUrl = getPingUrl();
-        if ( StringUtils.isNotBlank( pingUrl ) ) {
-            cdrAvailabilityCheckClient = WebClient.create( pingUrl, true );
-        } else {
-            cdrAvailabilityCheckClient = null;
-            LOGGER.info( "OpenSearch Source site availability ping/check URL is blank so will no longer do site availability checks for source id [{}], defaulting to always available", getId() );
-        }
-    }
-
     protected void setURLQueryString( Map<String, String> filterParameters ) {
         cdrRestClient.resetQuery();
         Map<String, String> urlParameterMap = getDynamicUrlParameterMap();
-        for ( Entry<String, String> entry : filterParameters.entrySet() ) {
-            String parameterName = urlParameterMap.get( entry.getKey() );
-            if ( StringUtils.isNotBlank( parameterName ) ) {
-                // TODO fix this
-                cdrRestClient.replaceQueryParam( parameterName, entry.getValue() );
+        // If there is no dynamic mapping then just use the defaults
+        if ( urlParameterMap == null || urlParameterMap.isEmpty() ) {
+            for ( Entry<String, String> entry : filterParameters.entrySet() ) {
+                cdrRestClient.replaceQueryParam( entry.getKey(), entry.getValue() );
             }
-            // else if ( Metacard.ID.equals( entry.getKey() ) ) {
-            // System.out.println( "Retreiveing value: " + entry.getValue() );
-            // cdrRestClient = WebClient.create( entry.getValue(), true );
-            // addHardocded = false;
-            // }
+        // Dynamic paraameter map exists so use that and do the mapping
+        } else {
+
+            for ( Entry<String, String> entry : filterParameters.entrySet() ) {
+                String parameterName = urlParameterMap.get( entry.getKey() );
+                if ( StringUtils.isNotBlank( parameterName ) ) {
+                    // TODO fix this
+                    cdrRestClient.replaceQueryParam( parameterName, entry.getValue() );
+                }
+                // else if ( Metacard.ID.equals( entry.getKey() ) ) {
+                // System.out.println( "Retreiveing value: " + entry.getValue()
+                // );
+                // cdrRestClient = WebClient.create( entry.getValue(), true );
+                // addHardocded = false;
+                // }
+            }
         }
 
         Map<String, String> hardcodedQueryParams = getStaticUrlQueryValues();
@@ -398,7 +377,6 @@ public abstract class AbstractOpenSearchSource extends MaskableImpl implements F
         if ( format != null ) {
             filterParameters.put( SearchConstants.FORMAT_PARAMETER, format );
         } else {
-            String defaultResponseFormat = getDefaultResponseFormat();
             if ( defaultResponseFormat != null ) {
                 filterParameters.put( SearchConstants.FORMAT_PARAMETER, defaultResponseFormat );
             }
@@ -419,9 +397,11 @@ public abstract class AbstractOpenSearchSource extends MaskableImpl implements F
         }
 
         int pageSize = query.getPageSize();
-        filterParameters.put( SearchConstants.COUNT_PARAMETER, maxResultsCount > 0 && pageSize > maxResultsCount ? String.valueOf( maxResultsCount ) : String.valueOf( pageSize ) );
+        filterParameters.put( SearchConstants.COUNT_PARAMETER,
+                maxResultsCount > 0 && pageSize > maxResultsCount ? String.valueOf( maxResultsCount ) : String.valueOf( pageSize ) );
 
-        filterParameters.put( SearchConstants.STARTINDEX_PARAMETER, String.valueOf( query.getStartIndex() ) );
+        int startIndex = query.getStartIndex();
+        filterParameters.put( SearchConstants.STARTINDEX_PARAMETER, String.valueOf( getFilterConfig().isZeroBasedStartIndex() ? startIndex - 1 : startIndex ) );
 
         String sortOrderString = getSortOrderString( query.getSortBy() );
         if ( sortOrderString != null ) {
@@ -456,5 +436,148 @@ public abstract class AbstractOpenSearchSource extends MaskableImpl implements F
         }
         return returnUri;
     }
+
+    public void setEndpointUrl( String endpointUrl ) {
+        String existingUrl = cdrRestClient == null ? null : cdrRestClient.getCurrentURI().toString();
+        if ( StringUtils.isNotBlank( endpointUrl ) && !endpointUrl.equals( existingUrl ) ) {
+            LOGGER.debug( "ConfigUpdate: Updating the source endpoint url value from [{}] to [{}] for sourceId [{}]", existingUrl, endpointUrl, getId() );
+            cdrRestClient = WebClient.create( endpointUrl, true );
+            WebClient.getConfig( cdrRestClient ).getHttpConduit().getClient().setReceiveTimeout( receiveTimeout );
+
+        } else {
+            LOGGER.warn( "OpenSearch Source Endpoint URL is not a valid value, so cannot update [{}]", endpointUrl );
+        }
+    }
+
+    public void setPingUrl( String url ) {
+        if ( StringUtils.isNotBlank( url ) ) {
+            LOGGER.debug( "ConfigUpdate: Updating the ping (site availability check) endpoint url value from [{}] to [{}]",
+                    cdrAvailabilityCheckClient == null ? null : cdrAvailabilityCheckClient.getCurrentURI().toString(), url );
+            cdrAvailabilityCheckClient = WebClient.create( url, true );
+            ;
+        } else {
+            LOGGER.debug( "ConfigUpdate: Updating the ping (site availability check) endpoint url to [null], will not be performing ping checks" );
+        }
+    }
+
+    public void setPingMethodString( String method ) {
+
+        try {
+            LOGGER.debug( "ConfigUpdate: Updating the httpPing method value from [{}] to [{}]", pingMethod, method );
+            pingMethod = PingMethod.valueOf( method );
+        } catch ( IllegalArgumentException | NullPointerException e ) {
+            LOGGER.warn( "Could not update the http ping method due to invalid valus [{}], so leaving at [{}]", method, pingMethod );
+        }
+    }
+
+    public void setPingMethod( PingMethod method ) {
+        LOGGER.debug( "ConfigUpdate: Updating the httpPing method value from [{}] to [{}]", pingMethod, method );
+        pingMethod = method;
+    }
+
+    /**
+     * Sets the time (in seconds) that availability should be cached (that is,
+     * the minimum amount of time between 2 perform availability checks). For
+     * example if set to 60 seconds, then if an availability check is called 30
+     * seconds after a previous availability check was called, the second call
+     * will just return a cache value and not do another check.
+     * 
+     * This settings allow admins to ensure that a site is not overloaded with
+     * availability checks
+     *
+     * @param newCacheTime
+     *            New time period, in seconds, to check the availability of the
+     *            federated source.
+     */
+    public void setAvailableCheckCacheTime( long newCacheTime ) {
+        if ( newCacheTime < 1 ) {
+            newCacheTime = 1;
+        }
+        LOGGER.debug( "ConfigUpdate: Updating the Availanle Check Cache Time value from [{}] to [{}] seconds", availableCheckCacheTime / 1000, newCacheTime );
+        this.availableCheckCacheTime = newCacheTime * 1000;
+    }
+
+    public void setReceiveTimeoutSeconds( Integer seconds ) {
+        seconds = seconds == null ? 0 : seconds;
+        long millis = seconds * 1000L;
+        if ( millis != receiveTimeout ) {
+            LOGGER.debug( "ConfigUpdate: Updating the source endpoint receive timeout value from [{}] to [{}] milliseconds", receiveTimeout, millis );
+            receiveTimeout = millis;
+            WebClient.getConfig( cdrRestClient ).getHttpConduit().getClient().setReceiveTimeout( receiveTimeout );
+        }
+    }
+
+    public void setMaxResultCount( Integer count ) {
+        count = count == null ? 0 : count;
+        if ( count != maxResultsCount ) {
+            LOGGER.debug( "ConfigUpdate: Updating the max results count value from [{}] to [{}]", maxResultsCount, count );
+            maxResultsCount = count;
+        }
+    }
+
+    public void setDefaultResponseFormat( String defaultFormat ) {
+        LOGGER.debug( "ConfigUpdate: Updating the default response format value from [{}] to [{}]", defaultResponseFormat, defaultFormat );
+        defaultResponseFormat = defaultFormat;
+    }
+
+    // TODO Migrate this to container wide code ECDR-24
+    /*
+     * @Override public void configurationUpdateCallback(Map<String, String>
+     * updatedConfiguration) { // the configuration was changed, update the
+     * keystores for the webclient (if there are any) String keystoreLocation =
+     * updatedConfiguration.get(ConfigurationManager.KEY_STORE); String
+     * keystorePassword =
+     * updatedConfiguration.get(ConfigurationManager.KEY_STORE_PASSWORD); String
+     * trustStoreLocation =
+     * updatedConfiguration.get(ConfigurationManager.TRUST_STORE); String
+     * trustStorePassword =
+     * updatedConfiguration.get(ConfigurationManager.TRUST_STORE_PASSWORD);
+     * 
+     * HTTPConduit conduit =
+     * WebClient.getConfig(cdrRestClient).getHttpConduit(); TLSClientParameters
+     * tlsClientParameters = new TLSClientParameters();
+     * 
+     * // set keystore KeyManager[] keyManagers = null; if
+     * (StringUtils.isNotBlank(keystoreLocation) && keystorePassword != null) {
+     * try { keyManagers = new KeyManager[]
+     * {KeyManagerUtils.createClientKeyManager(new File(keystoreLocation),
+     * keystorePassword)}; } catch (IOException|GeneralSecurityException ex) {
+     * LOGGER
+     * .debug("Could not access keystore {}, using default java keystore.",
+     * keystoreLocation); } }
+     * 
+     * // set truststore TrustManager[] trustManagers = null; if
+     * (StringUtils.isNotBlank(trustStoreLocation) && trustStorePassword !=
+     * null) { FileInputStream fis = null; try { KeyStore trustStore =
+     * KeyStore.getInstance(KeyStore.getDefaultType()); fis = new
+     * FileInputStream(trustStoreLocation); try { trustStore.load(fis,
+     * StringUtils.isNotEmpty(trustStorePassword) ?
+     * trustStorePassword.toCharArray() : null); trustManagers = new
+     * TrustManager[] {TrustManagerUtils.getDefaultTrustManager(trustStore)}; }
+     * catch (IOException ioe) {
+     * LOGGER.debug("Could not load truststore {}, using default java truststore"
+     * ); } } catch (IOException|GeneralSecurityException ex) {
+     * LOGGER.debug("Could not access truststore {}, using default java truststore."
+     * , trustStoreLocation); } finally { IOUtils.closeQuietly(fis); }
+     * 
+     * }
+     * 
+     * tlsClientParameters.setKeyManagers(keyManagers);
+     * tlsClientParameters.setTrustManagers(trustManagers);
+     * 
+     * FiltersType filtersType = new FiltersType();
+     * filtersType.getInclude().add(".*_WITH_AES_.*");
+     * filtersType.getInclude().add(".*_EXPORT_.*");
+     * filtersType.getInclude().add(".*_EXPORT1024_.*");
+     * filtersType.getInclude().add(".*_WITH_DES_.*");
+     * filtersType.getInclude().add(".*_WITH_NULL_.*");
+     * filtersType.getExclude().add(".*_DH_anon_.*");
+     * tlsClientParameters.setCipherSuitesFilter(filtersType);
+     * 
+     * LOGGER.debug("Setting up SSL settings for client.");
+     * conduit.setTlsClientParameters(tlsClientParameters);
+     * 
+     * }
+     */
 
 }

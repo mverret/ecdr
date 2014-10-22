@@ -63,6 +63,8 @@ public class CDRRestBrokerServiceImpl {
 
     public static final String NO_QUERY_PARAMETERS_MESSAGE = "The query did not contain any of the required critera, one of the following is required [searchTerms, geospatial, or temporal]";
 
+    private static final String RETRIEVE_PROXY_RELATIVE_URL = "/retrieve";
+    
     private CatalogFramework catalogFramework = null;
     private ConfigurationWatcherImpl platformConfig = null;
     private FilterBuilder filterBuilder = null;
@@ -120,6 +122,7 @@ public class CDRRestBrokerServiceImpl {
             CDRQueryImpl query = new CDRQueryImpl( filterBuilder, queryParameters, queryParser, false, localSourceId );
 
             Map<String, Serializable> queryProperties = queryParser.getQueryProperties( queryParameters, localSourceId );
+            queryProperties.put( SearchConstants.LOCAL_RETRIEVE_URL_PREFIX, RETRIEVE_PROXY_RELATIVE_URL + "?url=" );
 
             Collection<String> siteNames = query.getSiteNames();
             SortBy sortBy = queryParser.getSortBy( queryParameters );
@@ -136,7 +139,9 @@ public class CDRRestBrokerServiceImpl {
             // Broker Specific
             transformerProperties.put( SearchConstants.STATUS_PARAMETER, queryParameters.getFirst( SearchConstants.STATUS_PARAMETER ) );
 
-            transformerProperties.put( BrokerConstants.BROKER_RETRIEVE_URL, uriInfo.getBaseUri() + "/retrieve?url=" );
+            //TODO ECDR-22
+            transformerProperties.put( BrokerConstants.BROKER_RETRIEVE_URL, uriInfo.getBaseUri() + RETRIEVE_PROXY_RELATIVE_URL + "?url=" );
+
             BinaryContent content = catalogFramework.transform( queryResponse, format.contains( "ddms" ) ? "atom-ddms-2.0" : format, transformerProperties );
 
             response = Response.ok( content.getInputStream(), content.getMimeTypeValue() ).build();
@@ -162,9 +167,10 @@ public class CDRRestBrokerServiceImpl {
     }
 
     @GET
-    @Path( "/retrieve" )
+    @Path( RETRIEVE_PROXY_RELATIVE_URL )
     public Response retrieve( @QueryParam( "url" ) String remoteURL ) throws UnsupportedEncodingException {
         String url = URLDecoder.decode( remoteURL, "UTF-8" );
+        // TODO change to HTTP Client
         WebClient client = WebClient.create( url );
         return client.get();
     }

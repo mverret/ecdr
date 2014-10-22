@@ -27,6 +27,5 @@
 
     <modules>
         <module>cdr-rest-source</module>
-        <module>cdr-opensearch-source</module>
     </modules>
 </project>

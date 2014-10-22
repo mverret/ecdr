@@ -56,7 +56,6 @@
         <feature>cdr-atom-result-xformer</feature>
         <feature>cdr-libs-compression</feature>
         <feature>cdr-rest-source</feature>
-        <feature>cdr-opensearch-source</feature>
     </feature>
 
 </features>

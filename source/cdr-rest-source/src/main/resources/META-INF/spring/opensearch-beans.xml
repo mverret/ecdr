@@ -26,26 +26,29 @@
         http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <osgi:reference id="filterAdapter" interface="ddf.catalog.filter.FilterAdapter" />
+    
+    
 
-    <osgix:managed-service-factory id="net.di2e.ecdr.source.rest.CDRRestSource" factory-pid="CDRRestSource"
-        update-strategy="container-managed">
+    <osgix:managed-service-factory id="net.di2e.ecdr.source.rest.OpenSearchSource"
+        factory-pid="ecdr-opensearch-source" update-strategy="container-managed">
 
         <osgix:interfaces>
             <beans:value>ddf.catalog.source.FederatedSource</beans:value>
-            <beans:value>org.codice.ddf.configuration.ConfigurationWatcher</beans:value>
         </osgix:interfaces>
 
-        <beans:bean id="MySearchSource" class="net.di2e.ecdr.source.rest.CDRRestSource" init-method="init"
-            destroy-method="destroy" >
+
+        <beans:bean id="OpenSearchSourceBean" class="net.di2e.ecdr.source.rest.OpenSearchSource">
+            
             <beans:constructor-arg ref="filterAdapter" />
-            <beans:property name="id" value="cdr-source" />
-            <beans:property name="endpointUrl" value="http://localhost:8181/services/cdr/search/rest" />
-            <beans:property name="httpPing" value="true" />
-            <beans:property name="defaultResponseFormat" value="atom-ddms" />
+            
+            <!-- properties supported by Maskable Impl that are not set through Metatype -->  
             <beans:property name="title" value="CDR REST Federation" />
             <beans:property name="description" value="CDR REST Federated Source v3.0" />
-            <beans:property name="organization" value="" />
+            <beans:property name="organization" value="DI2E" />
             <beans:property name="version" value="3.0" />
+            
+            <!-- don't set the metatype properties in here -->
+            
         </beans:bean>
 
     </osgix:managed-service-factory>

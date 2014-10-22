@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
 
 import ddf.catalog.filter.FilterAdapter;
 
-public class ManualConfigOpenSearchSource extends AbstractOpenSearchSource {
+public class OpenSearchSource extends AbstractCDRSource {
 
     public static final String TIME_START_NAME = "startTimeParameter";
     public static final String TIME_END_NAME = "endTimeParameter";
@@ -36,54 +36,22 @@ public class ManualConfigOpenSearchSource extends AbstractOpenSearchSource {
     public static final String GEO_GEOMETRY_NAME = "geometryParameter";
     public static final String SRU_SORTKEY_NAME = "sortKeysParameter";
 
-    private static final transient Logger LOGGER = LoggerFactory.getLogger( ManualConfigOpenSearchSource.class );
-
-    private String queryEndpointUrl = null;
-
-    private String pingUrl = null;
-    private PingMethod pingMethod = PingMethod.NONE;
-    private long availableCheckCacheTime = 60000;
-    private String defaultResponseFormat = null;
+    private static final transient Logger LOGGER = LoggerFactory.getLogger( OpenSearchSource.class );
 
     private Map<String, String> parameterMap = new HashMap<String, String>();
     private Map<String, String> harcodedParamMap = new HashMap<String, String>();
 
     private FilterConfig filterConfig = null;
 
-    public ManualConfigOpenSearchSource( FilterAdapter adapter ) {
+    public OpenSearchSource( FilterAdapter adapter ) {
         super( adapter );
         filterConfig = new FilterConfig();
 
     }
 
     @Override
-    public String getEndpointURL() {
-        return queryEndpointUrl;
-    }
-
-    @Override
-    public String getPingUrl() {
-        return pingUrl;
-    }
-
-    @Override
-    public PingMethod getPingMethod() {
-        return pingMethod;
-    }
-
-    @Override
-    public long getSourceAvailCheckMillis() {
-        return availableCheckCacheTime;
-    }
-
-    @Override
     public Map<String, String> getDynamicUrlParameterMap() {
         return parameterMap;
-    }
-
-    @Override
-    public String getDefaultResponseFormat() {
-        return defaultResponseFormat;
     }
 
     @Override
@@ -94,32 +62,6 @@ public class ManualConfigOpenSearchSource extends AbstractOpenSearchSource {
     @Override
     public FilterConfig getFilterConfig() {
         return filterConfig;
-    }
-
-    public void setEndpointUrl( String endpoint ) {
-        if ( endpoint != null && !endpoint.equals( queryEndpointUrl ) ) {
-            LOGGER.debug( "ConfigUpdate: Updating the source endpoint url value from [{}] to [{}] for sourceId [{}]", queryEndpointUrl, endpoint, getId() );
-            queryEndpointUrl = endpoint;
-            endpointUrlUpdated();
-        }
-    }
-
-    public void setPingUrl( String url ) {
-        if ( (StringUtils.isBlank( url ) && StringUtils.isNotBlank( pingUrl )) || (url != null && !url.equals( pingUrl )) ) {
-            LOGGER.debug( "ConfigUpdate: Updating the ping (site availability check) endpoint url value from [{}] to [{}]", pingUrl, url );
-            pingUrl = url;
-            pingUrlUpdated();
-        }
-    }
-
-    public void setSitePingMethod( String method ) {
-
-        try {
-            LOGGER.debug( "ConfigUpdate: Updating the httpPing method value from [{}] to [{}]", pingMethod, method );
-            pingMethod = PingMethod.valueOf( method );
-        } catch ( IllegalArgumentException | NullPointerException e ) {
-            LOGGER.warn( "Could not update the http ping method due to invalid valus [{}], so leaving at [{}]", method, pingMethod );
-        }
     }
 
     public void setSingleRecordQueryMethod( String method ) {
@@ -137,9 +79,9 @@ public class ManualConfigOpenSearchSource extends AbstractOpenSearchSource {
         filterConfig.setProductLinkRelation( rel );
     }
 
-    public void setDefaultResponseFormat( String format ) {
-        LOGGER.debug( "ConfigUpdate: Updating the default response format value from [{}] to [{}]", defaultResponseFormat, format );
-        defaultResponseFormat = format;
+    public void setProxyUrls( boolean proxy ) {
+        LOGGER.debug( "ConfigUpdate: Updating the Proxy URLs through Local Instance value from [{}] to [{}]", filterConfig.isProvideLocalUrls(), proxy );
+        filterConfig.setProvideLocalUrls( proxy );
     }
 
     public void setSearchTermsParameter( String param ) {
@@ -150,6 +92,19 @@ public class ManualConfigOpenSearchSource extends AbstractOpenSearchSource {
     public void setStartIndexParameter( String param ) {
         LOGGER.debug( "ConfigUpdate: Updating os:startIndex parameter from [{}] to [{}]", parameterMap.get( SearchConstants.STARTINDEX_PARAMETER ), param );
         parameterMap.put( SearchConstants.STARTINDEX_PARAMETER, param );
+    }
+
+    public void setStartIndexStartNumber( String startNumber ) {
+        try {
+            // get the existing start index (0 or 1) to use in the log statement
+            // after setting the index
+            String oldIndex = filterConfig.isZeroBasedStartIndex() ? "0" : "1";
+            filterConfig.setZeroBasedStartIndex( Integer.parseInt( startNumber ) );
+            LOGGER.debug( "ConfigUpdate: Updating the Start Index Numbering value from [{}] to [{}]", oldIndex, startNumber );
+        } catch ( NumberFormatException e ) {
+            LOGGER.warn( "ConfigUpdate Failed: Attempted to update the 'start index number method' due to non valid (must be 1 or 0) start index numbering passed in["
+                    + startNumber + "]" );
+        }
     }
 
     public void setCountParameter( String param ) {

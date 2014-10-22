@@ -22,6 +22,9 @@ public class FilterConfig {
     private SingleRecordQueryMethod singleRecordQueryMethod = null;
     private String metadataLinkRelation = null;
     private String productLinkRelation = null;
+    
+    private boolean zeroBasedStartIndex = false;
+    private boolean localUrls = false;
 
     public FilterConfig() {
     }
@@ -48,6 +51,22 @@ public class FilterConfig {
 
     public String getProductLinkRelation() {
         return productLinkRelation;
+    }
+    
+    public void setProvideLocalUrls( boolean proxy ){
+        localUrls = proxy;
+    }
+    
+    public boolean isProvideLocalUrls(){
+        return localUrls;
+    }
+    
+    public void setZeroBasedStartIndex( int index ){
+        zeroBasedStartIndex = index == 0;
+    }
+    
+    public boolean isZeroBasedStartIndex(){
+        return zeroBasedStartIndex;
     }
 
 }
