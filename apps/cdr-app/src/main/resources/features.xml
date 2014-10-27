@@ -42,6 +42,11 @@
              description="Installs compression services that can be used for endpoints and sources. By default comes with EXI and GZIP.">
         <bundle start-level="70">mvn:net.di2e.ecdr.libs/cdr-libs-compression/${project.version}</bundle>
     </feature>
+    
+    <feature name="cdr-client-ssl-configurator" install="manual" version="${project.version}"
+             description="Installs the configuration component that will set the global container SSL client Java properties based on the Platform Configuration values (in Admin Console)">
+        <bundle start-level="70">mvn:net.di2e.ecdr.security/cdr-ssl-client-global-config/${project.version}</bundle>
+    </feature>
 
     <feature name="cdr-app" install="auto" version="${project.version}"
         description="Enterprise CDR (Content Discovery and Retrieval) is used for discovering data using the CDR Interfaces.::Enterprise CDR">
@@ -50,6 +55,7 @@
         <feature>cdr-rest-broker-endpoint</feature>
         <feature>cdr-atom-result-xformer</feature>
         <feature>cdr-libs-compression</feature>
+        <feature>cdr-client-ssl-configurator</feature>
         <feature>cdr-rest-source</feature>
     </feature>
 

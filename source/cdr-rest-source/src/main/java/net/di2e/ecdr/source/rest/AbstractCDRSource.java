@@ -12,11 +12,15 @@
  **/
 package net.di2e.ecdr.source.rest;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URLDecoder;
+import java.security.GeneralSecurityException;
+import java.security.KeyStore;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -27,6 +31,8 @@ import java.util.Set;
 
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
+import javax.net.ssl.KeyManager;
+import javax.net.ssl.TrustManager;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -40,8 +46,15 @@ import net.di2e.ecdr.search.transform.atom.response.AtomResponseTransformer;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.net.util.KeyManagerUtils;
+import org.apache.commons.net.util.TrustManagerUtils;
+import org.apache.cxf.configuration.jsse.TLSClientParameters;
+import org.apache.cxf.configuration.security.FiltersType;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.cxf.jaxrs.ext.multipart.ContentDisposition;
+import org.apache.cxf.transport.http.HTTPConduit;
+import org.codice.ddf.configuration.ConfigurationManager;
+import org.mockito.internal.util.collections.Sets;
 import org.opengis.filter.sort.SortBy;
 import org.opengis.filter.sort.SortOrder;
 import org.slf4j.Logger;
@@ -475,31 +488,31 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
         pingMethod = method;
     }
 
-    /**
-     * Sets the time (in seconds) that availability should be cached (that is,
-     * the minimum amount of time between 2 perform availability checks). For
-     * example if set to 60 seconds, then if an availability check is called 30
-     * seconds after a previous availability check was called, the second call
-     * will just return a cache value and not do another check.
-     * 
-     * This settings allow admins to ensure that a site is not overloaded with
-     * availability checks
-     *
-     * @param newCacheTime
-     *            New time period, in seconds, to check the availability of the
-     *            federated source.
-     */
+    /
+      Sets the time (in seconds) that availability should be cached (that is,
+      the minimum amount of time between 2 perform availability checks). For
+      example if set to 60 seconds, then if an availability check is called 30
+      seconds after a previous availability check was called, the second call
+      will just return a cache value and not do another check.
+      
+      This settings allow admins to ensure that a site is not overloaded with
+      availability checks
+     
+      @param newCacheTime
+                 New time period, in seconds, to check the availability of the
+                 federated source.
+     /
     public void setAvailableCheckCacheTime( long newCacheTime ) {
         if ( newCacheTime < 1 ) {
             newCacheTime = 1;
         }
         LOGGER.debug( "ConfigUpdate: Updating the Availanle Check Cache Time value from [{}] to [{}] seconds", availableCheckCacheTime / 1000, newCacheTime );
-        this.availableCheckCacheTime = newCacheTime * 1000;
+        this.availableCheckCacheTime = newCacheTime  1000;
     }
 
     public void setReceiveTimeoutSeconds( Integer seconds ) {
         seconds = seconds == null ? 0 : seconds;
-        long millis = seconds * 1000L;
+        long millis = seconds  1000L;
         if ( millis != receiveTimeout ) {
             LOGGER.debug( "ConfigUpdate: Updating the source endpoint receive timeout value from [{}] to [{}] milliseconds", receiveTimeout, millis );
             receiveTimeout = millis;
@@ -520,64 +533,61 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
         defaultResponseFormat = defaultFormat;
     }
 
-    // TODO Migrate this to container wide code ECDR-24
-    /*
-     * @Override public void configurationUpdateCallback(Map<String, String>
-     * updatedConfiguration) { // the configuration was changed, update the
-     * keystores for the webclient (if there are any) String keystoreLocation =
-     * updatedConfiguration.get(ConfigurationManager.KEY_STORE); String
-     * keystorePassword =
-     * updatedConfiguration.get(ConfigurationManager.KEY_STORE_PASSWORD); String
-     * trustStoreLocation =
-     * updatedConfiguration.get(ConfigurationManager.TRUST_STORE); String
-     * trustStorePassword =
-     * updatedConfiguration.get(ConfigurationManager.TRUST_STORE_PASSWORD);
-     * 
-     * HTTPConduit conduit =
-     * WebClient.getConfig(cdrRestClient).getHttpConduit(); TLSClientParameters
-     * tlsClientParameters = new TLSClientParameters();
-     * 
-     * // set keystore KeyManager[] keyManagers = null; if
-     * (StringUtils.isNotBlank(keystoreLocation) && keystorePassword != null) {
-     * try { keyManagers = new KeyManager[]
-     * {KeyManagerUtils.createClientKeyManager(new File(keystoreLocation),
-     * keystorePassword)}; } catch (IOException|GeneralSecurityException ex) {
-     * LOGGER
-     * .debug("Could not access keystore {}, using default java keystore.",
-     * keystoreLocation); } }
-     * 
-     * // set truststore TrustManager[] trustManagers = null; if
-     * (StringUtils.isNotBlank(trustStoreLocation) && trustStorePassword !=
-     * null) { FileInputStream fis = null; try { KeyStore trustStore =
-     * KeyStore.getInstance(KeyStore.getDefaultType()); fis = new
-     * FileInputStream(trustStoreLocation); try { trustStore.load(fis,
-     * StringUtils.isNotEmpty(trustStorePassword) ?
-     * trustStorePassword.toCharArray() : null); trustManagers = new
-     * TrustManager[] {TrustManagerUtils.getDefaultTrustManager(trustStore)}; }
-     * catch (IOException ioe) {
-     * LOGGER.debug("Could not load truststore {}, using default java truststore"
-     * ); } } catch (IOException|GeneralSecurityException ex) {
-     * LOGGER.debug("Could not access truststore {}, using default java truststore."
-     * , trustStoreLocation); } finally { IOUtils.closeQuietly(fis); }
-     * 
-     * }
-     * 
-     * tlsClientParameters.setKeyManagers(keyManagers);
-     * tlsClientParameters.setTrustManagers(trustManagers);
-     * 
-     * FiltersType filtersType = new FiltersType();
-     * filtersType.getInclude().add(".*_WITH_AES_.*");
-     * filtersType.getInclude().add(".*_EXPORT_.*");
-     * filtersType.getInclude().add(".*_EXPORT1024_.*");
-     * filtersType.getInclude().add(".*_WITH_DES_.*");
-     * filtersType.getInclude().add(".*_WITH_NULL_.*");
-     * filtersType.getExclude().add(".*_DH_anon_.*");
-     * tlsClientParameters.setCipherSuitesFilter(filtersType);
-     * 
-     * LOGGER.debug("Setting up SSL settings for client.");
-     * conduit.setTlsClientParameters(tlsClientParameters);
-     * 
-     * }
-     */
+
+      public void configurationUpdateCallback(Map<String, String> updatedConfiguration) {
+
+      String keystore = updatedConfiguration.get(ConfigurationManager.KEY_STORE); 
+      String keystorePassword = updatedConfiguration.get(ConfigurationManager.KEY_STORE_PASSWORD);
+      
+      HTTPConduit conduit =
+      WebClient.getConfig(cdrRestClient).getHttpConduit(); TLSClientParameters
+      tlsClientParameters = new TLSClientParameters();
+      
+      // set keystore 
+      KeyManager[] keyManagers = null; 
+      if
+      (StringUtils.isNotBlank(keystoreLocation) && keystorePassword != null) {
+      try { keyManagers = new KeyManager[]
+      {KeyManagerUtils.createClientKeyManager(new File(keystoreLocation),
+      keystorePassword)}; } catch (IOException|GeneralSecurityException ex) {
+      LOGGER
+      .debug("Could not access keystore {}, using default java keystore.",
+      keystoreLocation); } }
+      
+      // set truststore 
+      TrustManager[] trustManagers = null; 
+      if
+      (StringUtils.isNotBlank(trustStoreLocation) && trustStorePassword !=
+      null) { FileInputStream fis = null; try { KeyStore trustStore =
+      KeyStore.getInstance(KeyStore.getDefaultType()); fis = new
+      FileInputStream(trustStoreLocation); try { trustStore.load(fis,
+      StringUtils.isNotEmpty(trustStorePassword) ?
+      trustStorePassword.toCharArray() : null); trustManagers = new
+      TrustManager[] {TrustManagerUtils.getDefaultTrustManager(trustStore)}; }
+      catch (IOException ioe) {
+      LOGGER.debug("Could not load truststore {}, using default java truststore"
+      ); } } catch (IOException|GeneralSecurityException ex) {
+      LOGGER.debug("Could not access truststore {}, using default java truststore."
+      , trustStoreLocation); } finally { IOUtils.closeQuietly(fis); }
+      
+      }
+      
+      tlsClientParameters.setKeyManagers(keyManagers);
+      tlsClientParameters.setTrustManagers(trustManagers);
+      
+      FiltersType filtersType = new FiltersType();
+      filtersType.getInclude().add("._WITH_AES_.");
+      filtersType.getInclude().add("._EXPORT_.");
+      filtersType.getInclude().add("._EXPORT1024_.");
+      filtersType.getInclude().add("._WITH_DES_.");
+      filtersType.getInclude().add("._WITH_NULL_.");
+      filtersType.getExclude().add("._DH_anon_.");
+      tlsClientParameters.setCipherSuitesFilter(filtersType);
+      
+      LOGGER.debug("Setting up SSL settings for client.");
+      conduit.setTlsClientParameters(tlsClientParameters);
+      
+      }
+     
 
 }
