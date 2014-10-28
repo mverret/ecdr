@@ -12,6 +12,7 @@
  **/
 package net.di2e.ecdr.security.ssl.client;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -31,17 +32,37 @@ import org.slf4j.LoggerFactory;
  */
 public class GlobalSSLClientConfigurator implements ConfigurationWatcher {
 
-    private static final transient Logger LOGGER = LoggerFactory.getLogger( GlobalSSLClientConfigurator.class );
+    private static final Logger LOGGER = LoggerFactory.getLogger( GlobalSSLClientConfigurator.class );
 
     static final String SSL_KEYSTORE_JAVA_PROPERTY = "javax.net.ssl.keyStore";
     static final String SSL_KEYSTORE_PASSWORD_JAVA_PROPERTY = "javax.net.ssl.keyStorePassword";
     static final String SSL_TRUSTSTORE_JAVA_PROPERTY = "javax.net.ssl.trustStore";
     static final String SSL_TRUSTSTORE_PASSWORD_JAVA_PROPERTY = "javax.net.ssl.trustStorePassword";
 
-    static final String SSL_CIPHER_SUITES_PROPERTY = "https.cipherSuites";
+    static final String HTTPS_CIPHER_SUITES_PROPERTY = "https.cipherSuites";
     static final String HTTPS_PROTOCOLS_PROPERTY = "https.protocols";
 
     private static final String EMPTY_STRING = "";
+
+    /**
+     * Default constructor which sets the default properties for the ciphers and protocols. This needs to be done in
+     * case the Metatype is not called (on first deployment) or is not used.
+     */
+    public GlobalSSLClientConfigurator() {
+        // If the ciphers or protocols are updated be sure to update the associated metatype.xml file with the
+        // added/removed ciphers/protocols
+        String[] ciphers = new String[] { "SSL_RSA_WITH_3DES_EDE_CBC_SHA", "SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA",
+                "TLS_DHE_RSA_WITH_AES_128_CBC_SHA", "TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA", "TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA",
+                "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA", "TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA", "TLS_ECDH_RSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA",
+                "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA", "TLS_ECDH_anon_WITH_3DES_EDE_CBC_SHA", "TLS_ECDH_anon_WITH_AES_128_CBC_SHA" };
+        setIncludeCiphers( Arrays.asList( ciphers ) );
+        
+        String[] protocols = new String[] { "SSLv3", "TLSv1", "TLSv1.1", "TLSv1.2" };
+        setHttpsProtocols( Arrays.asList( protocols ) );
+
+        // NOTE - Don't need to set the properties that are in the configurationUpdateCallback method since that will
+        // always be covered by the container
+    }
 
     /**
      * Gets the values that were set in the configuration for the Java keystore and truststore and sets them to the
@@ -98,7 +119,7 @@ public class GlobalSSLClientConfigurator implements ConfigurationWatcher {
             }
             LOGGER.debug( "Setting the SSL cipher suite filter [{}] to the included (Allowed) list", ciphersBuidler );
         }
-        System.setProperty( SSL_CIPHER_SUITES_PROPERTY, ciphersBuidler.toString() );
+        System.setProperty( HTTPS_CIPHER_SUITES_PROPERTY, ciphersBuidler.toString() );
     }
 
     /**

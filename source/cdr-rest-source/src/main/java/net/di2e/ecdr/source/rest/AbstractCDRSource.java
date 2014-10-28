@@ -70,7 +70,7 @@ import ddf.catalog.util.impl.MaskableImpl;
 
 public abstract class AbstractCDRSource extends MaskableImpl implements FederatedSource, ConnectedSource {
 
-    private static final transient Logger LOGGER = LoggerFactory.getLogger( AbstractCDRSource.class );
+    private static final Logger LOGGER = LoggerFactory.getLogger( AbstractCDRSource.class );
 
     // TODO check the retrieve resuming from previous place capability
     // compare with existing DDF code as it may have been updated recently

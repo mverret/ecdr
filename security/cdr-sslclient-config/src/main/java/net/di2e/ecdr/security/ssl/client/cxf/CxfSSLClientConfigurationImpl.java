@@ -22,7 +22,6 @@ import java.util.Map;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.TrustManager;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.net.util.KeyManagerUtils;
 import org.apache.commons.net.util.TrustManagerUtils;
@@ -41,7 +40,7 @@ import org.slf4j.LoggerFactory;
  */
 public class CxfSSLClientConfigurationImpl implements CxfSSLClientConfiguration, ConfigurationWatcher {
 
-    private static final transient Logger LOGGER = LoggerFactory.getLogger( CxfSSLClientConfigurationImpl.class );
+    private static final Logger LOGGER = LoggerFactory.getLogger( CxfSSLClientConfigurationImpl.class );
 
     private TLSClientParameters tlsClientParameters = null;
 
@@ -54,55 +53,51 @@ public class CxfSSLClientConfigurationImpl implements CxfSSLClientConfiguration,
 
     @Override
     public void configurationUpdateCallback( Map<String, String> updatedConfiguration ) {
-        String keystore = updatedConfiguration.get( ConfigurationManager.KEY_STORE );
-        String keystorePassword = updatedConfiguration.get( ConfigurationManager.KEY_STORE_PASSWORD );
+        if ( updatedConfiguration != null ) {
+            String keystore = updatedConfiguration.get( ConfigurationManager.KEY_STORE );
+            String keystorePassword = updatedConfiguration.get( ConfigurationManager.KEY_STORE_PASSWORD );
 
-        KeyManager[] keyManagers = null;
-        if ( StringUtils.isNotBlank( keystore ) && keystorePassword != null ) {
-            try {
-                KeyManager manager = KeyManagerUtils.createClientKeyManager( new File( keystore ), keystorePassword );
-                keyManagers = new KeyManager[1];
-                keyManagers[0] = manager;
-
-            } catch ( IOException | GeneralSecurityException ex ) {
-                LOGGER.debug( "Could not access keystore {}, using default java keystore.", keystore );
-            }
-        }
-
-        String trustStoreLocation = updatedConfiguration.get( ConfigurationManager.TRUST_STORE );
-        String trustStorePassword = updatedConfiguration.get( ConfigurationManager.TRUST_STORE_PASSWORD );
-        TrustManager[] trustManagers = null;
-        if ( StringUtils.isNotBlank( trustStoreLocation ) && trustStorePassword != null ) {
-            FileInputStream fis = null;
-            try {
-                KeyStore trustStore = KeyStore.getInstance( KeyStore.getDefaultType() );
-                fis = new FileInputStream( trustStoreLocation );
+            KeyManager[] keyManagers = null;
+            if ( StringUtils.isNotBlank( keystore ) && keystorePassword != null ) {
                 try {
-                    trustStore.load( fis, StringUtils.isNotEmpty( trustStorePassword ) ? trustStorePassword.toCharArray() : null );
-                    trustManagers = new TrustManager[1];
-                    trustManagers[0] = TrustManagerUtils.getDefaultTrustManager( trustStore );
-                } catch ( IOException ioe ) {
-                    LOGGER.debug( "Could not load truststore {}, using default java truststore" );
+                    KeyManager manager = KeyManagerUtils.createClientKeyManager( new File( keystore ), keystorePassword );
+                    keyManagers = new KeyManager[1];
+                    keyManagers[0] = manager;
+
+                } catch ( IOException | GeneralSecurityException ex ) {
+                    LOGGER.debug( "Could not access keystore {}, using default java keystore.", keystore );
                 }
-            } catch ( IOException | GeneralSecurityException ex ) {
-                LOGGER.debug( "Could not access truststore {}, using default java truststore.", trustStoreLocation );
-            } finally {
-                IOUtils.closeQuietly( fis );
             }
 
+            String trustStoreLocation = updatedConfiguration.get( ConfigurationManager.TRUST_STORE );
+            String trustStorePassword = updatedConfiguration.get( ConfigurationManager.TRUST_STORE_PASSWORD );
+            TrustManager[] trustManagers = null;
+            if ( StringUtils.isNotBlank( trustStoreLocation ) && trustStorePassword != null ) {
+                try ( FileInputStream fis = new FileInputStream( trustStoreLocation ) ) {
+                    KeyStore trustStore = KeyStore.getInstance( KeyStore.getDefaultType() );
+                    try {
+                        trustStore.load( fis, StringUtils.isNotEmpty( trustStorePassword ) ? trustStorePassword.toCharArray() : null );
+                        trustManagers = new TrustManager[1];
+                        trustManagers[0] = TrustManagerUtils.getDefaultTrustManager( trustStore );
+                    } catch ( IOException ioe ) {
+                        LOGGER.debug( "Could not load truststore {}, using default java truststore" );
+                    }
+                } catch ( IOException | GeneralSecurityException ex ) {
+                    LOGGER.debug( "Could not access truststore {}, using default java truststore.", trustStoreLocation );
+                }
+            }
+            synchronized ( tlsClientParameters ) {
+                LOGGER.debug( "Setting the CXF KeyManager and TrustManager based on the Platform Global Configuration values" );
+                tlsClientParameters.setKeyManagers( keyManagers );
+                tlsClientParameters.setTrustManagers( trustManagers );
+            }
         }
-        synchronized ( tlsClientParameters ) {
-            LOGGER.debug( "Setting the CXF KeyManager and TrustManager based on the Platform Global Configuration values" );
-            tlsClientParameters.setKeyManagers( keyManagers );
-            tlsClientParameters.setTrustManagers( trustManagers );
-        }
-
     }
 
     @Override
     public KeyManager getKeyManager() {
         KeyManager[] managers = tlsClientParameters.getKeyManagers();
-        if ( managers.length > 0 ) {
+        if ( managers != null && managers.length > 0 ) {
             return tlsClientParameters.getKeyManagers()[0];
         }
         return null;
@@ -111,7 +106,7 @@ public class CxfSSLClientConfigurationImpl implements CxfSSLClientConfiguration,
     @Override
     public TrustManager getTrustManager() {
         TrustManager[] managers = tlsClientParameters.getTrustManagers();
-        if ( managers.length > 0 ) {
+        if ( managers != null && managers.length > 0 ) {
             return tlsClientParameters.getTrustManagers()[0];
         }
         return null;

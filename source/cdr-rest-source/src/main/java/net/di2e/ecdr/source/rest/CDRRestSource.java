@@ -25,7 +25,7 @@ import ddf.catalog.filter.FilterAdapter;
 
 public class CDRRestSource extends AbstractCDRSource {
 
-    private static final transient Logger LOGGER = LoggerFactory.getLogger( CDRRestSource.class );
+    private static final Logger LOGGER = LoggerFactory.getLogger( CDRRestSource.class );
 
     private Map<String, String> parameterMap = new HashMap<String, String>();
     private Map<String, String> harcodedParamMap = new HashMap<String, String>();
