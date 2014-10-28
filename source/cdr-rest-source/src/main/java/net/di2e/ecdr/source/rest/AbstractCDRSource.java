@@ -435,7 +435,12 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
         if ( StringUtils.isNotBlank( endpointUrl ) && !endpointUrl.equals( existingUrl ) ) {
             LOGGER.debug( "ConfigUpdate: Updating the source endpoint url value from [{}] to [{}] for sourceId [{}]", existingUrl, endpointUrl, getId() );
             cdrRestClient = WebClient.create( endpointUrl, true );
-            WebClient.getConfig( cdrRestClient ).getHttpConduit().getClient().setReceiveTimeout( receiveTimeout );
+            synchronized ( cdrRestClient ) {
+                HTTPConduit conduit = WebClient.getConfig( cdrRestClient ).getHttpConduit();
+                conduit.getClient().setReceiveTimeout( receiveTimeout );
+                conduit.setTlsClientParameters( sslClientConfig.getTLSClientParameters() );
+            }
+
 
         } else {
             LOGGER.warn( "OpenSearch Source Endpoint URL is not a valid value, so cannot update [{}]", endpointUrl );
