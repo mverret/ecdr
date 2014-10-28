@@ -40,10 +40,22 @@
             <artifactId>cdr-atom-result-xformer</artifactId>
             <version>${project.version}</version>
         </dependency>
+        
+        <dependency>
+            <groupId>net.di2e.ecdr.security</groupId>
+            <artifactId>cdr-sslclient-config</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.codice.ddf</groupId>
             <artifactId>platform-configuration-impl</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.4</version>
         </dependency>
 
         <dependency>
@@ -107,7 +119,8 @@
                         <Embed-Dependency>
                             catalog-core-api-impl,
                             joda-time,
-                            commons-net
+                            commons-net,
+                            commons-io
                         </Embed-Dependency>
                         <Import-Package>
                             !org.joda.convert,

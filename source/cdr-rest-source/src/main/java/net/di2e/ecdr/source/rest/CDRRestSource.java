@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.di2e.ecdr.commons.filter.config.FilterConfig;
+import net.di2e.ecdr.security.ssl.client.cxf.CxfSSLClientConfiguration;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,8 +32,8 @@ public class CDRRestSource extends AbstractCDRSource {
 
     private FilterConfig filterConfig = null;
 
-    public CDRRestSource( FilterAdapter filterAdapter ) {
-        super( filterAdapter );
+    public CDRRestSource( FilterAdapter filterAdapter, CxfSSLClientConfiguration sslClient ) {
+        super( filterAdapter, sslClient );
         filterConfig = new FilterConfig();
     }
 

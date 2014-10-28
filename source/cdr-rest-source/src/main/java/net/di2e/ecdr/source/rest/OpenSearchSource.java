@@ -18,6 +18,7 @@ import java.util.Map;
 import net.di2e.ecdr.commons.filter.config.FilterConfig;
 import net.di2e.ecdr.commons.filter.config.FilterConfig.SingleRecordQueryMethod;
 import net.di2e.ecdr.commons.util.SearchConstants;
+import net.di2e.ecdr.security.ssl.client.cxf.CxfSSLClientConfiguration;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -43,8 +44,8 @@ public class OpenSearchSource extends AbstractCDRSource {
 
     private FilterConfig filterConfig = null;
 
-    public OpenSearchSource( FilterAdapter adapter ) {
-        super( adapter );
+    public OpenSearchSource( FilterAdapter adapter, CxfSSLClientConfiguration sslClient ) {
+        super( adapter, sslClient );
         filterConfig = new FilterConfig();
 
     }

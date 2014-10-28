@@ -13,28 +13,41 @@
  *
  **/
  -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>net.di2e.ecdr</groupId>
         <artifactId>security</artifactId>
         <version>0.7.0-SNAPSHOT</version>
     </parent>
-    <name>Enterprise CDR :: Security :: SSL Client Global Config</name>
+    <name>Enterprise CDR :: Security :: SSL Client Config</name>
     <groupId>net.di2e.ecdr.security</groupId>
-    <artifactId>cdr-ssl-client-global-config</artifactId>
+    <artifactId>cdr-sslclient-config</artifactId>
     <packaging>bundle</packaging>
 
 
     <dependencies>
-        
+
         <dependency>
             <groupId>ddf.platform</groupId>
             <artifactId>platform-configuration</artifactId>
             <version>${ddf.platform.version}</version>
         </dependency>
-
-
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-bundle</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-net</groupId>
+            <artifactId>commons-net</artifactId>
+            <version>3.3</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.4</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -45,9 +58,14 @@
                 <configuration>
                     <instructions>
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
-                        <Embed-Transitive>false</Embed-Transitive>
+                        <Embed-Transitive>true</Embed-Transitive>
                         <Embed-Dependency>
+                            commons-io,
+                            commons-net
                         </Embed-Dependency>
+                        <Export-Package>
+                        net.di2e.ecdr.security.ssl.client.cxf
+                        </Export-Package>
                     </instructions>
                 </configuration>
             </plugin>

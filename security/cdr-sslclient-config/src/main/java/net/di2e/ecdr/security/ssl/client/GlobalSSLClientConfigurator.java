@@ -12,6 +12,7 @@
  **/
 package net.di2e.ecdr.security.ssl.client;
 
+import java.util.List;
 import java.util.Map;
 
 import org.codice.ddf.configuration.ConfigurationManager;
@@ -20,12 +21,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class listens for the ConfigurationWatcher to be called (when the Admin Console "Platform Global Configuration" is
- * updated, and then it will take the values for the Java Keystore and Truststore and set them to the Java System properties.
- * The System.properties get used by default when making outgoing SSL calls (for example in ResourceReader, FederatedSource, etc.)
+ * This class listens for the ConfigurationWatcher to be called (when the Admin Console "Platform Global Configuration"
+ * is updated, and then it will take the values for the Java Keystore and Truststore and set them to the Java System
+ * properties. The System.properties get used by default when making outgoing SSL calls (for example in ResourceReader,
+ * FederatedSource, etc.)
  * 
- * NOTE - CXF 2.7.x does not properly configure the keystore (it does the truststore) so if you are using CXF and want to 
- * do 2-way SSL (aka client auth), then you need to set the keystore properties  explicitly).
+ * NOTE - CXF 2.7.x does not properly configure the keystore (it does the truststore) so if you are using CXF and want
+ * to do 2-way SSL (aka client auth), then you should check out the CxfSSLClientConfiguration).
  */
 public class GlobalSSLClientConfigurator implements ConfigurationWatcher {
 
@@ -36,14 +38,17 @@ public class GlobalSSLClientConfigurator implements ConfigurationWatcher {
     static final String SSL_TRUSTSTORE_JAVA_PROPERTY = "javax.net.ssl.trustStore";
     static final String SSL_TRUSTSTORE_PASSWORD_JAVA_PROPERTY = "javax.net.ssl.trustStorePassword";
 
+    static final String SSL_CIPHER_SUITES_PROPERTY = "https.cipherSuites";
+    static final String HTTPS_PROTOCOLS_PROPERTY = "https.protocols";
+
     private static final String EMPTY_STRING = "";
 
     /**
-     * Gets the values that were set in the configuration for the Java keystore and truststore
-     * and sets them to the corresponding System.properties.
+     * Gets the values that were set in the configuration for the Java keystore and truststore and sets them to the
+     * corresponding System.properties.
      * 
-     * If the configiration values are null, it sets the ptoperties to Empty String instead of 
-     * falling back to use the unsecure out of the box cacerts.
+     * If the configiration values are null, it sets the ptoperties to Empty String instead of falling back to use the
+     * unsecure out of the box cacerts.
      */
     @Override
     public void configurationUpdateCallback( Map<String, String> properties ) {
@@ -73,8 +78,43 @@ public class GlobalSSLClientConfigurator implements ConfigurationWatcher {
                 System.setProperty( SSL_TRUSTSTORE_PASSWORD_JAVA_PROPERTY, EMPTY_STRING );
                 LOGGER.info( "Platform Configuration Properties are NULL or empty, setting all client SSL Java property values to null" );
             }
+
         } catch ( SecurityException e ) {
             LOGGER.warn( "Could not update Java global SSL client properties due to SecurityManager permissions:" + e.getMessage() );
         }
+    }
+
+    /**
+     * Updates the included SSL Cipher Suites, and set the Java System Property 'https.cipherSuites' accordingly
+     * 
+     * @param includedCiphers
+     *            List of ciphers that should be included
+     */
+    public void setIncludeCiphers( List<String> includedCiphers ) {
+        StringBuilder ciphersBuidler = new StringBuilder();
+        if ( includedCiphers != null ) {
+            for ( String includedCipher : includedCiphers ) {
+                ciphersBuidler.append( includedCipher + "," );
+            }
+            LOGGER.debug( "Setting the SSL cipher suite filter [{}] to the included (Allowed) list", ciphersBuidler );
+        }
+        System.setProperty( SSL_CIPHER_SUITES_PROPERTY, ciphersBuidler.toString() );
+    }
+
+    /**
+     * Updates the included HTTPS Protocols, and set the Java System Property 'https.protocols' accordingly
+     * 
+     * @param includedCiphers
+     *            List of HTTPS protocols that can be used
+     */
+    public void setHttpsProtocols( List<String> protocols ) {
+        StringBuilder protocolsBuidler = new StringBuilder();
+        if ( protocols != null ) {
+            for ( String protocol : protocols ) {
+                protocolsBuidler.append( protocol + "," );
+            }
+            LOGGER.debug( "Setting the allowed HTTPS Protocols [{}]", protocolsBuidler );
+        }
+        System.setProperty( HTTPS_PROTOCOLS_PROPERTY, protocolsBuidler.toString() );
     }
 }

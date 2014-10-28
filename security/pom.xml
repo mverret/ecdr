@@ -26,6 +26,6 @@
     <name>Enterprise CDR Security</name>
 
     <modules>
-        <module>cdr-ssl-client-global-config</module>
+        <module>cdr-sslclient-config</module>
     </modules>
 </project>
