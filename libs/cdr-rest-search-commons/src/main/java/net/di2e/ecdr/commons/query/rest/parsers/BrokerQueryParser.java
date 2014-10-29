@@ -86,7 +86,7 @@ public class BrokerQueryParser extends LegacyQueryParser {
             queryProperties.put( SearchConstants.OID_PARAMETER, oidString );
         }
 
-        return null;
+        return queryProperties;
     }
 
     protected boolean isUniqueQuery( MultivaluedMap<String, String> queryParameters, String sourceId ) {
