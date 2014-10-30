@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.di2e.ecdr.commons.filter.config.FilterConfig;
+import net.di2e.ecdr.security.ssl.client.cxf.CxfSSLClientConfiguration;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,15 +25,15 @@ import ddf.catalog.filter.FilterAdapter;
 
 public class CDRRestSource extends AbstractCDRSource {
 
-    private static final transient Logger LOGGER = LoggerFactory.getLogger( CDRRestSource.class );
+    private static final Logger LOGGER = LoggerFactory.getLogger( CDRRestSource.class );
 
     private Map<String, String> parameterMap = new HashMap<String, String>();
     private Map<String, String> harcodedParamMap = new HashMap<String, String>();
 
     private FilterConfig filterConfig = null;
 
-    public CDRRestSource( FilterAdapter filterAdapter ) {
-        super( filterAdapter );
+    public CDRRestSource( FilterAdapter filterAdapter, CxfSSLClientConfiguration sslClient ) {
+        super( filterAdapter, sslClient );
         filterConfig = new FilterConfig();
     }
 

@@ -36,12 +36,14 @@ import net.di2e.ecdr.commons.filter.config.FilterConfig;
 import net.di2e.ecdr.commons.filter.config.FilterConfig.SingleRecordQueryMethod;
 import net.di2e.ecdr.commons.util.SearchConstants;
 import net.di2e.ecdr.search.transform.atom.response.AtomResponseTransformer;
+import net.di2e.ecdr.security.ssl.client.cxf.CxfSSLClientConfiguration;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.cxf.jaxrs.ext.multipart.ContentDisposition;
+import org.apache.cxf.transport.http.HTTPConduit;
 import org.opengis.filter.sort.SortBy;
 import org.opengis.filter.sort.SortOrder;
 import org.slf4j.Logger;
@@ -68,7 +70,7 @@ import ddf.catalog.util.impl.MaskableImpl;
 
 public abstract class AbstractCDRSource extends MaskableImpl implements FederatedSource, ConnectedSource {
 
-    private static final transient Logger LOGGER = LoggerFactory.getLogger( AbstractCDRSource.class );
+    private static final Logger LOGGER = LoggerFactory.getLogger( AbstractCDRSource.class );
 
     // TODO check the retrieve resuming from previous place capability
     // compare with existing DDF code as it may have been updated recently
@@ -99,14 +101,11 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
     private int maxResultsCount = 0;
     private String defaultResponseFormat = null;
 
-    public AbstractCDRSource( FilterAdapter adapter ) {
+    private CxfSSLClientConfiguration sslClientConfig = null;
 
+    public AbstractCDRSource( FilterAdapter adapter, CxfSSLClientConfiguration sslClient ) {
         this.filterAdapter = adapter;
-        // This will be used in a future ticket, just leaving commented out for
-        // now
-        // MultiThreadedHttpConnectionManager connectionManager = new
-        // MultiThreadedHttpConnectionManager();
-        // cdrAvailabilityCheckClient = new HttpClient( connectionManager );
+        this.sslClientConfig = sslClient;
     }
 
     public abstract Map<String, String> getDynamicUrlParameterMap();
@@ -173,8 +172,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
         LOGGER.debug( "isAvailable method called on CDR Rest Source named [{}], determining whether to check availability or pull from cache", getId() );
         if ( pingMethod != null && !PingMethod.NONE.equals( pingMethod ) && cdrAvailabilityCheckClient != null ) {
             if ( !isCurrentlyAvailable || (lastAvailableCheckDate.getTime() < System.currentTimeMillis() - availableCheckCacheTime) ) {
-                LOGGER.debug( "Checking availability on CDR Rest Source named [{}] in real time by calling endpoint [{}]", getId(),
-                        cdrAvailabilityCheckClient.getBaseURI() );
+                LOGGER.debug( "Checking availability on CDR Rest Source named [{}] in real time by calling endpoint [{}]", getId(), cdrAvailabilityCheckClient.getBaseURI() );
                 try {
                     Response response = PingMethod.HEAD.equals( pingMethod ) ? cdrAvailabilityCheckClient.head() : cdrAvailabilityCheckClient.get();
                     if ( response.getStatus() == Status.OK.getStatusCode() || response.getStatus() == Status.ACCEPTED.getStatusCode() ) {
@@ -184,8 +182,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
                         isCurrentlyAvailable = false;
                     }
                 } catch ( Exception e ) {
-                    LOGGER.warn( "CDR Rest Source named [" + getId() + "] encountered error while executing HTTP Head at URL ["
-                            + cdrAvailabilityCheckClient.getBaseURI() + "]:" + e.getMessage() );
+                    LOGGER.warn( "CDR Rest Source named [" + getId() + "] encountered error while executing HTTP Head at URL [" + cdrAvailabilityCheckClient.getBaseURI() + "]:" + e.getMessage() );
 
                 }
 
@@ -231,8 +228,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
     }
 
     @Override
-    public ResourceResponse retrieveResource( URI uri, Map<String, Serializable> requestProperties ) throws ResourceNotFoundException,
-            ResourceNotSupportedException, IOException {
+    public ResourceResponse retrieveResource( URI uri, Map<String, Serializable> requestProperties ) throws ResourceNotFoundException, ResourceNotSupportedException, IOException {
         LOGGER.debug( "Retrieving Resource from remote CDR Source named [{}] using URI [{}]", getId(), uri );
 
         // Check to see if the resource-uri value was passed through which is
@@ -279,8 +275,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
             } catch ( MimeTypeParseException e ) {
                 try {
                     mimeType = new MimeType( "application/octet-stream" );
-                    LOGGER.warn( "Creating mime type from CDR Source named [{}] using uri [{}] with value [{}] defaulting to [{}]", getId(), uri,
-                            "application/octet-stream" );
+                    LOGGER.warn( "Creating mime type from CDR Source named [{}] using uri [{}] with value [{}] defaulting to [{}]", getId(), uri, "application/octet-stream" );
                 } catch ( MimeTypeParseException e1 ) {
                     LOGGER.error( "Could not create MIMEType for resource being retrieved", e1 );
                 }
@@ -324,8 +319,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
                         responseProperties.put( BYTES_SKIPPED_RESPONSE, Boolean.TRUE );
                     }
                 }
-                return new ResourceResponseImpl( new ResourceRequestByProductUri( uri, requestProperties ), responseProperties, new ResourceImpl( binaryStream,
-                        mimeType, fileName ) );
+                return new ResourceResponseImpl( new ResourceRequestByProductUri( uri, requestProperties ), responseProperties, new ResourceImpl( binaryStream, mimeType, fileName ) );
             }
         }
         LOGGER.warn( "Could not retrieve resource from CDR Source named [{}] using uri [{}]", getId(), uri );
@@ -397,8 +391,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
         }
 
         int pageSize = query.getPageSize();
-        filterParameters.put( SearchConstants.COUNT_PARAMETER,
-                maxResultsCount > 0 && pageSize > maxResultsCount ? String.valueOf( maxResultsCount ) : String.valueOf( pageSize ) );
+        filterParameters.put( SearchConstants.COUNT_PARAMETER, maxResultsCount > 0 && pageSize > maxResultsCount ? String.valueOf( maxResultsCount ) : String.valueOf( pageSize ) );
 
         int startIndex = query.getStartIndex();
         filterParameters.put( SearchConstants.STARTINDEX_PARAMETER, String.valueOf( getFilterConfig().isZeroBasedStartIndex() ? startIndex - 1 : startIndex ) );
@@ -442,7 +435,12 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
         if ( StringUtils.isNotBlank( endpointUrl ) && !endpointUrl.equals( existingUrl ) ) {
             LOGGER.debug( "ConfigUpdate: Updating the source endpoint url value from [{}] to [{}] for sourceId [{}]", existingUrl, endpointUrl, getId() );
             cdrRestClient = WebClient.create( endpointUrl, true );
-            WebClient.getConfig( cdrRestClient ).getHttpConduit().getClient().setReceiveTimeout( receiveTimeout );
+            synchronized ( cdrRestClient ) {
+                HTTPConduit conduit = WebClient.getConfig( cdrRestClient ).getHttpConduit();
+                conduit.getClient().setReceiveTimeout( receiveTimeout );
+                conduit.setTlsClientParameters( sslClientConfig.getTLSClientParameters() );
+            }
+
 
         } else {
             LOGGER.warn( "OpenSearch Source Endpoint URL is not a valid value, so cannot update [{}]", endpointUrl );
@@ -451,10 +449,15 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
 
     public void setPingUrl( String url ) {
         if ( StringUtils.isNotBlank( url ) ) {
-            LOGGER.debug( "ConfigUpdate: Updating the ping (site availability check) endpoint url value from [{}] to [{}]",
-                    cdrAvailabilityCheckClient == null ? null : cdrAvailabilityCheckClient.getCurrentURI().toString(), url );
+            LOGGER.debug( "ConfigUpdate: Updating the ping (site availability check) endpoint url value from [{}] to [{}]", cdrAvailabilityCheckClient == null ? null : cdrAvailabilityCheckClient
+                    .getCurrentURI().toString(), url );
+
             cdrAvailabilityCheckClient = WebClient.create( url, true );
-            
+            synchronized ( cdrAvailabilityCheckClient ) {
+                HTTPConduit conduit = WebClient.getConfig( cdrAvailabilityCheckClient ).getHttpConduit();
+                conduit.getClient().setReceiveTimeout( receiveTimeout );
+                conduit.setTlsClientParameters( sslClientConfig.getTLSClientParameters() );
+            }
         } else {
             LOGGER.debug( "ConfigUpdate: Updating the ping (site availability check) endpoint url to [null], will not be performing ping checks" );
         }
@@ -476,18 +479,15 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
     }
 
     /**
-     * Sets the time (in seconds) that availability should be cached (that is,
-     * the minimum amount of time between 2 perform availability checks). For
-     * example if set to 60 seconds, then if an availability check is called 30
-     * seconds after a previous availability check was called, the second call
-     * will just return a cache value and not do another check.
+     * Sets the time (in seconds) that availability should be cached (that is, the minimum amount of time between 2
+     * perform availability checks). For example if set to 60 seconds, then if an availability check is called 30
+     * seconds after a previous availability check was called, the second call will just return a cache value and not do
+     * another check.
      * 
-     * This settings allow admins to ensure that a site is not overloaded with
-     * availability checks
-     *
+     * This settings allow admins to ensure that a site is not overloaded with availability checks
+     * 
      * @param newCacheTime
-     *            New time period, in seconds, to check the availability of the
-     *            federated source.
+     *            New time period, in seconds, to check the availability of the federated source.
      */
     public void setAvailableCheckCacheTime( long newCacheTime ) {
         if ( newCacheTime < 1 ) {
@@ -519,65 +519,4 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
         LOGGER.debug( "ConfigUpdate: Updating the default response format value from [{}] to [{}]", defaultResponseFormat, defaultFormat );
         defaultResponseFormat = defaultFormat;
     }
-
-    // TODO Migrate this to container wide code ECDR-24
-    /*
-     * @Override public void configurationUpdateCallback(Map<String, String>
-     * updatedConfiguration) { // the configuration was changed, update the
-     * keystores for the webclient (if there are any) String keystoreLocation =
-     * updatedConfiguration.get(ConfigurationManager.KEY_STORE); String
-     * keystorePassword =
-     * updatedConfiguration.get(ConfigurationManager.KEY_STORE_PASSWORD); String
-     * trustStoreLocation =
-     * updatedConfiguration.get(ConfigurationManager.TRUST_STORE); String
-     * trustStorePassword =
-     * updatedConfiguration.get(ConfigurationManager.TRUST_STORE_PASSWORD);
-     * 
-     * HTTPConduit conduit =
-     * WebClient.getConfig(cdrRestClient).getHttpConduit(); TLSClientParameters
-     * tlsClientParameters = new TLSClientParameters();
-     * 
-     * // set keystore KeyManager[] keyManagers = null; if
-     * (StringUtils.isNotBlank(keystoreLocation) && keystorePassword != null) {
-     * try { keyManagers = new KeyManager[]
-     * {KeyManagerUtils.createClientKeyManager(new File(keystoreLocation),
-     * keystorePassword)}; } catch (IOException|GeneralSecurityException ex) {
-     * LOGGER
-     * .debug("Could not access keystore {}, using default java keystore.",
-     * keystoreLocation); } }
-     * 
-     * // set truststore TrustManager[] trustManagers = null; if
-     * (StringUtils.isNotBlank(trustStoreLocation) && trustStorePassword !=
-     * null) { FileInputStream fis = null; try { KeyStore trustStore =
-     * KeyStore.getInstance(KeyStore.getDefaultType()); fis = new
-     * FileInputStream(trustStoreLocation); try { trustStore.load(fis,
-     * StringUtils.isNotEmpty(trustStorePassword) ?
-     * trustStorePassword.toCharArray() : null); trustManagers = new
-     * TrustManager[] {TrustManagerUtils.getDefaultTrustManager(trustStore)}; }
-     * catch (IOException ioe) {
-     * LOGGER.debug("Could not load truststore {}, using default java truststore"
-     * ); } } catch (IOException|GeneralSecurityException ex) {
-     * LOGGER.debug("Could not access truststore {}, using default java truststore."
-     * , trustStoreLocation); } finally { IOUtils.closeQuietly(fis); }
-     * 
-     * }
-     * 
-     * tlsClientParameters.setKeyManagers(keyManagers);
-     * tlsClientParameters.setTrustManagers(trustManagers);
-     * 
-     * FiltersType filtersType = new FiltersType();
-     * filtersType.getInclude().add(".*_WITH_AES_.*");
-     * filtersType.getInclude().add(".*_EXPORT_.*");
-     * filtersType.getInclude().add(".*_EXPORT1024_.*");
-     * filtersType.getInclude().add(".*_WITH_DES_.*");
-     * filtersType.getInclude().add(".*_WITH_NULL_.*");
-     * filtersType.getExclude().add(".*_DH_anon_.*");
-     * tlsClientParameters.setCipherSuitesFilter(filtersType);
-     * 
-     * LOGGER.debug("Setting up SSL settings for client.");
-     * conduit.setTlsClientParameters(tlsClientParameters);
-     * 
-     * }
-     */
-
 }

@@ -77,6 +77,36 @@ public class AtomResponseTransformerTest extends net.di2e.ecdr.search.transform.
         SourceResponse response = getTransformResponse(GML_POLYGON);
         validateWKT(POLYGON_WKT, response);
     }
+    
+    @Test
+    public void testMultiPointTransform() throws Exception {
+        SourceResponse response = getTransformResponse(MULTIPOINT);
+        validateWKT(MULTIPOINT_WKT, response);
+    }
+    
+    @Test
+    public void testMultiLineStringTransform() throws Exception {
+        SourceResponse response = getTransformResponse(MULTILINESTRING);
+        validateWKT(MULTILINESTRING_WKT, response);
+    }
+    
+    @Test
+    public void testMultiPolygonTransform() throws Exception {
+        SourceResponse response = getTransformResponse(MULTIPOLYGON);
+        validateWKT(MULTIPOLYGON_WKT, response);
+    }
+    
+    @Test
+    public void testMultiBoxTransform() throws Exception {
+        SourceResponse response = getTransformResponse(MULTIBOX);
+        validateWKT(MULTIBOX_WKT, response);
+    }
+    
+    @Test
+    public void testGeometryCollectionTransform() throws Exception {
+        SourceResponse response = getTransformResponse(GEOMETRYCOLLECTION);
+        validateWKT(GEOMETRYCOLLECTION_WKT, response);
+    }
 
     private SourceResponse getTransformResponse(final String LOCATION_XML) throws Exception {
         FilterConfig config = mock(FilterConfig.class);

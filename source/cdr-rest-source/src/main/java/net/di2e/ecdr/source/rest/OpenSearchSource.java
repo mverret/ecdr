@@ -18,6 +18,7 @@ import java.util.Map;
 import net.di2e.ecdr.commons.filter.config.FilterConfig;
 import net.di2e.ecdr.commons.filter.config.FilterConfig.SingleRecordQueryMethod;
 import net.di2e.ecdr.commons.util.SearchConstants;
+import net.di2e.ecdr.security.ssl.client.cxf.CxfSSLClientConfiguration;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -36,15 +37,15 @@ public class OpenSearchSource extends AbstractCDRSource {
     public static final String GEO_GEOMETRY_NAME = "geometryParameter";
     public static final String SRU_SORTKEY_NAME = "sortKeysParameter";
 
-    private static final transient Logger LOGGER = LoggerFactory.getLogger( OpenSearchSource.class );
+    private static final Logger LOGGER = LoggerFactory.getLogger( OpenSearchSource.class );
 
     private Map<String, String> parameterMap = new HashMap<String, String>();
     private Map<String, String> harcodedParamMap = new HashMap<String, String>();
 
     private FilterConfig filterConfig = null;
 
-    public OpenSearchSource( FilterAdapter adapter ) {
-        super( adapter );
+    public OpenSearchSource( FilterAdapter adapter, CxfSSLClientConfiguration sslClient ) {
+        super( adapter, sslClient );
         filterConfig = new FilterConfig();
 
     }

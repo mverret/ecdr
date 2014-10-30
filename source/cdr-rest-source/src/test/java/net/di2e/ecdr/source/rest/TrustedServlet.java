@@ -27,6 +27,8 @@ import org.apache.commons.io.IOUtils;
 
 public class TrustedServlet extends HttpServlet {
 
+    private static final long serialVersionUID = 1L;
+
     @Override
     public void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {

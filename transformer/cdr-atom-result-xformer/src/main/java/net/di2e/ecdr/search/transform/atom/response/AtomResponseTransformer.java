@@ -121,7 +121,8 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
 
         // Set the source to the original source name
         // TODO revist this
-        String resultSource = entry.getSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, AtomResponseConstants.RESULT_SOURCE_ELEMENT, AtomResponseConstants.CDRB_NAMESPACE_PREFIX );
+        String resultSource = entry.getSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, AtomResponseConstants.RESULT_SOURCE_ELEMENT,
+                AtomResponseConstants.CDRB_NAMESPACE_PREFIX );
         // metacard.setSourceId( resultSource == null ? siteName : resultSource
         // );
         metacard.setSourceId( siteName );
@@ -139,12 +140,14 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
         metacard.setModifiedDate( entry.getUpdated() );
         metacard.setEffectiveDate( entry.getPublished() );
 
-        String createdDate = entry.getSimpleExtension( new QName( AtomResponseConstants.METACARD_ATOM_NAMESPACE, AtomResponseConstants.METACARD_CREATED_DATE_ELEMENT ) );
+        String createdDate = entry.getSimpleExtension( new QName( AtomResponseConstants.METACARD_ATOM_NAMESPACE,
+                AtomResponseConstants.METACARD_CREATED_DATE_ELEMENT ) );
         if ( createdDate != null ) {
             metacard.setCreatedDate( new Date( DATE_FORMATTER.parseMillis( createdDate ) ) );
         }
 
-        String expirationDate = entry.getSimpleExtension( new QName( AtomResponseConstants.METACARD_ATOM_NAMESPACE, AtomResponseConstants.METADATA_EXPIRATION_DATE_ELEMENT ) );
+        String expirationDate = entry.getSimpleExtension( new QName( AtomResponseConstants.METACARD_ATOM_NAMESPACE,
+                AtomResponseConstants.METADATA_EXPIRATION_DATE_ELEMENT ) );
         if ( expirationDate != null ) {
             metacard.setExpirationDate( new Date( DATE_FORMATTER.parseMillis( expirationDate ) ) );
         }
@@ -241,7 +244,8 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
 
     protected Result metacardToResult( Entry entry, Metacard metacard ) {
         ResultImpl result = new ResultImpl( metacard );
-        String relevance = entry.getSimpleExtension( AtomResponseConstants.RELEVANCE_NAMESPACE, AtomResponseConstants.RELEVANCE_ELEMENT, AtomResponseConstants.RELEVANCE_NAMESPACE_PREFIX );
+        String relevance = entry.getSimpleExtension( AtomResponseConstants.RELEVANCE_NAMESPACE, AtomResponseConstants.RELEVANCE_ELEMENT,
+                AtomResponseConstants.RELEVANCE_NAMESPACE_PREFIX );
         if ( relevance != null ) {
             try {
                 result.setRelevanceScore( Double.parseDouble( relevance ) );
@@ -250,7 +254,8 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
             }
         }
 
-        String distance = entry.getSimpleExtension( AtomResponseConstants.CDRS_EXT_NAMESPACE, AtomResponseConstants.DISTANCE_ELEMENT, AtomResponseConstants.CDRS_EXT_NAMESPACE_PREFIX );
+        String distance = entry.getSimpleExtension( AtomResponseConstants.CDRS_EXT_NAMESPACE, AtomResponseConstants.DISTANCE_ELEMENT,
+                AtomResponseConstants.CDRS_EXT_NAMESPACE_PREFIX );
         if ( distance != null ) {
             try {
                 result.setDistanceInMeters( Double.parseDouble( distance ) );
@@ -262,12 +267,17 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
         return result;
     }
 
-    private String getWKT( Entry entry ) {
+    protected String getWKT( Entry entry ) {
         String wkt = null;
-        Position[] positions = net.di2e.ecdr.search.transform.atom.geo.GeoHelper.getPositions(entry);
-        if (positions.length > 0 ) {
-            LOGGER.debug("Found geometry in the current entry, only pulling first geo if more than one are inside.");
-            return AbderaConverter.convertToWKT(positions[0]);
+        Position[] positions = net.di2e.ecdr.search.transform.atom.geo.GeoHelper.getPositions( entry );
+        int length = positions.length;
+        if ( length == 1 ) {
+            LOGGER.debug( "Found one geometry in the current Atom entry, converting to WKT for inclusion in metacard" );
+            return AbderaConverter.convertToWKT( positions[0] );
+        } else if ( length > 1 ) {
+            LOGGER.debug( "Found multiple geometries in the current Atom entry, converting to MULTI-WKT for inclusion in metacard" );
+            return AbderaConverter.convertToWKT( positions );
+
         }
         return wkt;
     }
