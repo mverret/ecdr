@@ -98,6 +98,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
     private PingMethod pingMethod = PingMethod.NONE;
 
     private long receiveTimeout = 0;
+    private long connectionTimeout = 30000;
     private int maxResultsCount = 0;
     private String defaultResponseFormat = null;
 
@@ -438,6 +439,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
             synchronized ( cdrRestClient ) {
                 HTTPConduit conduit = WebClient.getConfig( cdrRestClient ).getHttpConduit();
                 conduit.getClient().setReceiveTimeout( receiveTimeout );
+                conduit.getClient().setConnectionTimeout( connectionTimeout );
                 conduit.setTlsClientParameters( sslClientConfig.getTLSClientParameters() );
             }
 
@@ -456,6 +458,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
             synchronized ( cdrAvailabilityCheckClient ) {
                 HTTPConduit conduit = WebClient.getConfig( cdrAvailabilityCheckClient ).getHttpConduit();
                 conduit.getClient().setReceiveTimeout( receiveTimeout );
+                conduit.getClient().setConnectionTimeout( connectionTimeout );
                 conduit.setTlsClientParameters( sslClientConfig.getTLSClientParameters() );
             }
         } else {
@@ -504,6 +507,16 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
             LOGGER.debug( "ConfigUpdate: Updating the source endpoint receive timeout value from [{}] to [{}] milliseconds", receiveTimeout, millis );
             receiveTimeout = millis;
             WebClient.getConfig( cdrRestClient ).getHttpConduit().getClient().setReceiveTimeout( receiveTimeout );
+        }
+    }
+
+    public void setConnectionTimeoutSeconds( Integer seconds ) {
+        seconds = seconds == null ? 0 : seconds;
+        long millis = seconds * 1000L;
+        if ( millis != connectionTimeout ) {
+            LOGGER.debug( "ConfigUpdate: Updating the source endpoint connection timeout value from [{}] to [{}] milliseconds", connectionTimeout, millis );
+            connectionTimeout = millis;
+            WebClient.getConfig( cdrRestClient ).getHttpConduit().getClient().setConnectionTimeout( connectionTimeout );
         }
     }
 

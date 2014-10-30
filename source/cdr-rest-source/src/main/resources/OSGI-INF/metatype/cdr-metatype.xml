@@ -17,26 +17,33 @@
     xsi:schemaLocation="http://www.osgi.org/xmlns/metatype/v1.2.0 http://www.osgi.org/xmlns/metatype/v1.2.0"
     xmlns:metatype="http://www.osgi.org/xmlns/metatype/v1.2.0">
 
-    <OCD description="CDR Specification v3.0 compliant REST Federated Source.  Use this when federating to another DDF based CDR Service.  If federating to a non DDF CDR or 
-    OpenSearch source use the OpenSearch Federated Source configuration" name="CDR REST Federated Source" id="ecdr-rest-source">
-        
+    <OCD
+        description="CDR Specification v3.0 compliant REST Federated Source.  Use this when federating to another DDF based CDR Service.  If federating to a non DDF CDR or 
+    OpenSearch source use the OpenSearch Federated Source configuration"
+        name="CDR REST Federated Source" id="ecdr-rest-source">
+
         <AD name="Source Name" id="id" required="true" type="String" default="cdr-source" />
-        
+
         <AD name="CDR Endpoint URL" id="endpointUrl" required="true" type="String"
             default="http://localhost:8181/services/cdr/search/rest" />
-            
+
         <AD name="Response Timeout" id="receiveTimeoutSeconds" required="true" type="Integer" default="0"
-            description="Number of seconds to wait before for the source to respond before timingout the connection.  0 or null means never timeout." />
-            
+            description="Number of seconds that the client will wait for a response before it times out. The default is 0 (wait indefinitely). 
+            0 specifies that the client will wait indefinitely." />
+
+        <AD name="Connection Timeout" id="connectionTimeoutSeconds" required="true" type="Integer" default="30"
+            description="Number of seconds that the client will attempt to establish a connection before it times out. The default is 30 seconds. 
+            0 specifies that the client will continue to attempt to open a connection indefinitely." />
+
         <AD name="Max Result Count" id="maxResultCount" required="true" type="Integer" default="0"
             description="The maximum number of records to return. If a client specifies a larger value that value will be overriden with this value.  0 or empty means no override." />
-            
+
         <AD name="Check Availability" id="doSourcePing" type="Boolean" default="true"
-            description="Check the box if you want to get site status by using the HTTP HEAD method to the base URL" />        
-            
+            description="Check the box if you want to get site status by using the HTTP HEAD method to the base URL" />
+
         <AD name="Minimum Source Ping Interval" id="availableCheckCacheTime" required="true" type="Integer" default="60"
             description="The minimum time interval (in seconds) between source availability checks.  Source status will be pulled from cache if the minimum time has not passed." />
-            
+
     </OCD>
 
     <Designate pid="ecdr-rest-source" factoryPid="ecdr-rest-source">
