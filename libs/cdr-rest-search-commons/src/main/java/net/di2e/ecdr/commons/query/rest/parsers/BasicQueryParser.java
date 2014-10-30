@@ -324,6 +324,12 @@ public class BasicQueryParser implements QueryParser {
         return criteriaList;
     }
 
+    @Override
+    public String getGeoRSSFormat( MultivaluedMap<String, String> queryParameters ) {
+        String format = queryParameters.getFirst( SearchConstants.GEORSS_RESULT_FORMAT_PARAMETER );
+        return StringUtils.isNotBlank( format ) ? format : null;
+    }
+
     protected QueryRequestCache getQueryRequestCache() {
         return queryRequestCache;
     }

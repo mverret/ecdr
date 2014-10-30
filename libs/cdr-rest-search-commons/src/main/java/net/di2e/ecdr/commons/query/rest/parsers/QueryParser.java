@@ -60,4 +60,15 @@ public interface QueryParser {
 
     List<PropertyCriteria> getPropertyCriteria( MultivaluedMap<String, String> queryParameters );
 
+    /**
+     * Gets the value associated with the 'GeoRSS Format' parameter, which should denote whether the client requested
+     * GML or Simple GeoRSS encoding to be used
+     * 
+     * @param queryParameters
+     *            the list of query parameters
+     * @return the value associated with the 'GeoRSS Format' parameter or null if the value was not specified or the
+     *         value was and empty string or null
+     */
+    String getGeoRSSFormat( MultivaluedMap<String, String> queryParameters );
+
 }

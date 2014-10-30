@@ -63,12 +63,16 @@ public final class SearchConstants {
     public static final String OID_PARAMETER = "oid";
     
     public static final String CDR_KEYWORD_QUERY_LANGUAGE = "cdr-kw-basic-2.0";
-    
+
+    public static final String GEORSS_RESULT_FORMAT_PARAMETER = "georssFormat";
+    public static final String GEORSS_SIMPLE_FORMAT = "simple";
+    public static final String GEORSS_GML_FORMAT = "gml";
 
     // Parameter that are part of the Basic Plus query profile
     public static final String GEOSPATIALOPERATOR_PARAMETER = "spatialOp";
     public static final String TEXTPATH_PARAMETER = "textPath";
     public static final String LOCAL_SOURCE_ID = "local-source-id";
+
 
     public static final String TRUE_STRING = "1";
     public static final String FALSE_STRING = "0";
@@ -76,8 +80,8 @@ public final class SearchConstants {
     // Constants for Strategies
     public static final String TOTAL_HITS = "total-hits";
     public static final String SITE_LIST = "site-list";
-    // TODO add support for source list
-    public static final String SOURCE_LIST = "source-list";
+    // TODO add support for source list if DDF changes from site-list to source-list
+    // public static final String SOURCE_LIST = "source-list";
     public static final String TOTAL_RESULTS_RETURNED = "total-results-returned";
     public static final String ELAPSED_TIME = "elapsed-time";
     
