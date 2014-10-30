@@ -19,10 +19,15 @@
     <OCD description="CDR OpenSearch Federated Source" name="CDR OpenSearch Federated Source" id="ecdr-opensearch-source">
         <AD name="Source Name" id="id" required="true" type="String" default="OpenSearch Source" />
 
-        <AD name="CDR Endpoint URL" id="endpointUrl" required="true" type="String" default="" />
+        <AD name="Search Endpoint URL" id="endpointUrl" required="true" type="String" default="" description="OpenSearch base endpoint URL, should include everything up to (and not including) the '?'" />
 
         <AD name="Response Timeout" id="receiveTimeoutSeconds" required="true" type="Integer" default="0"
-            description="Number of seconds to wait before for the source to respond before timingout the connection.  0 or null means never timeout." />
+            description="Number of seconds that the client will wait for a response before it times out. The default is 0 (wait indefinitely). 
+            0 specifies that the client will wait indefinitely." />
+
+        <AD name="Connection Timeout" id="connectionTimeoutSeconds" required="true" type="Integer" default="30"
+            description="Number of seconds that the client will attempt to establish a connection before it times out. The default is 30 seconds. 
+            0 specifies that the client will continue to attempt to open a connection indefinitely." />
 
         <AD name="Max Result Count" id="maxResultCount" required="true" type="Integer" default="0"
             description="The maximum number of records to return. If a client specifies a larger value that value will be overriden with this value.  0 or empty means no override." />
