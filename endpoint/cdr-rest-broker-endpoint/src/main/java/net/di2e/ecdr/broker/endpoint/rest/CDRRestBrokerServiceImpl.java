@@ -136,6 +136,7 @@ public class CDRRestBrokerServiceImpl {
                     platformConfig.getHostname(), platformConfig.getPort() );
             transformerProperties.put( SearchConstants.FEED_TITLE, "Atom Search Results from '" + localSourceId + "' for Query: " + query.getHumanReadableQuery().trim() );
             transformerProperties.put( SearchConstants.FORMAT_PARAMETER, format );
+            transformerProperties.put( SearchConstants.GEORSS_RESULT_FORMAT_PARAMETER, queryParser.getGeoRSSFormat( queryParameters ) );
             // Broker Specific
             transformerProperties.put( SearchConstants.STATUS_PARAMETER, queryParameters.getFirst( SearchConstants.STATUS_PARAMETER ) );
 

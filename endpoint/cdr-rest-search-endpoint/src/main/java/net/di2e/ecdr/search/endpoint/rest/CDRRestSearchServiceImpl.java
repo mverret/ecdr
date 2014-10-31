@@ -122,6 +122,7 @@ public class CDRRestSearchServiceImpl {
             transformProperties.put( SearchConstants.FORMAT_PARAMETER, query.getResponseFormat() );
             transformProperties.put( SearchConstants.STATUS_PARAMETER, queryParser.isIncludeStatus( queryParameters ) );
             transformProperties.put( SearchConstants.LOCAL_SOURCE_ID, catalogFramework.getId() );
+            transformProperties.put( SearchConstants.GEORSS_RESULT_FORMAT_PARAMETER, queryParser.getGeoRSSFormat( queryParameters ) );
             String format = query.getResponseFormat();
 
             if (StringUtils.isBlank(format)) {
