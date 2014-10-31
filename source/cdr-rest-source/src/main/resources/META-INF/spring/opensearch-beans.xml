@@ -53,6 +53,17 @@
 
     </osgix:managed-service-factory>
 
+    <beans:bean id="cdr-os-identifier" class="net.di2e.ecdr.search.api.impl.SimpleDynamicServiceIdentifier">
+        <beans:constructor-arg>
+            <beans:value>ecdr-opensearch-source</beans:value>
+        </beans:constructor-arg>
+        <beans:constructor-arg>
+            <beans:value>CDR Brokered REST Search</beans:value>
+        </beans:constructor-arg>
+    </beans:bean>
+
+    <osgi:service ref="cdr-os-identifier" interface="net.di2e.ecdr.search.api.DynamicServiceIdentifier" />
+
 
 
 

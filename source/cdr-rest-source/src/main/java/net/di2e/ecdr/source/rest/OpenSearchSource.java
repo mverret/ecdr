@@ -174,4 +174,10 @@ public class OpenSearchSource extends AbstractCDRSource {
         }
     }
 
+    @Override
+    public void setSourceProperties(Map<String, String> props) {
+        //TODO future work!
+        LOGGER.warn("Got some properties but do not know what to do with them.");
+
+    }
 }

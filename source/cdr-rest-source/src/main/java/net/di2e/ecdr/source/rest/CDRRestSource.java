@@ -35,6 +35,7 @@ public class CDRRestSource extends AbstractCDRSource {
     public CDRRestSource( FilterAdapter filterAdapter, CxfSSLClientConfiguration sslClient ) {
         super( filterAdapter, sslClient );
         filterConfig = new FilterConfig();
+        LOGGER.info("Creating a new CDRRestSource.");
     }
 
     @Override
@@ -60,6 +61,13 @@ public class CDRRestSource extends AbstractCDRSource {
     public void setEndpointUrl( String endpointUrl ) {
         super.setPingUrl( endpointUrl );
         super.setEndpointUrl( endpointUrl );
+    }
+
+    @Override
+    public void setSourceProperties(Map<String, String> props) {
+        //TODO future work!
+        LOGGER.warn("Got some properties but do not know what to do with them.");
+
     }
 
 }

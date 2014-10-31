@@ -88,6 +88,7 @@
                         </Import-Package>
                         <Export-Package>
                             net.di2e.ecdr.commons.*,
+                            net.di2e.ecdr.search.api.*
                         </Export-Package>
                         <Private-Package>
                             org.objectweb.*,
