@@ -614,6 +614,7 @@
         <module>federation</module>
         <module>endpoint</module>
         <module>source</module>
+        <module>registry</module>
         <module>apps</module>
     </modules>
 </project>
