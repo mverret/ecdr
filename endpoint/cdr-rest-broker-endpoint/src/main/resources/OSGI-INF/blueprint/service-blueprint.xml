@@ -95,6 +95,8 @@
         <argument ref="fifo" />
     </bean>
 
+    <service ref="cdrRestSearchService" auto-export="interfaces" />
+
     <bean id="queryParser" class="net.di2e.ecdr.commons.query.rest.parsers.BrokerQueryParser">
         <cm:managed-properties persistent-id="cdr-rest-broker-endpoint-1.0.1" update-strategy="container-managed" />
         <property name="defaultResponseFormat" value="atom" />

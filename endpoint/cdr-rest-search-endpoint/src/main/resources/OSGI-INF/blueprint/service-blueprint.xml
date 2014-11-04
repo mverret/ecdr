@@ -82,4 +82,6 @@
         <argument ref="fifo" />
     </bean>
 
+    <service ref="cdrRestSearchService" auto-export="interfaces" />
+
 </blueprint>
