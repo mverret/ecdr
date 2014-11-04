@@ -22,7 +22,7 @@ import javax.jmdns.ServiceListener;
 import java.io.IOException;
 
 /**
- * Listens for registries on the local network using mDNS and automatically registers them into the service registry client.
+ * Listens for registries on the local network using the mDNS protocol, implemented by JmDNS, and automatically registers them into the service registry client.
  */
 public class DiscoveryRegistryListener implements ServiceListener {
 
