@@ -72,8 +72,8 @@
 
     <service ref="atomTransformer" auto-export="interfaces" ranking="5">
         <service-properties>
-            <entry key="id" value="atom" />
-            <entry key="shortname" value="atom" />
+            <entry key="id" value="cdr-atom" />
+            <entry key="shortname" value="cdr-atom" />
             <entry key="mime-type" value="application/atom+xml" />
         </service-properties>
     </service>

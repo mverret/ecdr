@@ -31,6 +31,7 @@ import javax.ws.rs.core.UriInfo;
 import net.di2e.ecdr.commons.query.rest.CDRQueryImpl;
 import net.di2e.ecdr.commons.query.rest.parsers.QueryParser;
 import net.di2e.ecdr.commons.query.util.QueryHelper;
+import net.di2e.ecdr.commons.transform.TransformIdMapper;
 import net.di2e.ecdr.commons.util.BrokerConstants;
 import net.di2e.ecdr.commons.util.SearchConstants;
 
@@ -64,11 +65,12 @@ public class CDRRestBrokerServiceImpl {
     public static final String NO_QUERY_PARAMETERS_MESSAGE = "The query did not contain any of the required critera, one of the following is required [searchTerms, geospatial, or temporal]";
 
     private static final String RETRIEVE_PROXY_RELATIVE_URL = "/retrieve";
-    
+
     private CatalogFramework catalogFramework = null;
     private ConfigurationWatcherImpl platformConfig = null;
     private FilterBuilder filterBuilder = null;
     private QueryParser queryParser = null;
+    private TransformIdMapper transformMapper = null;
     private FederationStrategy sortedFedStrategy = null;
     private FederationStrategy fifoFedStrategy = null;
 
@@ -85,14 +87,20 @@ public class CDRRestBrokerServiceImpl {
      * @param parser
      *            The instance of the QueryParser to use which will determine how to parse the parameters from the queyr
      *            String. Query parsers are tied to different versions of a query profile
+     * @param sortedStrategy
+     *            The sorted federation strategy to use if a sort order is specified
+     * @param fifoFedStrategy
+     *            The fifo federation strategy to use if no sort order is specified
      */
-    public CDRRestBrokerServiceImpl( CatalogFramework framework, ConfigurationWatcherImpl config, FilterBuilder builder, QueryParser parser, FederationStrategy strategy, FederationStrategy fifo ) {
+    public CDRRestBrokerServiceImpl( CatalogFramework framework, ConfigurationWatcherImpl config, FilterBuilder builder, QueryParser parser, FederationStrategy sortedStrategy,
+            FederationStrategy fifo ) {
         this.catalogFramework = framework;
         this.platformConfig = config;
         this.filterBuilder = builder;
         this.queryParser = parser;
-        this.sortedFedStrategy = strategy;
+        this.sortedFedStrategy = sortedStrategy;
         this.fifoFedStrategy = fifo;
+        this.transformMapper = new TransformIdMapper();
     }
 
     @HEAD
@@ -140,10 +148,11 @@ public class CDRRestBrokerServiceImpl {
             // Broker Specific
             transformerProperties.put( SearchConstants.STATUS_PARAMETER, queryParameters.getFirst( SearchConstants.STATUS_PARAMETER ) );
 
-            //TODO ECDR-22
+            // TODO ECDR-22
             transformerProperties.put( BrokerConstants.BROKER_RETRIEVE_URL, uriInfo.getBaseUri() + RETRIEVE_PROXY_RELATIVE_URL + "?url=" );
 
-            BinaryContent content = catalogFramework.transform( queryResponse, format.contains( "ddms" ) ? "atom-ddms-2.0" : format, transformerProperties );
+            format = transformMapper.getMappedValue( format );
+            BinaryContent content = catalogFramework.transform( queryResponse, format, transformerProperties );
 
             response = Response.ok( content.getInputStream(), content.getMimeTypeValue() ).build();
 

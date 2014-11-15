@@ -27,9 +27,9 @@ import javax.ws.rs.core.UriInfo;
 import net.di2e.ecdr.commons.query.rest.CDRQueryImpl;
 import net.di2e.ecdr.commons.query.rest.parsers.QueryParser;
 import net.di2e.ecdr.commons.query.util.QueryHelper;
+import net.di2e.ecdr.commons.transform.TransformIdMapper;
 import net.di2e.ecdr.commons.util.SearchConstants;
 
-import org.apache.commons.lang.StringUtils;
 import org.codice.ddf.configuration.impl.ConfigurationWatcherImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,12 +54,12 @@ import ddf.catalog.transform.CatalogTransformerException;
 public class CDRRestSearchServiceImpl {
 
     private static final Logger LOGGER = LoggerFactory.getLogger( CDRRestSearchServiceImpl.class );
-    private static final String DEFAULT_FORMAT = "atom";
 
     private CatalogFramework catalogFramework = null;
     private ConfigurationWatcherImpl platformConfig = null;
     private FilterBuilder filterBuilder = null;
     private QueryParser queryParser = null;
+    private TransformIdMapper transformMapper = null;
 
     private FederationStrategy fifoFedStrategy = null;
 
@@ -76,14 +76,19 @@ public class CDRRestSearchServiceImpl {
      * @param parser
      *            The instance of the QueryParser to use which will determine how to parse the parameters from the queyr
      *            String. Query parsers are tied to different versions of a query profile
+     * @param fifoFedStrategy
+     *            The fifo federation strategy to use if no sort order is specified
      */
     public CDRRestSearchServiceImpl( CatalogFramework framework, ConfigurationWatcherImpl config, FilterBuilder builder, QueryParser parser, FederationStrategy fifoFedStrategy ) {
+        if ( framework == null || config == null || builder == null || parser == null || fifoFedStrategy == null ) {
+            throw new IllegalArgumentException( "All the CDRRestSearchServiceImpl Constructor parameters must not be null" );
+        }
         this.catalogFramework = framework;
         this.platformConfig = config;
         this.filterBuilder = builder;
         this.queryParser = parser;
         this.fifoFedStrategy = fifoFedStrategy;
-
+        this.transformMapper = new TransformIdMapper();
     }
 
     @HEAD
@@ -99,8 +104,10 @@ public class CDRRestSearchServiceImpl {
      * 
      * @param uriInfo
      *            Query parameters obtained by e
-     * @param encoding accept-encoding from the client
-     * @param auth Authorization header
+     * @param encoding
+     *            accept-encoding from the client
+     * @param auth
+     *            Authorization header
      * @return Response to send back to the calling client
      */
     @GET
@@ -124,10 +131,7 @@ public class CDRRestSearchServiceImpl {
             transformProperties.put( SearchConstants.LOCAL_SOURCE_ID, catalogFramework.getId() );
             transformProperties.put( SearchConstants.GEORSS_RESULT_FORMAT_PARAMETER, queryParser.getGeoRSSFormat( queryParameters ) );
             String format = query.getResponseFormat();
-
-            if (StringUtils.isBlank(format)) {
-                format = DEFAULT_FORMAT;
-            }
+            format = transformMapper.getMappedValue( format );
 
             BinaryContent content = catalogFramework.transform( queryResponse, format, transformProperties );
 
