@@ -48,6 +48,16 @@
 
     </osgix:managed-service-factory>
 
+    <beans:bean id="cdr-rest-identifier" class="net.di2e.ecdr.search.api.impl.SimpleDynamicServiceIdentifier">
+        <beans:constructor-arg>
+            <beans:value>ecdr-rest-source</beans:value>
+        </beans:constructor-arg>
+        <beans:constructor-arg>
+            <beans:value>CDR REST Search Service</beans:value>
+        </beans:constructor-arg>
+    </beans:bean>
+
+    <osgi:service ref="cdr-rest-identifier" interface="net.di2e.ecdr.search.api.DynamicServiceIdentifier" />
 
 
 

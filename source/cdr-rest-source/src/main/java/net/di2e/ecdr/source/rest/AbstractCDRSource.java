@@ -35,6 +35,7 @@ import net.di2e.ecdr.commons.filter.StrictFilterDelegate;
 import net.di2e.ecdr.commons.filter.config.FilterConfig;
 import net.di2e.ecdr.commons.filter.config.FilterConfig.SingleRecordQueryMethod;
 import net.di2e.ecdr.commons.util.SearchConstants;
+import net.di2e.ecdr.search.api.DynamicExternalSource;
 import net.di2e.ecdr.search.transform.atom.response.AtomResponseTransformer;
 import net.di2e.ecdr.security.ssl.client.cxf.CxfSSLClientConfiguration;
 
@@ -68,7 +69,7 @@ import ddf.catalog.source.SourceMonitor;
 import ddf.catalog.source.UnsupportedQueryException;
 import ddf.catalog.util.impl.MaskableImpl;
 
-public abstract class AbstractCDRSource extends MaskableImpl implements FederatedSource, ConnectedSource {
+public abstract class AbstractCDRSource extends MaskableImpl implements FederatedSource, ConnectedSource, DynamicExternalSource {
 
     private static final Logger LOGGER = LoggerFactory.getLogger( AbstractCDRSource.class );
 

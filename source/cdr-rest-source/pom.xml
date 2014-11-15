@@ -122,6 +122,7 @@
                         </Import-Package>
                         <Private-Package>
                             net.di2e.ecdr.source.*,
+                            net.di2e.ecdr.search.api.impl
                         </Private-Package>
                         <Export-Package />
                     </instructions>
