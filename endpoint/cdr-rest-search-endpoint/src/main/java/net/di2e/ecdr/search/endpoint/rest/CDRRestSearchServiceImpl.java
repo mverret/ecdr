@@ -28,9 +28,9 @@ import javax.ws.rs.core.UriInfo;
 import net.di2e.ecdr.commons.query.rest.CDRQueryImpl;
 import net.di2e.ecdr.commons.query.rest.parsers.QueryParser;
 import net.di2e.ecdr.commons.query.util.QueryHelper;
-import net.di2e.ecdr.commons.transform.TransformIdMapper;
 import net.di2e.ecdr.commons.util.SearchConstants;
 import net.di2e.ecdr.search.api.RegistrableService;
+import net.di2e.ecdr.search.transform.mapper.TransformIdMapper;
 
 import org.codice.ddf.configuration.impl.ConfigurationWatcherImpl;
 import org.slf4j.Logger;
@@ -78,13 +78,14 @@ public class CDRRestSearchServiceImpl implements RegistrableService {
      * @param parser    The instance of the QueryParser to use which will determine how to parse the parameters from the queyr
      *                  String. Query parsers are tied to different versions of a query profile
      */
-    public CDRRestSearchServiceImpl(CatalogFramework framework, ConfigurationWatcherImpl config, FilterBuilder builder, QueryParser parser, FederationStrategy fifoFedStrategy) {
+    public CDRRestSearchServiceImpl( CatalogFramework framework, ConfigurationWatcherImpl config, FilterBuilder builder, QueryParser parser, TransformIdMapper mapper,
+            FederationStrategy fifoFedStrategy ) {
         this.catalogFramework = framework;
         this.platformConfig = config;
         this.filterBuilder = builder;
         this.queryParser = parser;
         this.fifoFedStrategy = fifoFedStrategy;
-        transformMapper = new TransformIdMapper();
+        transformMapper = mapper;
     }
 
     @HEAD
@@ -125,8 +126,9 @@ public class CDRRestSearchServiceImpl implements RegistrableService {
             transformProperties.put( SearchConstants.GEORSS_RESULT_FORMAT_PARAMETER, queryParser.getGeoRSSFormat( queryParameters ) );
 
             String format = query.getResponseFormat();
-            format = transformMapper.getMappedValue( format );
-            BinaryContent content = catalogFramework.transform(queryResponse, format, transformProperties);
+            String internalTransformerFormat = transformMapper.getQueryResponseTransformValue( format );
+            transformProperties.put( SearchConstants.METACARD_TRANSFORMER_NAME, transformMapper.getMetacardTransformValue( format ) );
+            BinaryContent content = catalogFramework.transform( queryResponse, internalTransformerFormat, transformProperties );
 
             response = Response.ok(content.getInputStream(), content.getMimeTypeValue()).build();
 

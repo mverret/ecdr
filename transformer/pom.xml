@@ -27,5 +27,6 @@
 
     <modules>
         <module>cdr-atom-result-xformer</module>
+        <module>cdr-transformer-mapper</module>
     </modules>
 </project>

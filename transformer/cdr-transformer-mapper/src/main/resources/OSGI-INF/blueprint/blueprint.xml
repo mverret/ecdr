@@ -1,3 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
 /**
  * Copyright (c) Cohesive Integrations, LLC
  *
@@ -10,15 +12,12 @@
  * <http://www.gnu.org/licenses/lgpl.html>.
  * 
  **/
-package net.di2e.ecdr.commons.util;
+ -->
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.0.0">
 
-public final class TransformConstants {
+    <service id="transformIdMapper" ref="transformIdMapperBean" interface="net.di2e.ecdr.search.transform.mapper.TransformIdMapper" />
+    <bean id="transformIdMapperBean" class="net.di2e.ecdr.search.transform.mapper.TransformIdMapperImpl">
+        <cm:managed-properties persistent-id="cdr-transformer-mapper" update-strategy="container-managed"/>
+    </bean>
 
-    private TransformConstants() {
-    }
-
-    public static final String DEFAULT_DDF_ATOM_TRANSFORM_ID = "atom";
-    public static final String UPDATED_DDF_ATOM_TRANSFORM_ID = "ddf-atom";
-    public static final String CDR_ATOM_TRANSFORM_ID = "cdr-atom";
-
-}
+</blueprint>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright (c) Cohesive Integrations, LLC
+ *
+ * This is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details. A copy of the GNU Lesser General Public License is distributed along with this program and can be found at
+ * <http://www.gnu.org/licenses/lgpl.html>.
+ *
+ **/
+ -->
+<metatype:MetaData xmlns:metatype="http://www.osgi.org/xmlns/metatype/v1.2.0"
+    xsi:schemaLocation="http://www.osgi.org/xmlns/metatype/v1.2.0 http://www.osgi.org/xmlns/metatype/v1.2.0">
+
+    <OCD name="CDR Transform Mapper" id="cdr-transformer-mapper">
+
+        <AD name="Query Response Transformer Mappings" id="queryResponseTransformValues" required="true" type="Boolean" cardinality="20"
+            description="Maps the external value to the internal value used to lookup the transform. Use the format extenral-value=internal-value"
+            default="atom=cdr-atom, ddf-atom=atom, atom-ddms=atom-with-payload, atom-ddms-2.0=atom-with-payload, atom-ddms-4.1=atom-with-payload, atom-ddms-5.0=atom-with-payload" />
+        
+        <AD name="Metadata/Metacard Transformer Mappings" id="metacardTransformValues" required="true" type="Boolean" cardinality="20"
+            description="Maps the external value to the internal value used to lookup the transform. Use the format extenral-value=internal-value"
+            default="atom-ddms-2.0=ddms20, atom-ddms-4.1=ddms41, atom-ddms-5.0=ddms50" />
+
+    </OCD>
+
+    <Designate pid="cdr-transformer-mapper">
+        <Object ocdref="cdr-transformer-mapper" />
+    </Designate>
+
+</metatype:MetaData>

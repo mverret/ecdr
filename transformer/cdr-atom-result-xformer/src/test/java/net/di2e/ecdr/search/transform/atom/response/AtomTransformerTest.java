@@ -12,11 +12,17 @@
  **/
 package net.di2e.ecdr.search.transform.atom.response;
 
-import ddf.action.ActionProvider;
-import ddf.catalog.data.BinaryContent;
-import ddf.catalog.data.impl.MetacardImpl;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+
+import java.io.Serializable;
+import java.util.HashMap;
+
+import javax.activation.MimeType;
+
 import net.di2e.ecdr.search.transform.atom.AtomTransformer;
 import net.di2e.ecdr.search.transform.atom.geo.GeoHelper;
+
 import org.apache.abdera.Abdera;
 import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Element;
@@ -27,12 +33,9 @@ import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import javax.activation.MimeType;
-import java.io.Serializable;
-import java.util.HashMap;
-
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
+import ddf.action.ActionProvider;
+import ddf.catalog.data.BinaryContent;
+import ddf.catalog.data.impl.MetacardImpl;
 
 /**
  * Test out the atom transformer
@@ -100,7 +103,7 @@ public class AtomTransformerTest extends net.di2e.ecdr.search.transform.atom.res
         ActionProvider thumbnailProvider = mock(ActionProvider.class);
         MimeType thumbnailMime = new MimeType();
         MimeType viewMime = new MimeType();
-        AtomTransformer transformer = new AtomTransformer(configurationWatcher, viewMetacardProvider, resourceProvider, thumbnailProvider, thumbnailMime, viewMime);
+        AtomTransformer transformer = new AtomTransformer( null, configurationWatcher, viewMetacardProvider, resourceProvider, thumbnailProvider, thumbnailMime, viewMime );
         MetacardImpl metacard = new MetacardImpl();
         metacard.setLocation(locationWKT);
         transformer.setUseGMLEncoding(useGMLEncoding);

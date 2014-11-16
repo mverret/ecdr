@@ -58,6 +58,7 @@
         <argument ref="postFederatedQuerySortedList" />
     </bean>
 
+    <reference id="transformIdMapper" interface="net.di2e.ecdr.search.transform.mapper.TransformIdMapper" />
     <reference id="catalogFramework" interface="ddf.catalog.CatalogFramework" />
     <reference id="filterBuilder" interface="ddf.catalog.filter.FilterBuilder" />
 
@@ -79,6 +80,7 @@
         <argument ref="configurationWatcher" />
         <argument ref="filterBuilder" />
         <argument ref="queryParser" />
+        <argument ref="transformIdMapper" />
         <argument ref="fifo" />
     </bean>
 

@@ -32,6 +32,12 @@
             <artifactId>cdr-rest-search-commons</artifactId>
             <version>${project.version}</version>
         </dependency>
+        
+        <dependency>
+            <groupId>net.di2e.ecdr.transformer</groupId>
+            <artifactId>cdr-transformer-mapper</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.apache.cxf</groupId>
