@@ -88,6 +88,7 @@ public class AtomTransformerWithPayload extends AbstractAtomTransformer {
             MetacardTransformer metacardTransformer = metacardTransformerMap.get( format );
             if ( metacardTransformer != null ) {
                 try {
+                    LOGGER.debug( "Calling the MetacardTransformer with id [{}] to transform the Metacard into XML Metadata", format );
                     BinaryContent binaryContent = metacardTransformer.transform( metacard, null );
                     String mimeValue = binaryContent.getMimeTypeValue();
                     if ( StringUtils.isNotBlank( mimeValue ) && mimeValue.contains( "xml" ) ) {

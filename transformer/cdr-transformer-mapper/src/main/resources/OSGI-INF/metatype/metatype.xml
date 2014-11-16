@@ -13,16 +13,16 @@
  *
  **/
  -->
-<metatype:MetaData xmlns:metatype="http://www.osgi.org/xmlns/metatype/v1.2.0"
+<metatype:MetaData xmlns:metatype="http://www.osgi.org/xmlns/metatype/v1.2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.osgi.org/xmlns/metatype/v1.2.0 http://www.osgi.org/xmlns/metatype/v1.2.0">
 
     <OCD name="CDR Transform Mapper" id="cdr-transformer-mapper">
 
-        <AD name="Query Response Transformer Mappings" id="queryResponseTransformValues" required="true" type="Boolean" cardinality="20"
+        <AD name="Query Response Transformer Mappings" id="queryResponseTransformValues" required="true" type="String" cardinality="50"
             description="Maps the external value to the internal value used to lookup the transform. Use the format extenral-value=internal-value"
             default="atom=cdr-atom, ddf-atom=atom, atom-ddms=atom-with-payload, atom-ddms-2.0=atom-with-payload, atom-ddms-4.1=atom-with-payload, atom-ddms-5.0=atom-with-payload" />
         
-        <AD name="Metadata/Metacard Transformer Mappings" id="metacardTransformValues" required="true" type="Boolean" cardinality="20"
+        <AD name="Metadata/Metacard Transformer Mappings" id="metacardTransformValues" required="true" type="String" cardinality="50"
             description="Maps the external value to the internal value used to lookup the transform. Use the format extenral-value=internal-value"
             default="atom-ddms-2.0=ddms20, atom-ddms-4.1=ddms41, atom-ddms-5.0=ddms50" />
 
