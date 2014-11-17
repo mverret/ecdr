@@ -13,18 +13,18 @@
  * 
  **/
  -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>net.di2e.ecdr</groupId>
-        <artifactId>endpoint</artifactId>
+        <artifactId>transformer</artifactId>
         <version>0.7.0-SNAPSHOT</version>
     </parent>
-    <name>Enterprise CDR :: Endpoints :: REST Search Service</name>
-    <groupId>net.di2e.ecdr.endpoint</groupId>
-    <artifactId>cdr-rest-search-endpoint</artifactId>
+    <name>Enterprise CDR :: Transformers :: Transformer Mapper</name>
+    <groupId>net.di2e.ecdr.transformer</groupId>
+    <artifactId>cdr-transformer-mapper</artifactId>
     <packaging>bundle</packaging>
-
 
     <dependencies>
         <dependency>
@@ -32,19 +32,6 @@
             <artifactId>cdr-rest-search-commons</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
-        <dependency>
-            <groupId>net.di2e.ecdr.transformer</groupId>
-            <artifactId>cdr-transformer-mapper</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-bundle</artifactId>
-        </dependency>
-
-
     </dependencies>
 
     <build>
@@ -56,20 +43,12 @@
                     <instructions>
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                         <Embed-Transitive>true</Embed-Transitive>
-                        <Embed-Dependency>
-                            platform-configuration-impl,
-                            catalog-core-api-impl,
-                        </Embed-Dependency>
                         <Import-Package>
-                            META-INF.cxf,
-                            META-INF.cxf.osgi,
-
-                            *,
+                            *
                         </Import-Package>
-                        <Export-Package />
-                        <Private-Package>
-                            net.di2e.ecdr.search.endpoint.rest,
-                        </Private-Package>
+                        <Export-Package>
+                            net.di2e.ecdr.search.transform.mapper
+                        </Export-Package>
                     </instructions>
                 </configuration>
             </plugin>

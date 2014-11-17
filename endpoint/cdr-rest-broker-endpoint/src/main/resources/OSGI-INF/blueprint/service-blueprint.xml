@@ -13,12 +13,9 @@
  * 
  **/
  -->
-<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" 
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0" 
-    xmlns:jaxrs="http://cxf.apache.org/blueprint/jaxrs"
-    xmlns:cxf="http://cxf.apache.org/blueprint/core" 
-    xmlns:ext="http://aries.apache.org/blueprint/xmlns/blueprint-ext/v1.0.0"
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0" xmlns:jaxrs="http://cxf.apache.org/blueprint/jaxrs"
+    xmlns:cxf="http://cxf.apache.org/blueprint/core" xmlns:ext="http://aries.apache.org/blueprint/xmlns/blueprint-ext/v1.0.0"
     xsi:schemaLocation="
         http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
         http://cxf.apache.org/blueprint/jaxrs http://cxf.apache.org/schemas/blueprint/jaxrs.xsd
@@ -29,7 +26,9 @@
     <type-converters>
         <bean id="listConverter" class="ddf.catalog.util.impl.ListConverter" />
     </type-converters>
-
+    
+   
+    <reference id="transformIdMapper" interface="net.di2e.ecdr.search.transform.mapper.TransformIdMapper" />
     <reference id="catalogFramework" interface="ddf.catalog.CatalogFramework" />
     <reference id="filterBuilder" interface="ddf.catalog.filter.FilterBuilder" />
 
@@ -45,18 +44,20 @@
     <bean id="preFederatedQuerySortedList" class="ddf.catalog.util.impl.SortedServiceList">
         <argument ref="blueprintBundleContext" />
     </bean>
-    
+
     <bean id="postFederatedQuerySortedList" class="ddf.catalog.util.impl.SortedServiceList">
         <argument ref="blueprintBundleContext" />
     </bean>
 
     <!-- PRE FEDERATED QUERY REFERENCE -->
-    <reference-list id="preFederatedQuery" interface="ddf.catalog.plugin.PreFederatedQueryPlugin" availability="optional">
+    <reference-list id="preFederatedQuery" interface="ddf.catalog.plugin.PreFederatedQueryPlugin"
+        availability="optional">
         <reference-listener bind-method="bindPlugin" unbind-method="unbindPlugin" ref="preFederatedQuerySortedList" />
     </reference-list>
     
     <!-- POST FEDERATED QUERY REFERENCE -->
-    <reference-list id="postFederatedQuery" interface="ddf.catalog.plugin.PostFederatedQueryPlugin" availability="optional">
+    <reference-list id="postFederatedQuery" interface="ddf.catalog.plugin.PostFederatedQueryPlugin"
+        availability="optional">
         <reference-listener bind-method="bindPlugin" unbind-method="unbindPlugin" ref="postFederatedQuerySortedList" />
     </reference-list>
 
@@ -70,7 +71,7 @@
         <argument ref="postFederatedQuerySortedList" />
         <property name="maxStartIndex" value="50000" />
     </bean>
-    
+
     <bean id="fifo" class="net.di2e.ecdr.federation.FifoFederationStrategy">
         <cm:managed-properties persistent-id="net.di2e.ecdr.federation.FifoFederationStrategy"
             update-strategy="container-managed" />
@@ -85,12 +86,13 @@
         <argument ref="preFederatedQuerySortedList" />
         <argument ref="postFederatedQuerySortedList" />
     </bean>-->
-    
+
     <bean id="cdrRestSearchService" class="net.di2e.ecdr.broker.endpoint.rest.CDRRestBrokerServiceImpl">
         <argument ref="catalogFramework" />
         <argument ref="configurationWatcher" />
         <argument ref="filterBuilder" />
         <argument ref="queryParser" />
+        <argument ref="transformIdMapper" />
         <argument ref="sorted" />
         <argument ref="fifo" />
     </bean>

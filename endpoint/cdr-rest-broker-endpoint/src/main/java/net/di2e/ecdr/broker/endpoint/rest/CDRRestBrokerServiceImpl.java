@@ -12,27 +12,12 @@
  **/
 package net.di2e.ecdr.broker.endpoint.rest;
 
-import ddf.catalog.CatalogFramework;
-import ddf.catalog.data.BinaryContent;
-import ddf.catalog.federation.FederationException;
-import ddf.catalog.federation.FederationStrategy;
-import ddf.catalog.filter.FilterBuilder;
-import ddf.catalog.operation.QueryResponse;
-import ddf.catalog.operation.impl.QueryRequestImpl;
-import ddf.catalog.source.SourceUnavailableException;
-import ddf.catalog.source.UnsupportedQueryException;
-import ddf.catalog.transform.CatalogTransformerException;
-import net.di2e.ecdr.commons.query.rest.CDRQueryImpl;
-import net.di2e.ecdr.commons.query.rest.parsers.QueryParser;
-import net.di2e.ecdr.commons.query.util.QueryHelper;
-import net.di2e.ecdr.commons.util.BrokerConstants;
-import net.di2e.ecdr.commons.util.SearchConstants;
-import net.di2e.ecdr.search.api.RegistrableService;
-import org.apache.cxf.jaxrs.client.WebClient;
-import org.codice.ddf.configuration.impl.ConfigurationWatcherImpl;
-import org.opengis.filter.sort.SortBy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Map;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.HEAD;
@@ -43,12 +28,31 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Map;
+
+import net.di2e.ecdr.commons.query.rest.CDRQueryImpl;
+import net.di2e.ecdr.commons.query.rest.parsers.QueryParser;
+import net.di2e.ecdr.commons.query.util.QueryHelper;
+import net.di2e.ecdr.commons.util.BrokerConstants;
+import net.di2e.ecdr.commons.util.SearchConstants;
+import net.di2e.ecdr.search.api.RegistrableService;
+import net.di2e.ecdr.search.transform.mapper.TransformIdMapper;
+
+import org.apache.cxf.jaxrs.client.WebClient;
+import org.codice.ddf.configuration.impl.ConfigurationWatcherImpl;
+import org.opengis.filter.sort.SortBy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import ddf.catalog.CatalogFramework;
+import ddf.catalog.data.BinaryContent;
+import ddf.catalog.federation.FederationException;
+import ddf.catalog.federation.FederationStrategy;
+import ddf.catalog.filter.FilterBuilder;
+import ddf.catalog.operation.QueryResponse;
+import ddf.catalog.operation.impl.QueryRequestImpl;
+import ddf.catalog.source.SourceUnavailableException;
+import ddf.catalog.source.UnsupportedQueryException;
+import ddf.catalog.transform.CatalogTransformerException;
 
 /**
  * JAX-RS Web Service which implements the CDR REST Search Specification which is based on Open Search
@@ -74,6 +78,8 @@ public class CDRRestBrokerServiceImpl implements RegistrableService {
     private FederationStrategy sortedFedStrategy = null;
     private FederationStrategy fifoFedStrategy = null;
 
+    private TransformIdMapper transformMapper = null;
+
     /**
      * Constructor for JAX RS CDR Search Service. Values should ideally be passed into the constructor using a
      * dependency injection framework like blueprint
@@ -84,13 +90,15 @@ public class CDRRestBrokerServiceImpl implements RegistrableService {
      * @param parser    The instance of the QueryParser to use which will determine how to parse the parameters from the queyr
      *                  String. Query parsers are tied to different versions of a query profile
      */
-    public CDRRestBrokerServiceImpl(CatalogFramework framework, ConfigurationWatcherImpl config, FilterBuilder builder, QueryParser parser, FederationStrategy strategy, FederationStrategy fifo) {
+    public CDRRestBrokerServiceImpl( CatalogFramework framework, ConfigurationWatcherImpl config, FilterBuilder builder, QueryParser parser, TransformIdMapper mapper, FederationStrategy strategy,
+            FederationStrategy fifo ) {
         this.catalogFramework = framework;
         this.platformConfig = config;
         this.filterBuilder = builder;
         this.queryParser = parser;
         this.sortedFedStrategy = strategy;
         this.fifoFedStrategy = fifo;
+        transformMapper = mapper;
     }
 
     @HEAD
@@ -141,7 +149,9 @@ public class CDRRestBrokerServiceImpl implements RegistrableService {
             //TODO ECDR-22
             transformerProperties.put(BrokerConstants.BROKER_RETRIEVE_URL, uriInfo.getBaseUri() + RETRIEVE_PROXY_RELATIVE_URL + "?url=");
 
-            BinaryContent content = catalogFramework.transform(queryResponse, format.contains("ddms") ? "atom-ddms-2.0" : format, transformerProperties);
+            String internalTransformFormat = transformMapper.getQueryResponseTransformValue( format );
+            transformerProperties.put( SearchConstants.METACARD_TRANSFORMER_NAME, transformMapper.getMetacardTransformValue( format ) );
+            BinaryContent content = catalogFramework.transform( queryResponse, internalTransformFormat, transformerProperties );
 
             response = Response.ok(content.getInputStream(), content.getMimeTypeValue()).build();
 

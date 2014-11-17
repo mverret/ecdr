@@ -12,6 +12,30 @@
  **/
 package net.di2e.ecdr.search.endpoint.rest;
 
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.Map;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.HEAD;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.Path;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+
+import net.di2e.ecdr.commons.query.rest.CDRQueryImpl;
+import net.di2e.ecdr.commons.query.rest.parsers.QueryParser;
+import net.di2e.ecdr.commons.query.util.QueryHelper;
+import net.di2e.ecdr.commons.util.SearchConstants;
+import net.di2e.ecdr.search.api.RegistrableService;
+import net.di2e.ecdr.search.transform.mapper.TransformIdMapper;
+
+import org.codice.ddf.configuration.impl.ConfigurationWatcherImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ddf.catalog.CatalogFramework;
 import ddf.catalog.data.BinaryContent;
 import ddf.catalog.federation.FederationException;
@@ -22,27 +46,6 @@ import ddf.catalog.operation.impl.QueryRequestImpl;
 import ddf.catalog.source.SourceUnavailableException;
 import ddf.catalog.source.UnsupportedQueryException;
 import ddf.catalog.transform.CatalogTransformerException;
-import net.di2e.ecdr.commons.query.rest.CDRQueryImpl;
-import net.di2e.ecdr.commons.query.rest.parsers.QueryParser;
-import net.di2e.ecdr.commons.query.util.QueryHelper;
-import net.di2e.ecdr.commons.util.SearchConstants;
-import net.di2e.ecdr.search.api.RegistrableService;
-import org.apache.commons.lang.StringUtils;
-import org.codice.ddf.configuration.impl.ConfigurationWatcherImpl;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.HEAD;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.Path;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.Map;
 
 /**
  * JAX-RS Web Service which implements the CDR REST Search Specification which is based on Open Search
@@ -53,7 +56,6 @@ import java.util.Map;
 public class CDRRestSearchServiceImpl implements RegistrableService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CDRRestSearchServiceImpl.class);
-    private static final String DEFAULT_FORMAT = "atom";
 
     private static final String RELATIVE_URL = "/services/cdr/search/rest";
     private static final String SERVICE_TYPE = "CDR REST Search Service";
@@ -62,8 +64,9 @@ public class CDRRestSearchServiceImpl implements RegistrableService {
     private ConfigurationWatcherImpl platformConfig = null;
     private FilterBuilder filterBuilder = null;
     private QueryParser queryParser = null;
-
     private FederationStrategy fifoFedStrategy = null;
+
+    private TransformIdMapper transformMapper = null;
 
     /**
      * Constructor for JAX RS CDR Search Service. Values should ideally be passed into the constructor using a
@@ -75,13 +78,14 @@ public class CDRRestSearchServiceImpl implements RegistrableService {
      * @param parser    The instance of the QueryParser to use which will determine how to parse the parameters from the queyr
      *                  String. Query parsers are tied to different versions of a query profile
      */
-    public CDRRestSearchServiceImpl(CatalogFramework framework, ConfigurationWatcherImpl config, FilterBuilder builder, QueryParser parser, FederationStrategy fifoFedStrategy) {
+    public CDRRestSearchServiceImpl( CatalogFramework framework, ConfigurationWatcherImpl config, FilterBuilder builder, QueryParser parser, TransformIdMapper mapper,
+            FederationStrategy fifoFedStrategy ) {
         this.catalogFramework = framework;
         this.platformConfig = config;
         this.filterBuilder = builder;
         this.queryParser = parser;
         this.fifoFedStrategy = fifoFedStrategy;
-
+        transformMapper = mapper;
     }
 
     @HEAD
@@ -122,12 +126,9 @@ public class CDRRestSearchServiceImpl implements RegistrableService {
             transformProperties.put( SearchConstants.GEORSS_RESULT_FORMAT_PARAMETER, queryParser.getGeoRSSFormat( queryParameters ) );
 
             String format = query.getResponseFormat();
-
-            if (StringUtils.isBlank(format)) {
-                format = DEFAULT_FORMAT;
-            }
-
-            BinaryContent content = catalogFramework.transform(queryResponse, format, transformProperties);
+            String internalTransformerFormat = transformMapper.getQueryResponseTransformValue( format );
+            transformProperties.put( SearchConstants.METACARD_TRANSFORMER_NAME, transformMapper.getMetacardTransformValue( format ) );
+            BinaryContent content = catalogFramework.transform( queryResponse, internalTransformerFormat, transformProperties );
 
             response = Response.ok(content.getInputStream(), content.getMimeTypeValue()).build();
 

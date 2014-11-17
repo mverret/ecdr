@@ -47,6 +47,7 @@ import org.apache.commons.lang.StringUtils;
 import org.codice.ddf.configuration.impl.ConfigurationWatcherImpl;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
+import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,6 +75,8 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
     private static final Logger LOGGER = LoggerFactory.getLogger( AbstractAtomTransformer.class );
     private static final DateTimeFormatter DATE_FORMATTER = ISODateTimeFormat.dateTime();
 
+    private BundleContext bundleContext = null;
+
     private ActionProvider viewMetacardActionProvider = null;
     private ActionProvider resourceActionProvider = null;
     private ActionProvider thumbnailActionProvider = null;
@@ -86,11 +89,12 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
 
     private boolean defaultToUseGMLEncoding = true;
 
-    public AbstractAtomTransformer( ConfigurationWatcherImpl config, ActionProvider viewMetacard, ActionProvider resourceProvider, ActionProvider thumbnailProvider, MimeType thumbnailMime,
-            MimeType viewMime ) {
+    public AbstractAtomTransformer( BundleContext context, ConfigurationWatcherImpl config, ActionProvider viewMetacard, ActionProvider resourceProvider, ActionProvider thumbnailProvider,
+            MimeType thumbnailMime, MimeType viewMime ) {
         if ( viewMime == null || thumbnailMime == null ) {
             throw new IllegalArgumentException( "MimeType parameters to constructor cannot be null" );
         }
+        this.bundleContext = context;
         this.configWatcher = config;
         this.viewMetacardActionProvider = viewMetacard;
         this.resourceActionProvider = resourceProvider;
@@ -102,6 +106,10 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
     public abstract void addFeedElements( Feed feed, SourceResponse response, Map<String, Serializable> properties );
 
     public abstract void addEntryElements( Entry entry, CDRMetacard metacard, Map<String, Serializable> properties );
+
+    protected BundleContext getBundleContext() {
+        return bundleContext;
+    }
 
     /**
      * Specifies if GML encoding should be used for location data.
@@ -373,7 +381,7 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
     protected Entry getMetacardEntry( CDRMetacard metacard, Map<String, Serializable> properties ) {
 
         String format = (String) properties.get( SearchConstants.FORMAT_PARAMETER );
-        setDDMSTransform( format );
+
         String urlPrefix = (String) properties.get( BrokerConstants.BROKER_RETRIEVE_URL );
         if ( urlPrefix == null ) {
             urlPrefix = "";
@@ -447,24 +455,6 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
             }
         }
         return useGml;
-    }
-
-    // TODO handle transformers in a different manner ECDR-30
-    private void setDDMSTransform( String format ) {
-
-        if ( format != null ) {
-            if ( format.equalsIgnoreCase( "atom-ddms-5.0" ) ) {
-                isTransform50 = true;
-                isTransform41 = false;
-            } else if ( format.equalsIgnoreCase( "atom-ddms-4.1" ) ) {
-                isTransform41 = true;
-                isTransform50 = false;
-            } else {
-                isTransform41 = false;
-                isTransform50 = false;
-            }
-        }
-
     }
 
     protected void addLinksToEntry( Entry entry, CDRMetacard metacard, String urlPrefix, String format ) {

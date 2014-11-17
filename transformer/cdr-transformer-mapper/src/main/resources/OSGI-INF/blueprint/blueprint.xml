@@ -13,20 +13,11 @@
  * 
  **/
  -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <parent>
-        <groupId>net.di2e.ecdr</groupId>
-        <artifactId>parent</artifactId>
-        <version>0.7.0-SNAPSHOT</version>
-    </parent>
-    <modelVersion>4.0.0</modelVersion>
-    <groupId>net.di2e.ecdr</groupId>
-    <artifactId>transformer</artifactId>
-    <packaging>pom</packaging>
-    <name>Enterprise CDR Transformers</name>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.0.0">
 
-    <modules>
-        <module>cdr-atom-result-xformer</module>
-        <module>cdr-transformer-mapper</module>
-    </modules>
-</project>
+    <service id="transformIdMapper" ref="transformIdMapperBean" interface="net.di2e.ecdr.search.transform.mapper.TransformIdMapper" />
+    <bean id="transformIdMapperBean" class="net.di2e.ecdr.search.transform.mapper.TransformIdMapperImpl">
+        <cm:managed-properties persistent-id="cdr-transformer-mapper" update-strategy="container-managed"/>
+    </bean>
+
+</blueprint>
