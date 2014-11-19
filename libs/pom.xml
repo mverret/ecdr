@@ -27,6 +27,5 @@
     <modules>
         <module>cdr-rest-search-commons</module>
         <module>cdr-libs-compression</module>
-        <module>cdr-rerelevance-plugin</module>
     </modules>
 </project>
