@@ -65,7 +65,7 @@ public final class TextParser {
         StringBuilder builder = new StringBuilder();
 
         XMLStreamReader xmlStreamReader;
-        long starttime = System.currentTimeMillis();
+
         try {
             // xml parser does not handle leading whitespace
             xmlStreamReader = xmlInputFactory
@@ -99,9 +99,6 @@ public final class TextParser {
                     "Failure occurred in parsing the xml data (" + xmlData + "). No data has been stored or indexed.",
                     e1);
         }
-        long endTime = System.currentTimeMillis();
-
-        LOGGER.trace("Parsing took {} ms", endTime - starttime);
 
         return builder.toString();
     }

@@ -22,7 +22,6 @@
     <reference id="filterAdapter" interface="ddf.catalog.filter.FilterAdapter" />
 
     <bean id="relevancePlugin" class="net.di2e.ecdr.plugin.relevance.RelevancePlugin">
-        <!--<cm:managed-properties persistent-id="rtsd-responder" update-strategy="container-managed" />-->
         <argument ref="filterAdapter" />
     </bean>
 

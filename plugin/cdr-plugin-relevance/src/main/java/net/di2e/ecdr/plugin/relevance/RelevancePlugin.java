@@ -21,6 +21,7 @@ import ddf.catalog.plugin.PluginExecutionException;
 import ddf.catalog.plugin.PostQueryPlugin;
 import ddf.catalog.plugin.StopProcessingException;
 import ddf.catalog.source.UnsupportedQueryException;
+import ddf.catalog.util.impl.RelevanceResultComparator;
 import net.di2e.ecdr.commons.filter.StrictFilterDelegate;
 import net.di2e.ecdr.commons.filter.config.FilterConfig;
 import org.apache.commons.io.IOUtils;
@@ -47,12 +48,13 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class RelevancePlugin implements PostQueryPlugin {
+
+    public static final String RELEVANCE_TIMER = "RELEVANCE TIMER:";
 
     private static final Logger LOGGER = LoggerFactory.getLogger( RelevancePlugin.class );
     private static final String METADATA_FIELD = "metadata";
@@ -100,14 +102,14 @@ public class RelevancePlugin implements PostQueryPlugin {
                 }
 
                 iwriter.close();
-                LOGGER.debug( "Indexing finished in {} seconds.", (double) stopWatch.getTime() / 1000.0 );
+                LOGGER.debug( "{} Document indexing finished in {} seconds.", RELEVANCE_TIMER, (double) stopWatch.getTime() / 1000.0 );
                 // Now search the index:
                 ireader = DirectoryReader.open( directory );
                 IndexSearcher isearcher = new IndexSearcher( ireader );
                 // Parse a simple query that searches for "text":
                 QueryParser parser = new QueryParser( METADATA_FIELD, analyzer );
                 Query query = parser.parse( searchPhrase );
-                ScoreDoc[] hits = isearcher.search( query, null, 1000 ).scoreDocs;
+                ScoreDoc[] hits = isearcher.search( query, null, docMap.size() ).scoreDocs;
                 LOGGER.debug( "Got back {} results", hits.length );
 
                 // loop through the indexed search results and update the scores in the original query results
@@ -119,8 +121,7 @@ public class RelevancePlugin implements PostQueryPlugin {
                 }
 
                 // resort results based on new scores
-                //TODO change order to match ASCENDING or DESCENDING
-                Collections.sort( updatedResults, new RelevanceComparator() );
+                Collections.sort( updatedResults, new RelevanceResultComparator(sortBy.getSortOrder()) );
 
                 // create new query response
                 queryResponse = new QueryResponseImpl( queryResponse.getRequest(), updatedResults, true, queryResponse.getHits(), queryResponse.getProperties() );
@@ -135,7 +136,7 @@ public class RelevancePlugin implements PostQueryPlugin {
                 IOUtils.closeQuietly( ireader );
                 IOUtils.closeQuietly( directory );
                 stopWatch.stop();
-                LOGGER.debug( "Re-relevance process took {} seconds.", (double) stopWatch.getTime() / 1000.0 );
+                LOGGER.debug( "{} Total relevance process took {} seconds.", RELEVANCE_TIMER, (double) stopWatch.getTime() / 1000.0 );
             }
         } else {
             LOGGER.debug( "Query is not sorted based on relevance. Skipping re-relevance plugin." );
@@ -156,15 +157,6 @@ public class RelevancePlugin implements PostQueryPlugin {
         ResultImpl result = new ResultImpl( origResult.getMetacard() );
         result.setRelevanceScore( new Double( newScore ) );
         return result;
-    }
-
-    private static class RelevanceComparator implements Comparator<Result> {
-
-        @Override
-        public int compare( Result result1, Result result2 ) {
-            // sort largest to smallest
-            return Double.compare( result2.getRelevanceScore(), result1.getRelevanceScore() );
-        }
     }
 
 }
