@@ -27,7 +27,6 @@
 
     <osgi:reference id="filterAdapter" interface="ddf.catalog.filter.FilterAdapter" />
     <osgi:reference id="sslClientConfig" interface="net.di2e.ecdr.security.ssl.client.cxf.CxfSSLClientConfiguration" />
-    
 
     <osgix:managed-service-factory id="net.di2e.ecdr.source.rest.OpenSearchSource"
         factory-pid="ecdr-opensearch-source" update-strategy="container-managed">
@@ -36,30 +35,28 @@
             <beans:value>ddf.catalog.source.FederatedSource</beans:value>
         </osgix:interfaces>
 
-
-        <beans:bean id="OpenSearchSourceBean" class="net.di2e.ecdr.source.rest.OpenSearchSource">
+        <beans:bean id="OpenSearchSourceBean" class="net.di2e.ecdr.source.rest.OpenSearchSource" destroy-method="cleanUp">
             <beans:constructor-arg ref="filterAdapter" />
             <beans:constructor-arg ref="sslClientConfig" />
+            <beans:constructor-arg ref="metacardCacheManager" />
             
             <!-- properties supported by Maskable Impl that are not set through Metatype -->  
             <beans:property name="title" value="CDR REST Federation" />
             <beans:property name="description" value="CDR REST Federated Source v3.0" />
             <beans:property name="organization" value="DI2E" />
             <beans:property name="version" value="3.0" />
-            
             <!-- don't set the metatype properties in here -->
-            
         </beans:bean>
 
     </osgix:managed-service-factory>
+    
+    <beans:bean id="metacardCacheManager" class="net.di2e.ecdr.source.rest.cache.impl.LRUMetacardCacheManager" destroy-method="destroy">
+        <beans:constructor-arg value="5000" type="int"/>
+    </beans:bean>
 
     <beans:bean id="cdr-os-identifier" class="net.di2e.ecdr.search.api.impl.SimpleDynamicServiceIdentifier">
-        <beans:constructor-arg>
-            <beans:value>ecdr-opensearch-source</beans:value>
-        </beans:constructor-arg>
-        <beans:constructor-arg>
-            <beans:value>CDR Brokered REST Search</beans:value>
-        </beans:constructor-arg>
+        <beans:constructor-arg value="ecdr-opensearch-source"/>
+        <beans:constructor-arg value="CDR Brokered REST Search"/>
     </beans:bean>
 
     <osgi:service ref="cdr-os-identifier" interface="net.di2e.ecdr.search.api.DynamicServiceIdentifier" />

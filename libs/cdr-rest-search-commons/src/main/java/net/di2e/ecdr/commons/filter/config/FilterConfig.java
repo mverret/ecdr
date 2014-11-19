@@ -14,26 +14,15 @@ package net.di2e.ecdr.commons.filter.config;
 
 public class FilterConfig {
 
-    public enum SingleRecordQueryMethod {
-        ID_ELEMENT_URL, UID_PARAMETER
-    }
-
-    private SingleRecordQueryMethod singleRecordQueryMethod = null;
+    private String thumbnailLinkRelation = null;
     private String metadataLinkRelation = null;
     private String productLinkRelation = null;
 
     private boolean zeroBasedStartIndex = false;
-    private boolean localUrls = false;
+    private boolean proxyProductUrl = false;
+    private boolean wrapXml = false;
 
     public FilterConfig() {
-    }
-
-    public SingleRecordQueryMethod getSingleRecordQueryMethod() {
-        return singleRecordQueryMethod;
-    }
-
-    public void setSingleRecordQueryMethod( SingleRecordQueryMethod queryMethod ) {
-        this.singleRecordQueryMethod = queryMethod;
     }
 
     public void setMetadataLinkRelation( String rel ) {
@@ -52,12 +41,28 @@ public class FilterConfig {
         return productLinkRelation;
     }
 
-    public void setProvideLocalUrls( boolean proxy ) {
-        localUrls = proxy;
+    public String getThumbnailLinkRelation() {
+        return thumbnailLinkRelation;
     }
 
-    public boolean isProvideLocalUrls() {
-        return localUrls;
+    public void setThumbnailLinkRelation( String rel ) {
+        thumbnailLinkRelation = rel;
+    }
+
+    public void setProxyProductUrl( boolean proxy ) {
+        proxyProductUrl = proxy;
+    }
+
+    public boolean isProxyProductUrl() {
+        return proxyProductUrl;
+    }
+
+    public void setWrapMetadata( boolean wrap ) {
+        wrapXml = wrap;
+    }
+
+    public boolean isWrapMetadata() {
+        return wrapXml;
     }
 
     public void setZeroBasedStartIndex( boolean zeroBased ) {

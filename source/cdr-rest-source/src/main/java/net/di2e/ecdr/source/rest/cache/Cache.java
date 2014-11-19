@@ -10,18 +10,14 @@
  * <http://www.gnu.org/licenses/lgpl.html>.
  * 
  **/
-package net.di2e.ecdr.commons.util;
+package net.di2e.ecdr.source.rest.cache;
 
-public final class BrokerConstants {
+
+public interface Cache<T> {
     
-    private BrokerConstants() {
-    }
+    void put( String id, T metacard );
+    
+    T get( String id );
 
-    // Brokered Search constants
-    public static final String SOURCE_PARAMETER = "source";
-    public static final String PATH_PARAMETER = "path";
-    public static final String DEDUP_PARAMETER = "dedup";
-
-    // public static final String BROKER_RETRIEVE_URL = "broker-retrieve-url";
-
+    void destroy();
 }

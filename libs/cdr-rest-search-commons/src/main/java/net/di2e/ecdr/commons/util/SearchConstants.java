@@ -85,7 +85,7 @@ public final class SearchConstants {
     public static final String TOTAL_RESULTS_RETURNED = "total-results-returned";
     public static final String ELAPSED_TIME = "elapsed-time";
     
-    public static final String LOCAL_RETRIEVE_URL_PREFIX = "local-retrieve-url-prefix";
+    // public static final String LOCAL_RETRIEVE_URL_PREFIX = "local-retrieve-url-prefix";
     public static final String METACARD_TRANSFORMER_NAME = "metacard-transformer-name";
 
 }

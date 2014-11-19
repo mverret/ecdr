@@ -13,13 +13,15 @@
  * 
  **/
  -->
-<metatype:MetaData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.osgi.org/xmlns/metatype/v1.2.0 http://www.osgi.org/xmlns/metatype/v1.2.0"
+<metatype:MetaData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.osgi.org/xmlns/metatype/v1.2.0 http://www.osgi.org/xmlns/metatype/v1.2.0"
     xmlns:metatype="http://www.osgi.org/xmlns/metatype/v1.2.0">
 
     <OCD description="CDR OpenSearch Federated Source" name="CDR OpenSearch Federated Source" id="ecdr-opensearch-source">
         <AD name="Source Name" id="id" required="true" type="String" default="OpenSearch Source" />
 
-        <AD name="Search Endpoint URL" id="endpointUrl" required="true" type="String" default="" description="OpenSearch base endpoint URL, should include everything up to (and not including) the '?'" />
+        <AD name="Search Endpoint URL" id="endpointUrl" required="true" type="String" default=""
+            description="OpenSearch base endpoint URL, should include everything up to (and not including) the '?'" />
 
         <AD name="Response Timeout" id="receiveTimeoutSeconds" required="true" type="Integer" default="0"
             description="Number of seconds that the client will wait for a response before it times out. The default is 0 (wait indefinitely). 
@@ -44,25 +46,24 @@
             <Option label="HEAD" value="HEAD" />
             <Option label="GET" value="GET" />
         </AD>
-        
+
         <AD name="Minimum Source Ping Interval" id="availableCheckCacheTime" required="true" type="Integer" default="60"
             description="The minimum time interval (in seconds) between source availability checks.  Source status will be pulled from cache if the minimum time has not passed." />
 
-        <AD name="Single Record Query Method" id="singleRecordQueryMethod" required="true" type="String" default="ID_URL"
-            description="The method to lookup the single metacard entry for ID searches">
-            <Option label="ID Element URL" value="ID_ELEMENT_URL" />
-            <Option label="Self Link Releation URL" value="SELF_LINK" />
-            <Option label="geo:uid Parameter Search" value="UID_PARAMETER" />
-        </AD>
+        <AD name="Wrap Metadata with XML Fragment" id="wrapMetadataWithXmlFragment" type="Boolean" default="false"
+            description="Check the box if you want the metadata to be wrapped with an xml-fragment tag.  This must be done if the metadata value returned is not valid XML" />
 
         <AD name="Metadata Link Relation" id="metadataLinkRelation" type="String" default="alternate"
             description="The link relation to use to populate the Metacard.METADATA element (leave blank if link relation not used)" />
 
-        <AD name="Product Link Relation" id="productLinkRelation" type="String" default="alternate"
+        <AD name="Product Link Relation" id="productLinkRelation" type="String" default="enclosure"
             description="The link relation to use to point to the Product" />
 
-        <AD name="Proxy URLs through Local Instance" id="proxyUrls" type="Boolean" default="false"
-            description="Check the box if you want all product, metadata, thumbnail URLs to be returned as local URLs referencing the existing server.  This should be checked if it is expected
+        <AD name="Thumbnail Link Relation" id="thumbnailLinkRelation" type="String" default="preview"
+            description="The link relation to use to populate the Metacard.THUMBNAIL element (leave blank if link relation not used)" />
+
+        <AD name="Proxy Product URLs through Local Node" id="proxyProductUrls" type="Boolean" default="false"
+            description="Check the box if you want all product URLs to be returned as local URLs referencing the existing server.  This should be checked if it is expected
             that the client would not be able to directly access URLs that are pointing to the remote data source (e.g. if there were firewalls inplace that would prohibit the access from 
             the client machine web browser)" />
 
@@ -107,7 +108,9 @@
 
         <AD name="sru:sortKeys" id="sortKeysParameter" type="String" default="sortKeys"
             description="HTTP Parameter to use for the sru:sortKeys value (empty means it's not supported)" />
-
+        
+        <AD name="Result Cache Expires" id="cacheExpirationMinutes" type="Long" default="60"
+            description="If the geo:uid parameter is not populated/supported, the results will be cached which will enable lookups by ID.  This specifies the number of minutes before the results are removed from the cache" />
 
     </OCD>
 

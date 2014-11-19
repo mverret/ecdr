@@ -17,7 +17,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.net.URI;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -29,8 +28,8 @@ import net.di2e.ecdr.commons.CDRMetacard;
 import net.di2e.ecdr.commons.filter.config.FilterConfig;
 import net.di2e.ecdr.commons.response.SearchResponseTransformer;
 import net.di2e.ecdr.search.transform.atom.constants.AtomResponseConstants;
-
 import net.di2e.ecdr.search.transform.atom.geo.AbderaConverter;
+
 import org.apache.abdera.Abdera;
 import org.apache.abdera.ext.geo.Position;
 import org.apache.abdera.ext.opensearch.OpenSearchConstants;
@@ -114,10 +113,11 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
 
         String id = entry.getIdElement().getText();
         // id may be formatted catalog:id:<id>, so we parse out the <id>
-        if ( StringUtils.isNotBlank( id ) && (id.startsWith( "urn:uuid:" ) || id.startsWith( "urn:catalog:id:" )) ) {
-            id = id.substring( id.lastIndexOf( ':' ) + 1 );
+        if (StringUtils.isNotBlank(id)
+                && (id.startsWith("urn:uuid:") || id.startsWith("urn:catalog:id:"))) {
+            id = id.substring(id.lastIndexOf(':') + 1);
         }
-        metacard.setId( URLEncoder.encode( id ) );
+        metacard.setId( id );
 
         // Set the source to the original source name
         // TODO revist this
@@ -153,6 +153,9 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
         }
 
         String metadata = entry.getContent();
+        if ( filterConfig.isWrapMetadata() ) {
+            metadata = "<xml-fragment>" + metadata + "</xml-fragment>";
+        }
         metacard.setMetadata( metadata );
 
         metacard.setLocation( getWKT( entry ) );
@@ -178,19 +181,22 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
             }
         }
 
-        List<Link> links = entry.getLinks( CDRMetacard.LINK_REL_PREVIEW );
-        if ( links != null && !links.isEmpty() ) {
-            for ( Link link : links ) {
-                MimeType mimeType = link.getMimeType();
-                if ( mimeType != null && "image".equals( mimeType.getPrimaryType() ) ) {
+        String thumbnailLinkRel = filterConfig.getThumbnailLinkRelation();
+        if ( thumbnailLinkRel != null ) {
+            List<Link> links = entry.getLinks( thumbnailLinkRel );
+            if ( links != null && !links.isEmpty() ) {
+                for ( Link link : links ) {
+                    MimeType mimeType = link.getMimeType();
+                    if ( mimeType == null || "image".equals( mimeType.getPrimaryType() ) ) {
 
-                    metacard.setAttribute( CDRMetacard.THUMBNAIL_LINK, URI.create( link.getHref().toASCIIString() ) );
-                    long thumbnailSize = link.getLength();
-                    if ( thumbnailSize > 0 ) {
-                        metacard.setAttribute( CDRMetacard.THUMBNAIL_LENGTH, Long.valueOf( thumbnailSize ) );
+                        metacard.setAttribute( CDRMetacard.THUMBNAIL_LINK, URI.create( link.getHref().toASCIIString() ) );
+                        long thumbnailSize = link.getLength();
+                        if ( thumbnailSize > 0 ) {
+                            metacard.setAttribute( CDRMetacard.THUMBNAIL_LENGTH, Long.valueOf( thumbnailSize ) );
+                        }
+                        metacard.setAttribute( CDRMetacard.THUMBNAIL_MIMETYPE, link.getMimeType() );
+                        metacard.setAttribute( CDRMetacard.THUMBNAIL_LINK_TITLE, link.getTitle() );
                     }
-                    metacard.setAttribute( CDRMetacard.THUMBNAIL_MIMETYPE, link.getMimeType() );
-                    metacard.setAttribute( CDRMetacard.THUMBNAIL_LINK_TITLE, link.getTitle() );
                 }
             }
         }

@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URI;
-import java.net.URLDecoder;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -33,7 +32,6 @@ import javax.ws.rs.core.Response.Status;
 
 import net.di2e.ecdr.commons.filter.StrictFilterDelegate;
 import net.di2e.ecdr.commons.filter.config.FilterConfig;
-import net.di2e.ecdr.commons.filter.config.FilterConfig.SingleRecordQueryMethod;
 import net.di2e.ecdr.commons.util.SearchConstants;
 import net.di2e.ecdr.search.api.DynamicExternalSource;
 import net.di2e.ecdr.search.transform.atom.response.AtomResponseTransformer;
@@ -103,11 +101,14 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
     private int maxResultsCount = 0;
     private String defaultResponseFormat = null;
 
+
+
     private CxfSSLClientConfiguration sslClientConfig = null;
 
     public AbstractCDRSource( FilterAdapter adapter, CxfSSLClientConfiguration sslClient ) {
         this.filterAdapter = adapter;
         this.sslClientConfig = sslClient;
+
     }
 
     public abstract Map<String, String> getDynamicUrlParameterMap();
@@ -116,39 +117,51 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
 
     public abstract FilterConfig getFilterConfig();
 
+    public abstract SourceResponse enhanceResults( SourceResponse response );
+
+    public abstract SourceResponse lookupById( QueryRequest queryRequest, String id );
+
     @Override
     public SourceResponse query( QueryRequest queryRequest ) throws UnsupportedQueryException {
         try {
+            
             Query query = queryRequest.getQuery();
             // TODO Add in default radius
             Map<String, String> filterParameters = filterAdapter.adapt( query, new StrictFilterDelegate( false, 50000.00, getFilterConfig() ) );
+            String id = filterParameters.get( SearchConstants.UID_PARAMETER );
+            SourceResponse sourceResponse = id == null ? null : lookupById( queryRequest, id );
+            if ( sourceResponse == null ) {
+                // Check to see if this is a remote Metacard Lookup
+                // Response response = getResponseIfRemoteMetacard( filterParameters );
+                Response response = null;
 
-            // Check to see if this is a remote Metacard Lookup
-            Response response = getResponseIfRemoteMetacard( filterParameters );
+                // If the custom metacard lookup didn't produce anything, then down
+                // the normal query path
+                if ( response == null ) {
+                    filterParameters.putAll( getIntialFilterParameters( queryRequest ) );
+                    setURLQueryString( filterParameters );
 
-            // If the custom metacard lookup didn't produce anything, then down
-            // the normal query path
-            if ( response == null ) {
-                filterParameters.putAll( getIntialFilterParameters( queryRequest ) );
-                setURLQueryString( filterParameters );
-
-                LOGGER.debug( "Executing http GET query to source [{}] with url [{}]", getId(), cdrRestClient.getCurrentURI().toString() );
-                response = cdrRestClient.get();
-                LOGGER.debug( "Query to source [{}] returned http status code [{}] and media type [{}]", getId(), response.getStatus(), response.getMediaType() );
-            }
-
-            if ( response.getStatus() == Status.OK.getStatusCode() ) {
-                AtomResponseTransformer transformer = new AtomResponseTransformer( getFilterConfig() );
-                // TODO check why "atom" is passed in here
-                SourceResponse sourceResponse = transformer.processSearchResponse( (InputStream) response.getEntity(), "atom", queryRequest, getId() );
-                return sourceResponse;
-            } else {
-                Object entity = response.getEntity();
-                if ( entity != null ) {
-                    LOGGER.warn( "Error recieved when querying site [{}] \n[{}]", getId(), IOUtils.toString( (InputStream) entity ) );
+                    LOGGER.debug( "Executing http GET query to source [{}] with url [{}]", getId(), cdrRestClient.getCurrentURI().toString() );
+                    response = cdrRestClient.get();
+                    LOGGER.debug( "Query to source [{}] returned http status code [{}] and media type [{}]", getId(), response.getStatus(), response.getMediaType() );
                 }
-                throw new UnsupportedQueryException( "Query to remote source returned http status code " + response.getStatus() );
+
+                if ( response.getStatus() == Status.OK.getStatusCode() ) {
+                    AtomResponseTransformer transformer = new AtomResponseTransformer( getFilterConfig() );
+                    // TODO check why "atom" is passed in here
+                    sourceResponse = transformer.processSearchResponse( (InputStream) response.getEntity(), "atom", queryRequest, getId() );
+                    // TODO update this with better cahce
+                    enhanceResults( sourceResponse );
+
+                } else {
+                    Object entity = response.getEntity();
+                    if ( entity != null ) {
+                        LOGGER.warn( "Error recieved when querying site [{}] \n[{}]", getId(), IOUtils.toString( (InputStream) entity ) );
+                    }
+                    throw new UnsupportedQueryException( "Query to remote source returned http status code " + response.getStatus() );
+                }
             }
+            return sourceResponse;
 
         } catch ( Exception e ) {
             LOGGER.error( e.getMessage(), e );
@@ -157,17 +170,17 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
 
     }
 
-    private Response getResponseIfRemoteMetacard( Map<String, String> filterParameters ) {
-        Response response = null;
-        String metacardUrl = filterParameters.get( SingleRecordQueryMethod.ID_ELEMENT_URL.toString() );
-        if ( metacardUrl != null ) {
-            metacardUrl = URLDecoder.decode( metacardUrl );
-            LOGGER.debug( "Retreiving the metadata from the following url [{}]", metacardUrl );
-            response = WebClient.create( metacardUrl ).get();
-        }
+    // private Response getResponseIfRemoteMetacard( Map<String, String> filterParameters ) {
+    // Response response = null;
+    // String metacardUrl = filterParameters.get( SingleRecordQueryMethod.ID_ELEMENT_URL.toString() );
+    // if ( metacardUrl != null ) {
+    // metacardUrl = URLDecoder.decode( metacardUrl );
+    // LOGGER.debug( "Retreiving the metadata from the following url [{}]", metacardUrl );
+    // response = WebClient.create( metacardUrl ).get();
+    // }
         // TODO support self link releation URL
-        return response;
-    }
+    // return response;
+    // }
 
     @Override
     public boolean isAvailable() {
@@ -443,7 +456,6 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
                 conduit.getClient().setConnectionTimeout( connectionTimeout );
                 conduit.setTlsClientParameters( sslClientConfig.getTLSClientParameters() );
             }
-
 
         } else {
             LOGGER.warn( "OpenSearch Source Endpoint URL is not a valid value, so cannot update [{}]", endpointUrl );
