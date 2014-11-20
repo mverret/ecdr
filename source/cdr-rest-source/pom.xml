@@ -34,6 +34,12 @@
             <artifactId>cdr-rest-search-commons</artifactId>
             <version>${project.version}</version>
         </dependency>
+        
+        <dependency>
+            <groupId>net.di2e.ecdr.libs</groupId>
+            <artifactId>cdr-libs-cache</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>net.di2e.ecdr.transformer</groupId>
@@ -126,7 +132,8 @@
                             joda-time,
                             commons-net,
                             hazelcast,
-                            cache-api
+                            cache-api,
+                            cdr-libs-cache,
                         </Embed-Dependency>
                         <Import-Package>
                             !org.joda.convert,

@@ -10,14 +10,14 @@
  * <http://www.gnu.org/licenses/lgpl.html>.
  * 
  **/
-package net.di2e.ecdr.source.rest.cache;
+package net.di2e.ecdr.libs.cache;
 
-public interface CacheManager<T> {
 
-    Cache<T> createCacheInstance( String cacheId );
-
-    void removeCacheInstance( String cacheId );
+public interface Cache<T> {
+    
+    void put( String id, T metacard );
+    
+    T get( String id );
 
     void destroy();
-
 }

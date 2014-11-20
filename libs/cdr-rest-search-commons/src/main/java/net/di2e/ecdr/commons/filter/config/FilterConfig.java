@@ -14,15 +14,28 @@ package net.di2e.ecdr.commons.filter.config;
 
 public class FilterConfig {
 
+    public enum AtomContentXmlWrapOption {
+        ALWAYS_WRAP, NEVER_WRAP, WRAP_HTML_AND_TEXT
+    }
+
     private String thumbnailLinkRelation = null;
     private String metadataLinkRelation = null;
     private String productLinkRelation = null;
 
     private boolean zeroBasedStartIndex = false;
     private boolean proxyProductUrl = false;
-    private boolean wrapXml = false;
+
+    private AtomContentXmlWrapOption wrapOption = AtomContentXmlWrapOption.NEVER_WRAP;
 
     public FilterConfig() {
+    }
+
+    public AtomContentXmlWrapOption getAtomContentXmlWrapOption() {
+        return wrapOption;
+    }
+
+    public void setAtomContentXmlWrapOption( AtomContentXmlWrapOption option ) {
+        wrapOption = option;
     }
 
     public void setMetadataLinkRelation( String rel ) {
@@ -55,14 +68,6 @@ public class FilterConfig {
 
     public boolean isProxyProductUrl() {
         return proxyProductUrl;
-    }
-
-    public void setWrapMetadata( boolean wrap ) {
-        wrapXml = wrap;
-    }
-
-    public boolean isWrapMetadata() {
-        return wrapXml;
     }
 
     public void setZeroBasedStartIndex( boolean zeroBased ) {

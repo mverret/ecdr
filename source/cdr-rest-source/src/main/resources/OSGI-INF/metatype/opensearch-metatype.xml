@@ -50,8 +50,13 @@
         <AD name="Minimum Source Ping Interval" id="availableCheckCacheTime" required="true" type="Integer" default="60"
             description="The minimum time interval (in seconds) between source availability checks.  Source status will be pulled from cache if the minimum time has not passed." />
 
-        <AD name="Wrap Metadata with XML Fragment" id="wrapMetadataWithXmlFragment" type="Boolean" default="false"
-            description="Check the box if you want the metadata to be wrapped with an xml-fragment tag.  This must be done if the metadata value returned is not valid XML" />
+        <AD name="Wrap Atom Content with XML Fragment" id="wrapContentWithXmlOption" type="String" default="NEVER_WRAP"
+            description="Check the box if you want the atom content value to be wrapped with an xml-fragment tag.  This must be done if the metadata value returned is not valid XML, 
+            for instance if it is Html and doesn't have asingle root element">
+            <Option label="Never Wrap the Content Value" value="NEVER_WRAP" />
+            <Option label="Always Wrap the Content Value" value="ALWAYS_WRAP" />
+            <Option label="Only Wrap HTML and Text Content Values" value="WRAP_HTML_AND_TEXT" />
+        </AD>
 
         <AD name="Metadata Link Relation" id="metadataLinkRelation" type="String" default="alternate"
             description="The link relation to use to populate the Metacard.METADATA element (leave blank if link relation not used)" />

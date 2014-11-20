@@ -119,7 +119,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
 
     public abstract SourceResponse enhanceResults( SourceResponse response );
 
-    public abstract SourceResponse lookupById( QueryRequest queryRequest, String id );
+    public abstract SourceResponse lookupById( QueryRequest queryRequest, String id ) throws UnsupportedQueryException;
 
     @Override
     public SourceResponse query( QueryRequest queryRequest ) throws UnsupportedQueryException {
@@ -129,8 +129,11 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
             // TODO Add in default radius
             Map<String, String> filterParameters = filterAdapter.adapt( query, new StrictFilterDelegate( false, 50000.00, getFilterConfig() ) );
             String id = filterParameters.get( SearchConstants.UID_PARAMETER );
-            SourceResponse sourceResponse = id == null ? null : lookupById( queryRequest, id );
-            if ( sourceResponse == null ) {
+
+            SourceResponse sourceResponse = null;
+            if ( id != null && !getDynamicUrlParameterMap().containsKey( SearchConstants.UID_PARAMETER ) ) {
+                sourceResponse = lookupById( queryRequest, id );
+            } else {
                 // Check to see if this is a remote Metacard Lookup
                 // Response response = getResponseIfRemoteMetacard( filterParameters );
                 Response response = null;
@@ -151,7 +154,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
                     // TODO check why "atom" is passed in here
                     sourceResponse = transformer.processSearchResponse( (InputStream) response.getEntity(), "atom", queryRequest, getId() );
                     // TODO update this with better cahce
-                    enhanceResults( sourceResponse );
+                    sourceResponse = enhanceResults( sourceResponse );
 
                 } else {
                     Object entity = response.getEntity();
@@ -265,6 +268,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
         }
 
         if ( uri != null ) {
+            LOGGER.debug( "Retrieving the remote resource using the uri [{}]", uri );
             WebClient retreiveWebClient = WebClient.create( uri );
             Long bytesToSkip = null;
             // If a bytesToSkip property is present add range header

@@ -10,42 +10,48 @@
  * <http://www.gnu.org/licenses/lgpl.html>.
  * 
  **/
-package net.di2e.ecdr.source.rest.cache.impl;
+package net.di2e.ecdr.libs.cache.impl;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import net.di2e.ecdr.source.rest.cache.Cache;
+import net.di2e.ecdr.libs.cache.Cache;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class LRUCache<T> implements Cache<T> {
+public class MemoryCache<T> implements Cache<T> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger( LRUCache.class );
+    private static final Logger LOGGER = LoggerFactory.getLogger( MemoryCache.class );
+
     private LRUCacheMap<String, T> metacardCache = null;
 
-    public LRUCache( int size ) {
+    public MemoryCache( int size ) {
         metacardCache = new LRUCacheMap<String, T>( size );
     }
 
     @Override
     public void put( String id, T entry ) {
         LOGGER.debug( "Adding entry to cache with id [{}]", id );
-        metacardCache.put( id, entry );
+        synchronized ( metacardCache ) {
+            metacardCache.put( id, entry );
+        }
     }
 
     @Override
     public void destroy() {
-        metacardCache.clear();
+        synchronized ( metacardCache ) {
+            metacardCache.clear();
+        }
     }
 
     @Override
     public T get( String id ) {
         LOGGER.debug( "Searching cache for entry with id [{}]", id );
-        return metacardCache.get( id );
+        synchronized ( metacardCache ) {
+            return metacardCache.get( id );
+        }
     }
-
 
     public class LRUCacheMap<K, V> extends LinkedHashMap<K, V> {
 

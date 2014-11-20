@@ -64,8 +64,6 @@ public class CDRRestBrokerServiceImpl implements RegistrableService {
 
     public static final String NO_QUERY_PARAMETERS_MESSAGE = "The query did not contain any of the required critera, one of the following is required [searchTerms, geospatial, or temporal]";
 
-    // private static final String RETRIEVE_PROXY_RELATIVE_URL = "/retrieve";
-
     private CatalogFramework catalogFramework = null;
     private ConfigurationWatcherImpl platformConfig = null;
     private FilterBuilder filterBuilder = null;
@@ -122,7 +120,6 @@ public class CDRRestBrokerServiceImpl implements RegistrableService {
             CDRQueryImpl query = new CDRQueryImpl(filterBuilder, queryParameters, queryParser, false, localSourceId);
 
             Map<String, Serializable> queryProperties = queryParser.getQueryProperties(queryParameters, localSourceId);
-            // queryProperties.put(SearchConstants.LOCAL_RETRIEVE_URL_PREFIX, RETRIEVE_PROXY_RELATIVE_URL + "?url=");
 
             Collection<String> siteNames = query.getSiteNames();
             SortBy sortBy = queryParser.getSortBy(queryParameters);
@@ -140,10 +137,6 @@ public class CDRRestBrokerServiceImpl implements RegistrableService {
 
             // Broker Specific
             transformerProperties.put(SearchConstants.STATUS_PARAMETER, queryParameters.getFirst(SearchConstants.STATUS_PARAMETER));
-
-            //TODO ECDR-22
-            // transformerProperties.put(BrokerConstants.BROKER_RETRIEVE_URL, uriInfo.getBaseUri() +
-            // RETRIEVE_PROXY_RELATIVE_URL + "?url=");
 
             String internalTransformFormat = transformMapper.getQueryResponseTransformValue( format );
             transformerProperties.put( SearchConstants.METACARD_TRANSFORMER_NAME, transformMapper.getMetacardTransformValue( format ) );
@@ -170,15 +163,6 @@ public class CDRRestBrokerServiceImpl implements RegistrableService {
 
         return response;
     }
-
-    // @GET
-    // @Path(RETRIEVE_PROXY_RELATIVE_URL)
-    // public Response retrieve(@QueryParam("url") String remoteURL) throws UnsupportedEncodingException {
-    // String url = URLDecoder.decode(remoteURL, "UTF-8");
-        // TODO change to HTTP Client
-    // WebClient client = WebClient.create(url);
-    // return client.get();
-    // }
 
     @Override
     public String getServiceType() {

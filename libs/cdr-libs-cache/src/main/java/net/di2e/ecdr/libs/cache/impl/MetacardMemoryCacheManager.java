@@ -10,39 +10,37 @@
  * <http://www.gnu.org/licenses/lgpl.html>.
  * 
  **/
-package net.di2e.ecdr.source.rest.cache.impl;
+package net.di2e.ecdr.libs.cache.impl;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import net.di2e.ecdr.source.rest.cache.Cache;
-import net.di2e.ecdr.source.rest.cache.CacheManager;
+import net.di2e.ecdr.libs.cache.Cache;
+import net.di2e.ecdr.libs.cache.CacheManager;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ddf.catalog.data.Metacard;
 
-public class LRUMetacardCacheManager implements CacheManager<Metacard> {
+public class MetacardMemoryCacheManager implements CacheManager<Metacard> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger( LRUMetacardCacheManager.class );
+    private static final Logger LOGGER = LoggerFactory.getLogger( MetacardMemoryCacheManager.class );
     private Map<String, Cache<Metacard>> cacheList = new HashMap<String, Cache<Metacard>>();;
-    private int cacheSize = 5000;
 
-    public LRUMetacardCacheManager( int size ) {
-        LOGGER.debug( "Creating a new LRUMetacardCacheManager with cache instances that will hold a maximum of [{}] entries", size );
-        cacheSize = size;
+    public MetacardMemoryCacheManager() {
+        LOGGER.debug( "Creating a new LRUMetacardCacheManager for Metacard cache" );
     }
 
     @Override
-    public Cache<Metacard> createCacheInstance( String cacheId ) {
+    public Cache<Metacard> createCacheInstance( String cacheId, Map<String, Object> cacheProperties ) {
         if ( cacheId == null ) {
             throw new IllegalArgumentException( "CacheId cannot be null when calling the LRUCache.createCache method" );
         } else if ( cacheList.containsKey( cacheId ) ) {
             throw new IllegalArgumentException( "CacheId with the name [" + cacheId + "] already exists, each cache instance must have a unique name" );
         }
-        Cache<Metacard> cache = new LRUCache<Metacard>( cacheSize );
+        Cache<Metacard> cache = new MemoryCache<Metacard>( getSize( cacheProperties ) );
         cacheList.put( cacheId, cache );
         return cache;
     }
@@ -60,6 +58,28 @@ public class LRUMetacardCacheManager implements CacheManager<Metacard> {
     public void removeCacheInstance( String cacheId ) {
         LOGGER.debug( "Removing the cache instance [{}]", cacheId );
         cacheList.remove( cacheId );
+    }
+
+    protected int getSize( Map<String, Object> cacheProperties ) {
+        int size = -1;
+        if ( cacheProperties != null ) {
+            Object cacheSize = cacheProperties.get( net.di2e.ecdr.libs.cache.CacheManager.CACHE_SIZE );
+            if ( cacheSize != null ) {
+                if ( cacheSize instanceof Integer ) {
+                    LOGGER.debug( "Setting cache maximum size of newly created cache to [{}] entries", cacheSize );
+                    size = (Integer) cacheSize;
+                } else {
+                    LOGGER.warn( "Cache property [{}] was not the expected type of Integer, instead it was [{}]", net.di2e.ecdr.libs.cache.CacheManager.CACHE_SIZE, cacheSize.getClass()
+                            .getName() );
+                }
+            }
+        }
+        if ( size < 0 ) {
+            size = 5000;
+            LOGGER.debug( "Duration was not passed into cache creation, so defaulting to cache of [{}] minutes", size );
+
+        }
+        return size;
     }
 
 }

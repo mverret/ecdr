@@ -10,14 +10,19 @@
  * <http://www.gnu.org/licenses/lgpl.html>.
  * 
  **/
-package net.di2e.ecdr.source.rest.cache;
+package net.di2e.ecdr.libs.cache;
 
+import java.util.Map;
 
-public interface Cache<T> {
-    
-    void put( String id, T metacard );
-    
-    T get( String id );
+public interface CacheManager<T> {
+
+    String CACHE_EXPIRE_AFTER_MINUTES = "cache-expire-after-minutes";
+    String CACHE_SIZE = "cache-size";
+
+    Cache<T> createCacheInstance( String cacheId, Map<String, Object> cacheProperties );
+
+    void removeCacheInstance( String cacheId );
 
     void destroy();
+
 }

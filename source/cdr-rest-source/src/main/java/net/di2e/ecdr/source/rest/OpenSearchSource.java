@@ -15,15 +15,16 @@ package net.di2e.ecdr.source.rest;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import net.di2e.ecdr.commons.filter.config.FilterConfig;
+import net.di2e.ecdr.commons.filter.config.FilterConfig.AtomContentXmlWrapOption;
 import net.di2e.ecdr.commons.util.SearchConstants;
+import net.di2e.ecdr.libs.cache.Cache;
+import net.di2e.ecdr.libs.cache.CacheManager;
 import net.di2e.ecdr.security.ssl.client.cxf.CxfSSLClientConfiguration;
-import net.di2e.ecdr.source.rest.cache.Cache;
-import net.di2e.ecdr.source.rest.cache.CacheManager;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.ws.security.util.UUIDGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +35,7 @@ import ddf.catalog.filter.FilterAdapter;
 import ddf.catalog.operation.QueryRequest;
 import ddf.catalog.operation.SourceResponse;
 import ddf.catalog.operation.impl.SourceResponseImpl;
+import ddf.catalog.source.UnsupportedQueryException;
 
 public class OpenSearchSource extends AbstractCDRSource {
 
@@ -72,7 +74,7 @@ public class OpenSearchSource extends AbstractCDRSource {
     }
 
     @Override
-    public SourceResponse lookupById( QueryRequest queryRequest, String id ) {
+    public SourceResponse lookupById( QueryRequest queryRequest, String id ) throws UnsupportedQueryException {
         SourceResponse sourceResponse = null;
         LOGGER.debug( "Checking cache for Result with id [{}].", id );
         Metacard metacard = metacardCache.get( id );
@@ -81,6 +83,7 @@ public class OpenSearchSource extends AbstractCDRSource {
             sourceResponse = new SourceResponseImpl( queryRequest, Arrays.asList( (Result) new ResultImpl( metacard ) ), 1L );
         } else {
             LOGGER.debug( "Could not find result id [{}] in cache", id );
+            throw new UnsupportedQueryException( "Queries for parameter uid are not supported by source [" + getId() + "]" );
         }
         return sourceResponse;
     }
@@ -128,9 +131,9 @@ public class OpenSearchSource extends AbstractCDRSource {
         filterConfig.setProxyProductUrl( proxy );
     }
 
-    public void setWrapMetadataWithXmlFragment( boolean wrapXml ) {
-        LOGGER.debug( "ConfigUpdate: Updating the wrapMetadataWithXmlFragment value from [{}] to [{}]", filterConfig.isWrapMetadata(), wrapXml );
-        filterConfig.setWrapMetadata( wrapXml );
+    public void setWrapContentWithXmlOption( String option ) {
+        LOGGER.debug( "ConfigUpdate: Updating the WrapContentWithXmlOption value from [{}] to [{}]", filterConfig.getAtomContentXmlWrapOption(), option );
+        filterConfig.setAtomContentXmlWrapOption( AtomContentXmlWrapOption.valueOf( option ) );
     }
 
     public void setSearchTermsParameter( String param ) {
@@ -232,9 +235,10 @@ public class OpenSearchSource extends AbstractCDRSource {
                 metacardCache.destroy();
                 cacheManager.removeCacheInstance( cacheId );
             }
-            cacheId = getId() + "-" + UUIDGenerator.getUUID();
+            cacheId = getId() + "-" + UUID.randomUUID();
             LOGGER.debug( "ConfigUpdate: Creating a cache with id [{}] for Metacard id lookups for source [{}] with an cache expiration time of [{}] minutes", cacheId, getId(), minutes );
-            metacardCache = cacheManager.createCacheInstance( cacheId );
+            // TODO populate the cache porperties via config
+            metacardCache = cacheManager.createCacheInstance( cacheId, null );
         }
     }
 

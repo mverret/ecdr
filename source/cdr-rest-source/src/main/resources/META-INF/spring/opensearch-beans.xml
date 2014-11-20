@@ -50,8 +50,7 @@
 
     </osgix:managed-service-factory>
     
-    <beans:bean id="metacardCacheManager" class="net.di2e.ecdr.source.rest.cache.impl.LRUMetacardCacheManager" destroy-method="destroy">
-        <beans:constructor-arg value="5000" type="int"/>
+    <beans:bean id="metacardCacheManager" class="net.di2e.ecdr.libs.cache.impl.MetacardJCacheManager" destroy-method="destroy">
     </beans:bean>
 
     <beans:bean id="cdr-os-identifier" class="net.di2e.ecdr.search.api.impl.SimpleDynamicServiceIdentifier">
