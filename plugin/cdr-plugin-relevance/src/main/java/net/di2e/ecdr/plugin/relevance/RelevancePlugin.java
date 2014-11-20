@@ -25,6 +25,7 @@ import ddf.catalog.util.impl.RelevanceResultComparator;
 import net.di2e.ecdr.commons.filter.StrictFilterDelegate;
 import net.di2e.ecdr.commons.filter.config.FilterConfig;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.StopWatch;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -34,6 +35,7 @@ import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
@@ -71,8 +73,10 @@ public class RelevancePlugin implements PostQueryPlugin {
     public QueryResponse process( QueryResponse queryResponse ) throws PluginExecutionException, StopProcessingException {
 
         SortBy sortBy = queryResponse.getRequest().getQuery().getSortBy();
+        String searchPhrase = getSearchPhrase( queryResponse.getRequest().getQuery() );
 
-        if ( sortBy != null && sortBy.getPropertyName() != null && Result.RELEVANCE.equals( sortBy.getPropertyName().getPropertyName() ) ) {
+        if ( sortBy != null && sortBy.getPropertyName() != null && Result.RELEVANCE.equals( sortBy.getPropertyName().getPropertyName() ) && StringUtils
+            .isNotBlank( searchPhrase ) ) {
             LOGGER.debug( "Response has RELEVANCE sorting, performing re-indexing to normalize relevance." );
             Directory directory = null;
             DirectoryReader ireader = null;
@@ -81,7 +85,6 @@ public class RelevancePlugin implements PostQueryPlugin {
             StopWatch stopWatch = new StopWatch();
             stopWatch.start();
             try {
-                String searchPhrase = getSearchPhrase( queryResponse.getRequest().getQuery() );
                 Analyzer analyzer = new StandardAnalyzer();
 
                 // create memory-stored index
@@ -101,7 +104,7 @@ public class RelevancePlugin implements PostQueryPlugin {
                     docMap.put( id, curResult );
                 }
 
-                iwriter.close();
+                IOUtils.closeQuietly( iwriter );
                 LOGGER.debug( "{} Document indexing finished in {} seconds.", RELEVANCE_TIMER, (double) stopWatch.getTime() / 1000.0 );
                 // Now search the index:
                 ireader = DirectoryReader.open( directory );
@@ -121,17 +124,13 @@ public class RelevancePlugin implements PostQueryPlugin {
                 }
 
                 // resort results based on new scores
-                Collections.sort( updatedResults, new RelevanceResultComparator(sortBy.getSortOrder()) );
+                Collections.sort( updatedResults, new RelevanceResultComparator( sortBy.getSortOrder() ) );
 
                 // create new query response
                 queryResponse = new QueryResponseImpl( queryResponse.getRequest(), updatedResults, true, queryResponse.getHits(), queryResponse.getProperties() );
 
-            } catch ( UnsupportedQueryException uqe ) {
-                LOGGER.debug( "Query could not be properly parsed, skipping re-relevance processing.", uqe );
-            } catch ( IOException ioe ) {
-                LOGGER.warn( "Got an exception while trying to reindex.", ioe );
-            } catch ( Exception e ) {
-                LOGGER.warn( "Got a random exception.", e );
+            } catch ( IOException | ParseException e ) {
+                LOGGER.warn( "Received an exception while trying to perform re-indexing, sending original queryResponse on.", e );
             } finally {
                 IOUtils.closeQuietly( ireader );
                 IOUtils.closeQuietly( directory );
@@ -139,23 +138,42 @@ public class RelevancePlugin implements PostQueryPlugin {
                 LOGGER.debug( "{} Total relevance process took {} seconds.", RELEVANCE_TIMER, (double) stopWatch.getTime() / 1000.0 );
             }
         } else {
-            LOGGER.debug( "Query is not sorted based on relevance. Skipping re-relevance plugin." );
+            LOGGER.debug( "Query is not sorted based on relevance with contextual criteria. Skipping re-relevance plugin." );
         }
         return queryResponse;
     }
 
-    private String getSearchPhrase( ddf.catalog.operation.Query query ) throws UnsupportedQueryException {
-        Map<String, String> filterParameters = filterAdapter.adapt( query, new StrictFilterDelegate( false, 50000.00, new FilterConfig() ) );
-        if ( filterParameters.containsKey( PHRASE_KEY ) ) {
-            return filterParameters.get( PHRASE_KEY );
-        } else {
-            throw new UnsupportedQueryException( "Contextual phrase not found in query, cannot perform re-relevance on query." );
+    /**
+     * Pull out the string-based search phrase from a query.
+     *
+     * @param query Query that possibly contains a search phrase.
+     * @return Search phrase or null if no search phrase was found.
+     */
+    private String getSearchPhrase( ddf.catalog.operation.Query query ) {
+        try {
+            Map<String, String> filterParameters = filterAdapter
+                .adapt( query, new StrictFilterDelegate( false, 50000.00, new FilterConfig() ) );
+            if ( filterParameters.containsKey( PHRASE_KEY ) ) {
+                return filterParameters.get( PHRASE_KEY );
+            }
+        } catch ( UnsupportedQueryException uqe ) {
+            LOGGER.debug( "Query did not contain any contextual criteria (search phrases), cannot perform re-relevance on this query." );
         }
+
+        return null;
     }
 
+    /**
+     * Creates a new result with an updated score.
+     *
+     * @param origResult Original result that contains an older score.
+     * @param newScore   New score to update the result with.
+     * @return Result with updated score.
+     */
     private Result updateResult( Result origResult, float newScore ) {
         ResultImpl result = new ResultImpl( origResult.getMetacard() );
         result.setRelevanceScore( new Double( newScore ) );
+        result.setDistanceInMeters( origResult.getDistanceInMeters() );
         return result;
     }
 
