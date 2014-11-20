@@ -22,16 +22,15 @@ import net.di2e.ecdr.commons.CDRMetacard;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
 import org.codice.ddf.configuration.impl.ConfigurationWatcherImpl;
-import org.osgi.framework.BundleContext;
 
 import ddf.action.ActionProvider;
 import ddf.catalog.operation.SourceResponse;
 
 public class AtomTransformer extends AbstractAtomTransformer {
 
-    public AtomTransformer( BundleContext bundleContext, ConfigurationWatcherImpl configWatcher, ActionProvider viewMetacardProvider, ActionProvider resourceProvider,
+    public AtomTransformer( ConfigurationWatcherImpl configWatcher, ActionProvider viewMetacardProvider, ActionProvider resourceProvider,
             ActionProvider thumbnailProvider, MimeType thumbnailMime, MimeType viewMime ) {
-        super( bundleContext, configWatcher, viewMetacardProvider, resourceProvider, thumbnailProvider, thumbnailMime, viewMime );
+        super( configWatcher, viewMetacardProvider, resourceProvider, thumbnailProvider, thumbnailMime, viewMime );
     }
 
     @Override

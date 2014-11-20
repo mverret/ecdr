@@ -44,7 +44,6 @@
 
     <bean id="atomPayloadTransformer" class="net.di2e.ecdr.search.transform.atom.AtomTransformerWithPayload">
         <cm:managed-properties persistent-id="cdr-atom-result-xformer" update-strategy="container-managed" />
-        <argument ref="blueprintBundleContext" />
         <argument ref="configurationWatcherAtom" />
         <argument ref="viewMetacardActionProvider" />
         <argument ref="resourceActionProvider" />
@@ -63,7 +62,6 @@
 
     <bean id="atomTransformer" class="net.di2e.ecdr.search.transform.atom.AtomTransformer">
         <cm:managed-properties persistent-id="cdr-atom-result-xformer" update-strategy="container-managed" />
-        <argument ref="blueprintBundleContext" />
         <argument ref="configurationWatcherAtom" />
         <argument ref="viewMetacardActionProvider" />
         <argument ref="resourceActionProvider" />

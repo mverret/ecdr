@@ -29,7 +29,6 @@ import org.apache.abdera.model.Feed;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.codice.ddf.configuration.impl.ConfigurationWatcherImpl;
-import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,9 +46,9 @@ public class AtomTransformerWithPayload extends AbstractAtomTransformer {
 
     private Map<String, MetacardTransformer> metacardTransformerMap = null;
 
-    public AtomTransformerWithPayload( BundleContext bundleContext, ConfigurationWatcherImpl configWatcher, ActionProvider viewMetacardProvider, ActionProvider resourceProvider,
+    public AtomTransformerWithPayload( ConfigurationWatcherImpl configWatcher, ActionProvider viewMetacardProvider, ActionProvider resourceProvider,
             ActionProvider thumbnailProvider, MimeType thumbnailMime, MimeType viewMime ) {
-        super( bundleContext, configWatcher, viewMetacardProvider, resourceProvider, thumbnailProvider, thumbnailMime, viewMime );
+        super( configWatcher, viewMetacardProvider, resourceProvider, thumbnailProvider, thumbnailMime, viewMime );
         metacardTransformerMap = new HashMap<String, MetacardTransformer>();
     }
 

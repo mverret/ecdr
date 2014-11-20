@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.Set;
 
 import net.di2e.ecdr.commons.filter.config.FilterConfig;
-import net.di2e.ecdr.commons.filter.config.FilterConfig.SingleRecordQueryMethod;
 import net.di2e.ecdr.commons.util.SearchConstants;
 
 import org.joda.time.format.DateTimeFormatter;
@@ -171,9 +170,10 @@ public class StrictFilterDelegate extends AbstractFilterDelegate<Map<String, Str
     @Override
     public Map<String, String> handlePropertyEqualToString( String propertyName, String literal, StringFilterOptions options ) {
         Map<String, String> filterContainer = new HashMap<String, String>();
-        if ( SingleRecordQueryMethod.ID_ELEMENT_URL.equals( getFilterConfig().getSingleRecordQueryMethod() ) && Metacard.ID.equals( propertyName ) ) {
-            filterContainer.put( SingleRecordQueryMethod.ID_ELEMENT_URL.toString(), literal );
-        } else {
+        // if ( SingleRecordQueryMethod.ID_ELEMENT_URL.equals( getFilterConfig().getSingleRecordQueryMethod() ) &&
+        // Metacard.ID.equals( propertyName ) ) {
+        // filterContainer.put( SingleRecordQueryMethod.ID_ELEMENT_URL.toString(), literal );
+        // } else {
             if ( handleKeyword( propertyName, literal, filterContainer ) ) {
                 if ( StringFilterOptions.CASE_SENSITIVE.equals( options ) ) {
                     filterContainer.put( SearchConstants.CASESENSITIVE_PARAMETER, "1" );
@@ -186,7 +186,7 @@ public class StrictFilterDelegate extends AbstractFilterDelegate<Map<String, Str
                     filterContainer.put( propertyName, literal );
                 }
             }
-        }
+        // }
         return filterContainer;
     }
 

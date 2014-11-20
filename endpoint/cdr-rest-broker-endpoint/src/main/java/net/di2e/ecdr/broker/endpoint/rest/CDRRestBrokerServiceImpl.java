@@ -13,8 +13,6 @@
 package net.di2e.ecdr.broker.endpoint.rest;
 
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -23,7 +21,6 @@ import javax.ws.rs.GET;
 import javax.ws.rs.HEAD;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
@@ -32,12 +29,10 @@ import javax.ws.rs.core.UriInfo;
 import net.di2e.ecdr.commons.query.rest.CDRQueryImpl;
 import net.di2e.ecdr.commons.query.rest.parsers.QueryParser;
 import net.di2e.ecdr.commons.query.util.QueryHelper;
-import net.di2e.ecdr.commons.util.BrokerConstants;
 import net.di2e.ecdr.commons.util.SearchConstants;
 import net.di2e.ecdr.search.api.RegistrableService;
 import net.di2e.ecdr.search.transform.mapper.TransformIdMapper;
 
-import org.apache.cxf.jaxrs.client.WebClient;
 import org.codice.ddf.configuration.impl.ConfigurationWatcherImpl;
 import org.opengis.filter.sort.SortBy;
 import org.slf4j.Logger;
@@ -68,8 +63,6 @@ public class CDRRestBrokerServiceImpl implements RegistrableService {
     private static final String SERVICE_TYPE = "CDR Brokered REST Search";
 
     public static final String NO_QUERY_PARAMETERS_MESSAGE = "The query did not contain any of the required critera, one of the following is required [searchTerms, geospatial, or temporal]";
-
-    private static final String RETRIEVE_PROXY_RELATIVE_URL = "/retrieve";
 
     private CatalogFramework catalogFramework = null;
     private ConfigurationWatcherImpl platformConfig = null;
@@ -127,7 +120,6 @@ public class CDRRestBrokerServiceImpl implements RegistrableService {
             CDRQueryImpl query = new CDRQueryImpl(filterBuilder, queryParameters, queryParser, false, localSourceId);
 
             Map<String, Serializable> queryProperties = queryParser.getQueryProperties(queryParameters, localSourceId);
-            queryProperties.put(SearchConstants.LOCAL_RETRIEVE_URL_PREFIX, RETRIEVE_PROXY_RELATIVE_URL + "?url=");
 
             Collection<String> siteNames = query.getSiteNames();
             SortBy sortBy = queryParser.getSortBy(queryParameters);
@@ -145,9 +137,6 @@ public class CDRRestBrokerServiceImpl implements RegistrableService {
 
             // Broker Specific
             transformerProperties.put(SearchConstants.STATUS_PARAMETER, queryParameters.getFirst(SearchConstants.STATUS_PARAMETER));
-
-            //TODO ECDR-22
-            transformerProperties.put(BrokerConstants.BROKER_RETRIEVE_URL, uriInfo.getBaseUri() + RETRIEVE_PROXY_RELATIVE_URL + "?url=");
 
             String internalTransformFormat = transformMapper.getQueryResponseTransformValue( format );
             transformerProperties.put( SearchConstants.METACARD_TRANSFORMER_NAME, transformMapper.getMetacardTransformValue( format ) );
@@ -173,15 +162,6 @@ public class CDRRestBrokerServiceImpl implements RegistrableService {
         }
 
         return response;
-    }
-
-    @GET
-    @Path(RETRIEVE_PROXY_RELATIVE_URL)
-    public Response retrieve(@QueryParam("url") String remoteURL) throws UnsupportedEncodingException {
-        String url = URLDecoder.decode(remoteURL, "UTF-8");
-        // TODO change to HTTP Client
-        WebClient client = WebClient.create(url);
-        return client.get();
     }
 
     @Override

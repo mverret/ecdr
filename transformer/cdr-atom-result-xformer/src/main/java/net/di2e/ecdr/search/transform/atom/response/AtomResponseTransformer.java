@@ -17,7 +17,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.net.URI;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -27,15 +26,17 @@ import javax.xml.namespace.QName;
 
 import net.di2e.ecdr.commons.CDRMetacard;
 import net.di2e.ecdr.commons.filter.config.FilterConfig;
+import net.di2e.ecdr.commons.filter.config.FilterConfig.AtomContentXmlWrapOption;
 import net.di2e.ecdr.commons.response.SearchResponseTransformer;
 import net.di2e.ecdr.search.transform.atom.constants.AtomResponseConstants;
-
 import net.di2e.ecdr.search.transform.atom.geo.AbderaConverter;
+
 import org.apache.abdera.Abdera;
 import org.apache.abdera.ext.geo.Position;
 import org.apache.abdera.ext.opensearch.OpenSearchConstants;
 import org.apache.abdera.i18n.iri.IRI;
 import org.apache.abdera.model.Category;
+import org.apache.abdera.model.Content;
 import org.apache.abdera.model.Document;
 import org.apache.abdera.model.Element;
 import org.apache.abdera.model.Entry;
@@ -117,12 +118,11 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
         if ( StringUtils.isNotBlank( id ) && (id.startsWith( "urn:uuid:" ) || id.startsWith( "urn:catalog:id:" )) ) {
             id = id.substring( id.lastIndexOf( ':' ) + 1 );
         }
-        metacard.setId( URLEncoder.encode( id ) );
+        metacard.setId( id );
 
         // Set the source to the original source name
         // TODO revist this
-        String resultSource = entry.getSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, AtomResponseConstants.RESULT_SOURCE_ELEMENT,
-                AtomResponseConstants.CDRB_NAMESPACE_PREFIX );
+        String resultSource = entry.getSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, AtomResponseConstants.RESULT_SOURCE_ELEMENT, AtomResponseConstants.CDRB_NAMESPACE_PREFIX );
         // metacard.setSourceId( resultSource == null ? siteName : resultSource
         // );
         metacard.setSourceId( siteName );
@@ -140,26 +140,40 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
         metacard.setModifiedDate( entry.getUpdated() );
         metacard.setEffectiveDate( entry.getPublished() );
 
-        String createdDate = entry.getSimpleExtension( new QName( AtomResponseConstants.METACARD_ATOM_NAMESPACE,
-                AtomResponseConstants.METACARD_CREATED_DATE_ELEMENT ) );
+        String createdDate = entry.getSimpleExtension( new QName( AtomResponseConstants.METACARD_ATOM_NAMESPACE, AtomResponseConstants.METACARD_CREATED_DATE_ELEMENT ) );
         if ( createdDate != null ) {
             metacard.setCreatedDate( new Date( DATE_FORMATTER.parseMillis( createdDate ) ) );
         }
 
-        String expirationDate = entry.getSimpleExtension( new QName( AtomResponseConstants.METACARD_ATOM_NAMESPACE,
-                AtomResponseConstants.METADATA_EXPIRATION_DATE_ELEMENT ) );
+        String expirationDate = entry.getSimpleExtension( new QName( AtomResponseConstants.METACARD_ATOM_NAMESPACE, AtomResponseConstants.METADATA_EXPIRATION_DATE_ELEMENT ) );
         if ( expirationDate != null ) {
             metacard.setExpirationDate( new Date( DATE_FORMATTER.parseMillis( expirationDate ) ) );
         }
 
+        AtomContentXmlWrapOption wrap = filterConfig.getAtomContentXmlWrapOption();
         String metadata = entry.getContent();
-        metacard.setMetadata( metadata );
+        if ( metadata != null && wrap != null && !wrap.equals( AtomContentXmlWrapOption.NEVER_WRAP ) ) {
+            if ( wrap.equals( AtomContentXmlWrapOption.WRAP_HTML_AND_TEXT ) ) {
+                Content.Type contentType = entry.getContentType();
+                // certain content types may not follow XML structure
+                switch ( contentType ) {
+                case TEXT:
+                case HTML:
+                    // add content element to make sure it has single root
+                    metadata = "<xml-fragment>" + metadata + "</xml-fragment>";
+                    break;
+                default:
+                    // other items are xml-based
+                    break;
+                }
+            } else {
+                metadata = "<xml-fragment>" + metadata + "</xml-fragment>";
+            }
+            metacard.setMetadata( metadata );
+        }
 
         metacard.setLocation( getWKT( entry ) );
 
-        // if ( position != null ){
-        // metacard.setLocation( toWKT( position ) );
-        // }
         Link productLink = entry.getLink( filterConfig.getProductLinkRelation() );
         if ( productLink != null ) {
 
@@ -172,25 +186,30 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
             if ( productTitle != null ) {
                 metacard.setAttribute( CDRMetacard.RESOURCE_TITLE, productTitle );
             }
+            // TODO ECDR-41 figure out MIMEType
             MimeType productType = productLink.getMimeType();
             if ( productType != null ) {
                 metacard.setAttribute( CDRMetacard.RESOURCE_MIME_TYPE, productType.toString() );
             }
         }
 
-        List<Link> links = entry.getLinks( CDRMetacard.LINK_REL_PREVIEW );
-        if ( links != null && !links.isEmpty() ) {
-            for ( Link link : links ) {
-                MimeType mimeType = link.getMimeType();
-                if ( mimeType != null && "image".equals( mimeType.getPrimaryType() ) ) {
+        String thumbnailLinkRel = filterConfig.getThumbnailLinkRelation();
+        if ( thumbnailLinkRel != null ) {
+            List<Link> links = entry.getLinks( thumbnailLinkRel );
+            if ( links != null && !links.isEmpty() ) {
+                for ( Link link : links ) {
+                    MimeType mimeType = link.getMimeType();
+                    if ( mimeType == null || "image".equals( mimeType.getPrimaryType() ) ) {
 
-                    metacard.setAttribute( CDRMetacard.THUMBNAIL_LINK, URI.create( link.getHref().toASCIIString() ) );
-                    long thumbnailSize = link.getLength();
-                    if ( thumbnailSize > 0 ) {
-                        metacard.setAttribute( CDRMetacard.THUMBNAIL_LENGTH, Long.valueOf( thumbnailSize ) );
+                        metacard.setAttribute( CDRMetacard.THUMBNAIL_LINK, URI.create( link.getHref().toASCIIString() ) );
+                        long thumbnailSize = link.getLength();
+                        if ( thumbnailSize > 0 ) {
+                            metacard.setAttribute( CDRMetacard.THUMBNAIL_LENGTH, Long.valueOf( thumbnailSize ) );
+                        }
+                        // TODO ECDR-41 figure out MIMEType
+                        metacard.setAttribute( CDRMetacard.THUMBNAIL_MIMETYPE, link.getMimeType() );
+                        metacard.setAttribute( CDRMetacard.THUMBNAIL_LINK_TITLE, link.getTitle() );
                     }
-                    metacard.setAttribute( CDRMetacard.THUMBNAIL_MIMETYPE, link.getMimeType() );
-                    metacard.setAttribute( CDRMetacard.THUMBNAIL_LINK_TITLE, link.getTitle() );
                 }
             }
         }
@@ -244,8 +263,7 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
 
     protected Result metacardToResult( Entry entry, Metacard metacard ) {
         ResultImpl result = new ResultImpl( metacard );
-        String relevance = entry.getSimpleExtension( AtomResponseConstants.RELEVANCE_NAMESPACE, AtomResponseConstants.RELEVANCE_ELEMENT,
-                AtomResponseConstants.RELEVANCE_NAMESPACE_PREFIX );
+        String relevance = entry.getSimpleExtension( AtomResponseConstants.RELEVANCE_NAMESPACE, AtomResponseConstants.RELEVANCE_ELEMENT, AtomResponseConstants.RELEVANCE_NAMESPACE_PREFIX );
         if ( relevance != null ) {
             try {
                 result.setRelevanceScore( Double.parseDouble( relevance ) );
@@ -254,8 +272,7 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
             }
         }
 
-        String distance = entry.getSimpleExtension( AtomResponseConstants.CDRS_EXT_NAMESPACE, AtomResponseConstants.DISTANCE_ELEMENT,
-                AtomResponseConstants.CDRS_EXT_NAMESPACE_PREFIX );
+        String distance = entry.getSimpleExtension( AtomResponseConstants.CDRS_EXT_NAMESPACE, AtomResponseConstants.DISTANCE_ELEMENT, AtomResponseConstants.CDRS_EXT_NAMESPACE_PREFIX );
         if ( distance != null ) {
             try {
                 result.setDistanceInMeters( Double.parseDouble( distance ) );

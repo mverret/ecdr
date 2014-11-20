@@ -12,19 +12,30 @@
  **/
 package net.di2e.ecdr.source.rest;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import net.di2e.ecdr.commons.filter.config.FilterConfig;
-import net.di2e.ecdr.commons.filter.config.FilterConfig.SingleRecordQueryMethod;
+import net.di2e.ecdr.commons.filter.config.FilterConfig.AtomContentXmlWrapOption;
 import net.di2e.ecdr.commons.util.SearchConstants;
+import net.di2e.ecdr.libs.cache.Cache;
+import net.di2e.ecdr.libs.cache.CacheManager;
 import net.di2e.ecdr.security.ssl.client.cxf.CxfSSLClientConfiguration;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ddf.catalog.data.Metacard;
+import ddf.catalog.data.Result;
+import ddf.catalog.data.impl.ResultImpl;
 import ddf.catalog.filter.FilterAdapter;
+import ddf.catalog.operation.QueryRequest;
+import ddf.catalog.operation.SourceResponse;
+import ddf.catalog.operation.impl.SourceResponseImpl;
+import ddf.catalog.source.UnsupportedQueryException;
 
 public class OpenSearchSource extends AbstractCDRSource {
 
@@ -43,12 +54,40 @@ public class OpenSearchSource extends AbstractCDRSource {
     private Map<String, String> harcodedParamMap = new HashMap<String, String>();
 
     private FilterConfig filterConfig = null;
-
-    public OpenSearchSource( FilterAdapter adapter, CxfSSLClientConfiguration sslClient ) {
+    private CacheManager<Metacard> cacheManager = null;
+    private Cache<Metacard> metacardCache = null;
+    private String cacheId = null;
+    
+    public OpenSearchSource( FilterAdapter adapter, CxfSSLClientConfiguration sslClient, CacheManager<Metacard> manager ) {
         super( adapter, sslClient );
         filterConfig = new FilterConfig();
-
+        cacheManager = manager;
     }
+
+    @Override
+    public SourceResponse enhanceResults( SourceResponse sourceResponse ) {
+        for ( Result result : sourceResponse.getResults() ) {
+            Metacard metacard = result.getMetacard();
+            metacardCache.put( metacard.getId(), metacard );
+        }
+        return sourceResponse;
+    }
+
+    @Override
+    public SourceResponse lookupById( QueryRequest queryRequest, String id ) throws UnsupportedQueryException {
+        SourceResponse sourceResponse = null;
+        LOGGER.debug( "Checking cache for Result with id [{}].", id );
+        Metacard metacard = metacardCache.get( id );
+        if ( metacard != null ) {
+            LOGGER.debug( "Cache hit found for id [{}], returning response", id );
+            sourceResponse = new SourceResponseImpl( queryRequest, Arrays.asList( (Result) new ResultImpl( metacard ) ), 1L );
+        } else {
+            LOGGER.debug( "Could not find result id [{}] in cache", id );
+            throw new UnsupportedQueryException( "Queries for parameter uid are not supported by source [" + getId() + "]" );
+        }
+        return sourceResponse;
+    }
+
 
     @Override
     public Map<String, String> getDynamicUrlParameterMap() {
@@ -65,9 +104,16 @@ public class OpenSearchSource extends AbstractCDRSource {
         return filterConfig;
     }
 
-    public void setSingleRecordQueryMethod( String method ) {
-        LOGGER.debug( "ConfigUpdate: Updating the Single Record Lookup Method value from [{}] to [{}]", filterConfig.getSingleRecordQueryMethod(), method );
-        filterConfig.setSingleRecordQueryMethod( SingleRecordQueryMethod.valueOf( method ) );
+    public void cleanUp() {
+        LOGGER.debug( "Shutting down CDR Federated Source with id [{}]", getId() );
+        if ( metacardCache != null ) {
+            metacardCache.destroy();
+        }
+    }
+
+    public void setThumbnailLinkRelation( String rel ) {
+        LOGGER.debug( "ConfigUpdate: Updating the Thumbnail Link Relation value from [{}] to [{}]", filterConfig.getThumbnailLinkRelation(), rel );
+        filterConfig.setThumbnailLinkRelation( rel );
     }
 
     public void setMetadataLinkRelation( String rel ) {
@@ -80,9 +126,14 @@ public class OpenSearchSource extends AbstractCDRSource {
         filterConfig.setProductLinkRelation( rel );
     }
 
-    public void setProxyUrls( boolean proxy ) {
-        LOGGER.debug( "ConfigUpdate: Updating the Proxy URLs through Local Instance value from [{}] to [{}]", filterConfig.isProvideLocalUrls(), proxy );
-        filterConfig.setProvideLocalUrls( proxy );
+    public void setProxyProductUrls( boolean proxy ) {
+        LOGGER.debug( "ConfigUpdate: Updating the Proxy URLs through Local Instance value from [{}] to [{}]", filterConfig.isProxyProductUrl(), proxy );
+        filterConfig.setProxyProductUrl( proxy );
+    }
+
+    public void setWrapContentWithXmlOption( String option ) {
+        LOGGER.debug( "ConfigUpdate: Updating the WrapContentWithXmlOption value from [{}] to [{}]", filterConfig.getAtomContentXmlWrapOption(), option );
+        filterConfig.setAtomContentXmlWrapOption( AtomContentXmlWrapOption.valueOf( option ) );
     }
 
     public void setSearchTermsParameter( String param ) {
@@ -103,8 +154,7 @@ public class OpenSearchSource extends AbstractCDRSource {
             filterConfig.setZeroBasedStartIndex( Integer.parseInt( startNumber ) == 0 );
             LOGGER.debug( "ConfigUpdate: Updating the Start Index Numbering value from [{}] to [{}]", oldIndex, startNumber );
         } catch ( NumberFormatException e ) {
-            LOGGER.warn( "ConfigUpdate Failed: Attempted to update the 'start index number method' due to non valid (must be 1 or 0) start index numbering passed in["
-                    + startNumber + "]" );
+            LOGGER.warn( "ConfigUpdate Failed: Attempted to update the 'start index number method' due to non valid (must be 1 or 0) start index numbering passed in[" + startNumber + "]" );
         }
     }
 
@@ -174,10 +224,29 @@ public class OpenSearchSource extends AbstractCDRSource {
         }
     }
 
+    public void setCacheExpirationMinutes( Long minutes ) {
+        if ( minutes == null || minutes == 0 ) {
+            LOGGER.debug( "ConfigUpdate: Clearing any existing cached Metacards, and no longer using the Cache for id lookups for source [{}]", getId() );
+            if ( metacardCache != null ) {
+                metacardCache.destroy();
+            }
+        } else {
+            if ( metacardCache != null ) {
+                metacardCache.destroy();
+                cacheManager.removeCacheInstance( cacheId );
+            }
+            cacheId = getId() + "-" + UUID.randomUUID();
+            LOGGER.debug( "ConfigUpdate: Creating a cache with id [{}] for Metacard id lookups for source [{}] with an cache expiration time of [{}] minutes", cacheId, getId(), minutes );
+            // TODO populate the cache porperties via config
+            metacardCache = cacheManager.createCacheInstance( cacheId, null );
+        }
+    }
+
     @Override
-    public void setSourceProperties(Map<String, String> props) {
-        //TODO future work!
-        LOGGER.warn("Got some properties but do not know what to do with them.");
+    public void setSourceProperties( Map<String, String> props ) {
+        // TODO future work!
+        LOGGER.warn( "Got some properties but do not know what to do with them." );
 
     }
+
 }

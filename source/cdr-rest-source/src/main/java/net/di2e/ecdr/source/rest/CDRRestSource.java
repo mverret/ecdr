@@ -22,6 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ddf.catalog.filter.FilterAdapter;
+import ddf.catalog.operation.QueryRequest;
+import ddf.catalog.operation.SourceResponse;
 
 public class CDRRestSource extends AbstractCDRSource {
 
@@ -53,6 +55,16 @@ public class CDRRestSource extends AbstractCDRSource {
         return filterConfig;
     }
 
+    @Override
+    public SourceResponse enhanceResults( SourceResponse response ) {
+        return response;
+    }
+
+    @Override
+    public SourceResponse lookupById( QueryRequest queryRequest, String id ) {
+        return null;
+    }
+
     public void setDoSourcePing( boolean doPing ) {
         LOGGER.debug( "ConfigUpdate: Updating the doSourcePing value from to [{}]", doPing );
         setPingMethod( doPing ? PingMethod.HEAD : PingMethod.NONE );
@@ -69,5 +81,6 @@ public class CDRRestSource extends AbstractCDRSource {
         LOGGER.warn("Got some properties but do not know what to do with them.");
 
     }
+
 
 }
