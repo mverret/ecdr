@@ -44,6 +44,11 @@
             <artifactId>cxf-bundle</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>ddf.registry.core</groupId>
+            <artifactId>registry-core-api</artifactId>
+        </dependency>
+
 
     </dependencies>
 

@@ -30,10 +30,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import ddf.registry.api.DynamicExternalSource;
 import net.di2e.ecdr.commons.filter.StrictFilterDelegate;
 import net.di2e.ecdr.commons.filter.config.FilterConfig;
 import net.di2e.ecdr.commons.util.SearchConstants;
-import net.di2e.ecdr.search.api.DynamicExternalSource;
 import net.di2e.ecdr.search.transform.atom.response.AtomResponseTransformer;
 import net.di2e.ecdr.security.ssl.client.cxf.CxfSSLClientConfiguration;
 

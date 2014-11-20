@@ -25,11 +25,11 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import ddf.registry.api.RegistrableService;
 import net.di2e.ecdr.commons.query.rest.CDRQueryImpl;
 import net.di2e.ecdr.commons.query.rest.parsers.QueryParser;
 import net.di2e.ecdr.commons.query.util.QueryHelper;
 import net.di2e.ecdr.commons.util.SearchConstants;
-import net.di2e.ecdr.search.api.RegistrableService;
 import net.di2e.ecdr.search.transform.mapper.TransformIdMapper;
 
 import org.codice.ddf.configuration.impl.ConfigurationWatcherImpl;
