@@ -44,9 +44,9 @@
         <bundle>mvn:net.di2e.ecdr.transformer/cdr-transformer-mapper/${project.version}</bundle>
     </feature>
 
-    <feature name="cdr-libs-compression" install="manual" version="${project.version}"
-             description="Installs compression services that can be used for endpoints and sources. By default comes with EXI and GZIP.">
-        <bundle start-level="70">mvn:net.di2e.ecdr.libs/cdr-libs-compression/${project.version}</bundle>
+    <feature name="compression-exi" install="manual" version="${project.version}"
+             description="Installs an EXI-based compression service that can be used for endpoints.">
+        <bundle start-level="70">mvn:ddf.compression/compression-exi/${ddf.compression.version}</bundle>
     </feature>
     
     <feature name="cdr-sslclient-configuration" install="manual" version="${project.version}"
@@ -61,7 +61,7 @@
         <feature>cdr-rest-search-endpoint</feature>
         <feature>cdr-rest-broker-endpoint</feature>
         <feature>cdr-atom-result-xformer</feature>
-        <feature>cdr-libs-compression</feature>
+        <feature>compression-exi</feature>
         <feature>cdr-rest-source</feature>
     </feature>
 

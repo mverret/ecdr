@@ -28,6 +28,5 @@
     <modules>
         <module>cdr-libs-cache</module>
         <module>cdr-rest-search-commons</module>
-        <module>cdr-libs-compression</module>
     </modules>
 </project>
