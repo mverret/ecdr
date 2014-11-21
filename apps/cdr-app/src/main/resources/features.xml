@@ -15,7 +15,6 @@
  -->
 <features name="${project.artifactId}-${project.version}">
 
-
     <feature name="cdr-atom-result-xformer" install="manual" version="${project.version}"
         description="Atom Metacard and Query Response Transformer">
         <bundle>mvn:net.di2e.ecdr.transformer/cdr-atom-result-xformer/${project.version}</bundle>
@@ -44,9 +43,10 @@
         <bundle>mvn:net.di2e.ecdr.transformer/cdr-transformer-mapper/${project.version}</bundle>
     </feature>
 
-    <feature name="compression-exi" install="manual" version="${project.version}"
-             description="Installs an EXI-based compression service that can be used for endpoints.">
+    <feature name="ddf-compression" install="manual" version="${project.version}"
+             description="Installs DDF compression services that can be used for CXF-based endpoints.">
         <bundle start-level="70">mvn:ddf.compression/compression-exi/${ddf.compression.version}</bundle>
+        <bundle start-level="70">mvn:ddf.compression/compression-gzip/${ddf.compression.version}</bundle>
     </feature>
     
     <feature name="cdr-sslclient-configuration" install="manual" version="${project.version}"
@@ -56,12 +56,12 @@
 
     <feature name="cdr-app" install="auto" version="${project.version}"
         description="Enterprise CDR (Content Discovery and Retrieval) is used for discovering data using the CDR Interfaces.::Enterprise CDR">
+        <feature>ddf-compression</feature>
         <feature>catalog-app</feature>
         <feature>cdr-sslclient-configuration</feature>
         <feature>cdr-rest-search-endpoint</feature>
         <feature>cdr-rest-broker-endpoint</feature>
         <feature>cdr-atom-result-xformer</feature>
-        <feature>compression-exi</feature>
         <feature>cdr-rest-source</feature>
     </feature>
 

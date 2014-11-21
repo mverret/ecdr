@@ -585,10 +585,10 @@
         </repository>-->
         <repository>
             <id>codice</id>
-            <name>Codice Releases</name>
-            <url>http://artifacts.codice.org/content/repositories/releases</url>
+            <name>Codice</name>
+            <url>http://artifacts.codice.org/content/groups/public/</url>
             <snapshots>
-                <enabled>false</enabled>
+                <enabled>true</enabled>
             </snapshots>
         </repository>
     </repositories>
