@@ -15,13 +15,11 @@
  -->
 <beans:beans xmlns="http://www.springframework.org/schema/osgi" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:osgix="http://www.springframework.org/schema/osgi-compendium" xmlns:osgi="http://www.springframework.org/schema/osgi"
-    xmlns:beans="http://www.springframework.org/schema/beans" xmlns:ctx="http://www.springframework.org/schema/context"
+    xmlns:beans="http://www.springframework.org/schema/beans"
     xsi:schemaLocation="http://www.springframework.org/schema/osgi  
         http://www.springframework.org/schema/osgi/spring-osgi.xsd
         http://www.springframework.org/schema/osgi-compendium                                    
-        http://www.springframework.org/schema/osgi-compendium/spring-osgi-compendium.xsd    
-        http://www.springframework.org/schema/context 
-        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/osgi-compendium/spring-osgi-compendium.xsd
         http://www.springframework.org/schema/beans   
         http://www.springframework.org/schema/beans/spring-beans.xsd">
 
@@ -53,14 +51,15 @@
     <beans:bean id="metacardCacheManager" class="net.di2e.ecdr.libs.cache.impl.MetacardJCacheManager" destroy-method="destroy">
     </beans:bean>
 
-    <beans:bean id="cdr-os-identifier" class="net.di2e.ecdr.search.api.impl.SimpleDynamicServiceIdentifier">
-        <beans:constructor-arg value="ecdr-opensearch-source"/>
-        <beans:constructor-arg value="CDR Brokered REST Search"/>
+    <beans:bean id="cdr-os-identifier" class="net.di2e.ecdr.source.rest.SimpleDynamicServiceIdentifier">
+        <beans:constructor-arg>
+            <beans:value>ecdr-opensearch-source</beans:value>
+        </beans:constructor-arg>
+        <beans:constructor-arg>
+            <beans:value>CDR Brokered REST Search</beans:value>
+        </beans:constructor-arg>
     </beans:bean>
 
-    <osgi:service ref="cdr-os-identifier" interface="net.di2e.ecdr.search.api.DynamicServiceIdentifier" />
-
-
-
+    <osgi:service ref="cdr-os-identifier" interface="ddf.registry.api.DynamicServiceIdentifier" />
 
 </beans:beans>

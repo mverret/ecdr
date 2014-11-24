@@ -10,9 +10,9 @@
  * <http://www.gnu.org/licenses/lgpl.html>.
  *
  **/
-package net.di2e.ecdr.search.api.impl;
+package net.di2e.ecdr.source.rest;
 
-import net.di2e.ecdr.search.api.DynamicServiceIdentifier;
+import ddf.registry.api.DynamicServiceIdentifier;
 
 public class SimpleDynamicServiceIdentifier implements DynamicServiceIdentifier {
 

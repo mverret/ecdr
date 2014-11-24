@@ -23,6 +23,7 @@
     </feature>
 
     <feature name="cdr-rest-search-endpoint" install="manual" version="${project.version}" description="CDR REST Search endpoint.">
+        <bundle>mvn:ddf.registry.core/registry-core-api/${ddf.registry.version}</bundle>
         <bundle>mvn:net.di2e.ecdr.endpoint/cdr-rest-search-endpoint/${project.version}</bundle>
         <bundle>mvn:net.di2e.ecdr.libs/cdr-rest-search-commons/${project.version}</bundle>
         <bundle>mvn:net.di2e.ecdr.federation/cdr-federation-strategies/${project.version}</bundle>
@@ -32,11 +33,13 @@
     <feature name="cdr-rest-source" install="manual" version="${project.version}" description="CDR REST Source">
         <feature>cdr-sslclient-configuration</feature>
         <feature>cdr-atom-result-xformer</feature>
+        <bundle>mvn:ddf.registry.core/registry-core-api/${ddf.registry.version}</bundle>
         <bundle>mvn:net.di2e.ecdr.source/cdr-rest-source/${project.version}</bundle>
         <bundle>mvn:net.di2e.ecdr.libs/cdr-rest-search-commons/${project.version}</bundle>
     </feature>
 
     <feature name="cdr-rest-broker-endpoint" install="manual" version="${project.version}" description="CDR REST Search endpoint.">
+        <bundle>mvn:ddf.registry.core/registry-core-api/${ddf.registry.version}</bundle>
         <bundle>mvn:net.di2e.ecdr.endpoint/cdr-rest-broker-endpoint/${project.version}</bundle>
         <bundle>mvn:net.di2e.ecdr.libs/cdr-rest-search-commons/${project.version}</bundle>
         <bundle>mvn:net.di2e.ecdr.federation/cdr-federation-strategies/${project.version}</bundle>
