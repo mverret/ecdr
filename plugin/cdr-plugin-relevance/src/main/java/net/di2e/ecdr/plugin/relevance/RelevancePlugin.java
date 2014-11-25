@@ -79,7 +79,7 @@ public class RelevancePlugin implements PostQueryPlugin {
             .isNotBlank( searchPhrase ) ) {
             LOGGER.debug( "Response has RELEVANCE sorting, performing re-indexing to normalize relevance." );
             Directory directory = null;
-            DirectoryReader ireader = null;
+            DirectoryReader iReader = null;
             Map<String, Result> docMap = new HashMap<>();
             List<Result> updatedResults = new ArrayList<>();
             StopWatch stopWatch = new StopWatch();
@@ -91,7 +91,7 @@ public class RelevancePlugin implements PostQueryPlugin {
                 directory = new RAMDirectory();
 
                 IndexWriterConfig config = new IndexWriterConfig( Version.LATEST, analyzer );
-                IndexWriter iwriter = new IndexWriter( directory, config );
+                IndexWriter iWriter = new IndexWriter( directory, config );
 
                 // loop through all of the results and add them to the index
                 for ( Result curResult : queryResponse.getResults() ) {
@@ -100,24 +100,24 @@ public class RelevancePlugin implements PostQueryPlugin {
                     String id = curResult.getMetacard().getId();
                     doc.add( new Field( METADATA_FIELD, text, TextField.TYPE_STORED ) );
                     doc.add( new Field( ID_FIELD, id, TextField.TYPE_STORED ) );
-                    iwriter.addDocument( doc );
+                    iWriter.addDocument( doc );
                     docMap.put( id, curResult );
                 }
 
-                IOUtils.closeQuietly( iwriter );
+                IOUtils.closeQuietly( iWriter );
                 LOGGER.debug( "{} Document indexing finished in {} seconds.", RELEVANCE_TIMER, (double) stopWatch.getTime() / 1000.0 );
                 // Now search the index:
-                ireader = DirectoryReader.open( directory );
-                IndexSearcher isearcher = new IndexSearcher( ireader );
+                iReader = DirectoryReader.open( directory );
+                IndexSearcher iSearcher = new IndexSearcher( iReader );
                 // Parse a simple query that searches for "text":
                 QueryParser parser = new QueryParser( METADATA_FIELD, analyzer );
                 Query query = parser.parse( searchPhrase );
-                ScoreDoc[] hits = isearcher.search( query, null, docMap.size() ).scoreDocs;
+                ScoreDoc[] hits = iSearcher.search( query, null, docMap.size() ).scoreDocs;
                 LOGGER.debug( "Got back {} results", hits.length );
 
                 // loop through the indexed search results and update the scores in the original query results
                 for ( ScoreDoc curHit : hits ) {
-                    Document doc = isearcher.doc( curHit.doc );
+                    Document doc = iSearcher.doc( curHit.doc );
                     Result result = docMap.get( doc.getField( ID_FIELD ).stringValue() );
                     updatedResults.add( updateResult( result, curHit.score ) );
                     LOGGER.debug( "Relevance for result {} was changed FROM {} TO {}", result.getMetacard().getId(), result.getRelevanceScore(), curHit.score );
@@ -132,7 +132,7 @@ public class RelevancePlugin implements PostQueryPlugin {
             } catch ( IOException | ParseException e ) {
                 LOGGER.warn( "Received an exception while trying to perform re-indexing, sending original queryResponse on.", e );
             } finally {
-                IOUtils.closeQuietly( ireader );
+                IOUtils.closeQuietly( iReader );
                 IOUtils.closeQuietly( directory );
                 stopWatch.stop();
                 LOGGER.debug( "{} Total relevance process took {} seconds.", RELEVANCE_TIMER, (double) stopWatch.getTime() / 1000.0 );
@@ -172,7 +172,7 @@ public class RelevancePlugin implements PostQueryPlugin {
      */
     private Result updateResult( Result origResult, float newScore ) {
         ResultImpl result = new ResultImpl( origResult.getMetacard() );
-        result.setRelevanceScore( new Double( newScore ) );
+        result.setRelevanceScore( (double) newScore );
         result.setDistanceInMeters( origResult.getDistanceInMeters() );
         return result;
     }

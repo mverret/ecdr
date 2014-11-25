@@ -8,45 +8,9 @@
  * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  * details. A copy of the GNU Lesser General Public License is distributed along with this program and can be found at
  * <http://www.gnu.org/licenses/lgpl.html>.
- * 
+ *
  **/
 package net.di2e.ecdr.source.rest;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Serializable;
-import java.net.URI;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import javax.activation.MimeType;
-import javax.activation.MimeTypeParseException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-
-import ddf.registry.api.DynamicExternalSource;
-import net.di2e.ecdr.commons.filter.StrictFilterDelegate;
-import net.di2e.ecdr.commons.filter.config.FilterConfig;
-import net.di2e.ecdr.commons.util.SearchConstants;
-import net.di2e.ecdr.search.transform.atom.response.AtomResponseTransformer;
-import net.di2e.ecdr.security.ssl.client.cxf.CxfSSLClientConfiguration;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.cxf.jaxrs.client.WebClient;
-import org.apache.cxf.jaxrs.ext.multipart.ContentDisposition;
-import org.apache.cxf.transport.http.HTTPConduit;
-import org.opengis.filter.sort.SortBy;
-import org.opengis.filter.sort.SortOrder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import ddf.catalog.data.ContentType;
 import ddf.catalog.data.Metacard;
@@ -66,6 +30,39 @@ import ddf.catalog.source.FederatedSource;
 import ddf.catalog.source.SourceMonitor;
 import ddf.catalog.source.UnsupportedQueryException;
 import ddf.catalog.util.impl.MaskableImpl;
+import ddf.registry.api.DynamicExternalSource;
+import net.di2e.ecdr.commons.filter.StrictFilterDelegate;
+import net.di2e.ecdr.commons.filter.config.FilterConfig;
+import net.di2e.ecdr.commons.util.SearchConstants;
+import net.di2e.ecdr.search.transform.atom.response.AtomResponseTransformer;
+import net.di2e.ecdr.security.ssl.client.cxf.CxfSSLClientConfiguration;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.cxf.jaxrs.client.WebClient;
+import org.apache.cxf.jaxrs.ext.multipart.ContentDisposition;
+import org.apache.cxf.transport.http.HTTPConduit;
+import org.opengis.filter.sort.SortBy;
+import org.opengis.filter.sort.SortOrder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.activation.MimeType;
+import javax.activation.MimeTypeParseException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Serializable;
+import java.net.URI;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 public abstract class AbstractCDRSource extends MaskableImpl implements FederatedSource, ConnectedSource, DynamicExternalSource {
 
@@ -83,7 +80,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
 
     public enum PingMethod {
         GET, HEAD, NONE
-    };
+    }
 
     private SourceMonitor siteAvailabilityCallback = null;
     private FilterAdapter filterAdapter = null;
@@ -100,8 +97,6 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
     private long connectionTimeout = 30000;
     private int maxResultsCount = 0;
     private String defaultResponseFormat = null;
-
-
 
     private CxfSSLClientConfiguration sslClientConfig = null;
 
@@ -124,7 +119,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
     @Override
     public SourceResponse query( QueryRequest queryRequest ) throws UnsupportedQueryException {
         try {
-            
+
             Query query = queryRequest.getQuery();
             // TODO Add in default radius
             Map<String, String> filterParameters = filterAdapter.adapt( query, new StrictFilterDelegate( false, 50000.00, getFilterConfig() ) );
@@ -181,7 +176,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
     // LOGGER.debug( "Retreiving the metadata from the following url [{}]", metacardUrl );
     // response = WebClient.create( metacardUrl ).get();
     // }
-        // TODO support self link releation URL
+    // TODO support self link releation URL
     // return response;
     // }
 
@@ -382,7 +377,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
         Map<String, Serializable> queryRequestProps = request.getProperties();
 
         if ( LOGGER.isDebugEnabled() ) {
-            LOGGER.debug( "CDR REST Source recieved Query: " + ToStringBuilder.reflectionToString( request.getQuery() ) );
+            LOGGER.debug( "CDR REST Source received Query: " + ToStringBuilder.reflectionToString( request.getQuery() ) );
         }
 
         // include format parameter
@@ -469,7 +464,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
     public void setPingUrl( String url ) {
         if ( StringUtils.isNotBlank( url ) ) {
             LOGGER.debug( "ConfigUpdate: Updating the ping (site availability check) endpoint url value from [{}] to [{}]", cdrAvailabilityCheckClient == null ? null : cdrAvailabilityCheckClient
-                    .getCurrentURI().toString(), url );
+                .getCurrentURI().toString(), url );
 
             cdrAvailabilityCheckClient = WebClient.create( url, true );
             synchronized ( cdrAvailabilityCheckClient ) {
@@ -503,11 +498,10 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
      * perform availability checks). For example if set to 60 seconds, then if an availability check is called 30
      * seconds after a previous availability check was called, the second call will just return a cache value and not do
      * another check.
-     * 
+     * <p/>
      * This settings allow admins to ensure that a site is not overloaded with availability checks
-     * 
-     * @param newCacheTime
-     *            New time period, in seconds, to check the availability of the federated source.
+     *
+     * @param newCacheTime New time period, in seconds, to check the availability of the federated source.
      */
     public void setAvailableCheckCacheTime( long newCacheTime ) {
         if ( newCacheTime < 1 ) {

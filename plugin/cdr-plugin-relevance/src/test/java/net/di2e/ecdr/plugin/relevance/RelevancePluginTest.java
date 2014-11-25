@@ -67,7 +67,7 @@ public class RelevancePluginTest {
     public void testReindexScores() throws Exception {
         Result result1 = createResult( ID_1, XML_FILE1, ORIG_SCORE1 );
         Result result2 = createResult( ID_2, XML_FILE2, ORIG_SCORE2 );
-        List<Result> results = Arrays.asList( result1, result2  );
+        List<Result> results = Arrays.asList( result1, result2 );
         QueryResponse queryResponse = createResponse( new PropertyNameImpl( Result.RELEVANCE ), SortOrder.DESCENDING, results );
         Map<String, String> paramMap = new HashMap<>();
         paramMap.put( SEARCH_KEY, EXAMPLE_PHRASE );
@@ -81,7 +81,7 @@ public class RelevancePluginTest {
             } else if ( ID_2.equals( curResult.getMetacard().getId() ) ) {
                 compareResults( result2, curResult );
             } else {
-                fail( "metcard IDs do not match original metacards." );
+                fail( "metacard IDs do not match original metacards." );
             }
         }
 
