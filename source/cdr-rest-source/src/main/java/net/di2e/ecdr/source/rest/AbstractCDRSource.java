@@ -126,7 +126,8 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
             String id = filterParameters.get( SearchConstants.UID_PARAMETER );
 
             SourceResponse sourceResponse = null;
-            if ( id != null && !getDynamicUrlParameterMap().containsKey( SearchConstants.UID_PARAMETER ) ) {
+            // check if it is an id query and that the UID parameter is NOT supported by the federated OS source
+            if ( id != null && StringUtils.isBlank( getDynamicUrlParameterMap().get( SearchConstants.UID_PARAMETER ) ) ) {
                 sourceResponse = lookupById( queryRequest, id );
             } else {
                 // Check to see if this is a remote Metacard Lookup
@@ -264,7 +265,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
 
         if ( uri != null ) {
             LOGGER.debug( "Retrieving the remote resource using the uri [{}]", uri );
-            WebClient retreiveWebClient = WebClient.create( uri );
+            WebClient retrieveWebClient = WebClient.create( uri );
             Long bytesToSkip = null;
             // If a bytesToSkip property is present add range header
             if ( requestProperties.containsKey( BYTES_TO_SKIP ) ) {
@@ -275,11 +276,11 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
                     // 100 bytes were to be skipped. The end -
                     // means its open ended
                     // Range: bytes=100-
-                    retreiveWebClient.header( HEADER_RANGE, BYTES_EQUAL + bytesToSkip + "-" );
+                    retrieveWebClient.header( HEADER_RANGE, BYTES_EQUAL + bytesToSkip + "-" );
                 }
             }
 
-            Response clientResponse = retreiveWebClient.get();
+            Response clientResponse = retrieveWebClient.get();
 
             MediaType mediaType = clientResponse.getMediaType();
             MimeType mimeType = null;
@@ -330,6 +331,9 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
                     if ( rangeHeader == null || !rangeHeader.equals( BYTES ) ) {
                         LOGGER.debug( "Skipping {} bytes in CDR Remote Source because endpoint didn't support Range Headers", bytesToSkip );
                         binaryStream.skip( bytesToSkip );
+                        responseProperties.put( BYTES_SKIPPED_RESPONSE, Boolean.TRUE );
+                    } else if ((rangeHeader != null) && rangeHeader.equals(BYTES)) {
+                        LOGGER.debug( "CDR Remote source supports Range Headers, only retrieving part of file that has not been downloaded yet." );
                         responseProperties.put( BYTES_SKIPPED_RESPONSE, Boolean.TRUE );
                     }
                 }
