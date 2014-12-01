@@ -34,12 +34,6 @@
         </dependency>
         
         <dependency>
-            <groupId>net.di2e.ecdr.transformer</groupId>
-            <artifactId>cdr-transformer-mapper</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-bundle</artifactId>
         </dependency>
@@ -62,7 +56,6 @@
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                         <Embed-Transitive>true</Embed-Transitive>
                         <Embed-Dependency>
-                            platform-configuration-impl,
                             catalog-core-api-impl,
                         </Embed-Dependency>
                         <Import-Package>

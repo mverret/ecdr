@@ -26,14 +26,6 @@
     <artifactId>cdr-transformer-mapper</artifactId>
     <packaging>bundle</packaging>
 
-    <dependencies>
-        <dependency>
-            <groupId>net.di2e.ecdr.libs</groupId>
-            <artifactId>cdr-rest-search-commons</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-    </dependencies>
-
     <build>
         <plugins>
             <plugin>
