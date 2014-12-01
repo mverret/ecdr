@@ -44,14 +44,18 @@ import ddf.catalog.source.SourceUnavailableException;
 import ddf.catalog.source.UnsupportedQueryException;
 
 /**
- * JAX-RS Web Service which implements the CDR REST Search Specification which is based on Open Search
+ * JAX-RS Web Service which implements the CDR REST Brokered Search Specification which is based on the CDR Search Spec
+ * which is in turn based on Open Search
+ * 
+ * The key difference between CDR Brokered Search and CDR Search is that Brokered Search can route the search to
+ * multiple sources (FederatedSource).
  *
  * @author Jeff Vettraino
  */
-@Path("/")
+@Path( "/" )
 public class CDRRestBrokerServiceImpl extends AbstractRestSearchEndpoint {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CDRRestBrokerServiceImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger( CDRRestBrokerServiceImpl.class );
 
     private static final String RELATIVE_URL = "/services/cdr/broker/rest";
     private static final String SERVICE_TYPE = "CDR Brokered REST Search";
@@ -63,11 +67,15 @@ public class CDRRestBrokerServiceImpl extends AbstractRestSearchEndpoint {
      * Constructor for JAX RS CDR Search Service. Values should ideally be passed into the constructor using a
      * dependency injection framework like blueprint
      *
-     * @param framework Catalog Framework which will be used for search
-     * @param config    ConfigurationWatcherImpl used to get the platform configuration values
-     * @param builder   FilterBuilder implementation
-     * @param parser    The instance of the QueryParser to use which will determine how to parse the parameters from the queyr
-     *                  String. Query parsers are tied to different versions of a query profile
+     * @param framework
+     *            Catalog Framework which will be used for search
+     * @param config
+     *            ConfigurationWatcherImpl used to get the platform configuration values
+     * @param builder
+     *            FilterBuilder implementation
+     * @param parser
+     *            The instance of the QueryParser to use which will determine how to parse the parameters from the queyr
+     *            String. Query parsers are tied to different versions of a query profile
      */
     public CDRRestBrokerServiceImpl( CatalogFramework framework, ConfigurationWatcherImpl config, FilterBuilder builder, QueryParser parser, TransformIdMapper mapper, FederationStrategy strategy,
             FederationStrategy fifo ) {
@@ -77,7 +85,7 @@ public class CDRRestBrokerServiceImpl extends AbstractRestSearchEndpoint {
     }
 
     @HEAD
-    public Response ping(@Context UriInfo uriInfo, @HeaderParam("Accept-Encoding") String encoding, @HeaderParam("Authorization") String auth) {
+    public Response ping( @Context UriInfo uriInfo, @HeaderParam( "Accept-Encoding" ) String encoding, @HeaderParam( "Authorization" ) String auth ) {
         Response response = executePing( uriInfo, encoding, auth );
         LOGGER.debug( "Ping (HTTP HEAD) was called to check if the CDR Broker Endpoint is available, result is [{}]", response.getStatus() );
         return response;
@@ -87,13 +95,14 @@ public class CDRRestBrokerServiceImpl extends AbstractRestSearchEndpoint {
      * Search method that gets called when issuing an HTTP GET to the corresponding URL. HTTP GET URL query parameters
      * contain the query criteria values
      *
-     * @param uriInfo  Query parameters obtained by e
+     * @param uriInfo
+     *            Query parameters obtained by e
      * @param encoding
      * @param auth
      * @return
      */
     @GET
-    public Response search(@Context UriInfo uriInfo, @HeaderParam("Accept-Encoding") String encoding, @HeaderParam("Authorization") String auth) {
+    public Response search( @Context UriInfo uriInfo, @HeaderParam( "Accept-Encoding" ) String encoding, @HeaderParam( "Authorization" ) String auth ) {
         LOGGER.debug( "Query received on CDR Broker Endpoint: {}", uriInfo.getRequestUri() );
         return executeSearch( uriInfo, encoding, auth );
     }
@@ -119,16 +128,15 @@ public class CDRRestBrokerServiceImpl extends AbstractRestSearchEndpoint {
     }
 
     @Override
-    public QueryResponse executeQuery( String localSourceId, MultivaluedMap<String, String> queryParameters, CDRQueryImpl query )
-            throws SourceUnavailableException, UnsupportedQueryException, FederationException {
+    public QueryResponse executeQuery( String localSourceId, MultivaluedMap<String, String> queryParameters, CDRQueryImpl query ) throws SourceUnavailableException, UnsupportedQueryException,
+            FederationException {
         Collection<String> siteNames = query.getSiteNames();
-        //Collection<String> siteNames = Collections.singletonList( "SELF" );
-        
-        QueryRequest queryRequest = new QueryRequestImpl( query, siteNames.isEmpty(), siteNames, getQueryParser().getQueryProperties( queryParameters,
-                localSourceId ) );
-        SortBy sortBy = getQueryParser().getSortBy(queryParameters);
+        // Collection<String> siteNames = Collections.singletonList( "SELF" );
+
+        QueryRequest queryRequest = new QueryRequestImpl( query, siteNames.isEmpty(), siteNames, getQueryParser().getQueryProperties( queryParameters, localSourceId ) );
+        SortBy sortBy = getQueryParser().getSortBy( queryParameters );
         QueryResponse queryResponse = getCatalogFramework().query( queryRequest, sortBy == null ? fifoFedStrategy : sortedFedStrategy );
         return queryResponse;
     }
-    
+
 }
