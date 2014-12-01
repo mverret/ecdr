@@ -6,6 +6,7 @@ public abstract class AtomTest {
 
     // test files
     protected static final String ATOM_TEMPLATE_FILE = "/atom-template.xml";
+    protected static final String ATOM_INVALID_FILE = "/atom-invalid.xml";
 
     // WKT shapes
     protected static final String POINT_WKT = "POINT (-77.0366 38.8977)";

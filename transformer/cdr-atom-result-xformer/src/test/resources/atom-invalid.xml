@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright (c) Cohesive Integrations, LLC
+ *
+ * This is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details. A copy of the GNU Lesser General Public License is distributed along with this program and can be found at
+ * <http://www.gnu.org/licenses/lgpl.html>.
+ *
+ **/
+ -->
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:os="http://a9.com/-/spec/opensearch/1.1/"
+      xmlns:cdrb="urn:cdr:broker:2.0" xmlns:ICISM="urn:us:gov:ic:ism:v2"
+      ICISM:classification="U" ICISM:ownerProducer="USA">
+    <id>urn:uuid:59eefebc-2d9e-49be-86d9-2268e3bdd3d8</id>
+    <title type="text">Atom Search Results from 'ddf.distribution' for Query: q=[*] caseSensitive=[false]
+        sortKeys=[RELEVANCE DESCENDING] strictMode=[false] startIndex=[1] count=[100] format=[atom]
+    </title>
+    <updated>2014-10-16T16:39:29.614Z</updated>
+    <os:itemsPerPage>5</os:itemsPerPage>
+    <os:startIndex>1</os:startIndex>
+    <os:totalResults>0</os:totalResults>
+    <generator version="2.4.1">ddf.distribution</generator>
+    <author>
+        <name>Codice Foundation</name>
+        <email />
+    </author>
+    <link href="http://localhost:8181/services/cdr/search/rest?q=*" rel="self" type="application/atom+xml"
+          title="Current Page"/>
+    <entry>
+        <!--No Search Results Found-->
+    </entry>
+</feed>
