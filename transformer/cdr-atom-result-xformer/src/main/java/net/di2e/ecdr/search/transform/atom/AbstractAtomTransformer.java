@@ -79,6 +79,7 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
     private ActionProvider viewMetacardActionProvider = null;
     private ActionProvider resourceActionProvider = null;
     private ActionProvider thumbnailActionProvider = null;
+    private ActionProvider metadataActionProvider = null;
     private ConfigurationWatcherImpl configWatcher = null;
     private MimeType thumbnailMimeType = null;
     private MimeType viewMimeType = null;
@@ -88,13 +89,14 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
 
     private boolean defaultToUseGMLEncoding = true;
 
-    public AbstractAtomTransformer( ConfigurationWatcherImpl config, ActionProvider viewMetacard, ActionProvider resourceProvider,
+    public AbstractAtomTransformer( ConfigurationWatcherImpl config, ActionProvider viewMetacard, ActionProvider metadataProvider, ActionProvider resourceProvider,
             ActionProvider thumbnailProvider, MimeType thumbnailMime, MimeType viewMime ) {
         if ( viewMime == null || thumbnailMime == null ) {
             throw new IllegalArgumentException( "MimeType parameters to constructor cannot be null" );
         }
         this.configWatcher = config;
         this.viewMetacardActionProvider = viewMetacard;
+        this.metadataActionProvider = metadataProvider;
         this.resourceActionProvider = resourceProvider;
         this.thumbnailActionProvider = thumbnailProvider;
         this.thumbnailMimeType = thumbnailMime;
@@ -400,12 +402,6 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
 
         String format = (String) properties.get( SearchConstants.FORMAT_PARAMETER );
 
-        // String urlPrefix = (String) properties.get(
-        // BrokerConstants.BROKER_RETRIEVE_URL );
-        // if ( urlPrefix == null ) {
-        // urlPrefix = "";
-        // }
-
         Entry entry = Abdera.getInstance().newEntry();
         entry.declareNS( SecurityConstants.ICISM_NAMESPACE, SecurityConstants.ICISM_NAMESPACE_PREFIX );
         entry.declareNS( AtomResponseConstants.GEORSS_NAMESPACE, AtomResponseConstants.GEORSS_NAMESPACE_PREFIX );
@@ -484,14 +480,6 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
         if ( metacard.hasThumbnail() ) {
             URI thumbnailURI = metacard.getThumbnailURL();
 
-            // if ( thumbnailURI != null ) {
-            // String thumbnailTitle = metacard.getThumbnailLinkTitle();
-            // MimeType thumbnailMime = metacard.getThumbnailMIMEType();
-            // entry.addLink( urlPrefix + thumbnailURI.toString(),
-            // CDRMetacard.LINK_REL_PREVIEW, thumbnailMime == null ?
-            // thumbnailMimeType.getBaseType() : thumbnailMime.getBaseType(),
-            // thumbnailTitle == null ? "View Thumbnail" : thumbnailTitle, null,
-            // metacard.getThumbnailLength() );
             if ( thumbnailActionProvider != null ) {
                 Action action = thumbnailActionProvider.getAction( metacard );
                 if ( action != null && action.getUrl() != null ) {
@@ -500,13 +488,19 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
                 }
             }
         }
-        boolean hasResource = false;
+
         if ( resourceActionProvider != null && metacard.hasResource() ) {
             Action action = resourceActionProvider.getAction( metacard );
             if ( action != null && action.getUrl() != null ) {
                 entry.addLink( action.getUrl().toString(), Link.REL_ALTERNATE, metacard.getResourceMIMETypeString(), action.getTitle(), null,
                         metacard.getResourceSizeLong() );
-                hasResource = true;
+            }
+            // If there is no explicit resource then the metadata serves as
+            // the product/resource so include a link to it here
+        } else if ( metadataActionProvider != null ) {
+            Action action = metadataActionProvider.getAction( metacard );
+            if ( action != null && action.getUrl() != null ) {
+                entry.addLink( action.getUrl().toString(), Link.REL_ALTERNATE, "text/xml", "View Product", null, -1 );
             }
         }
         if ( viewMetacardActionProvider != null ) {
@@ -515,14 +509,6 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
                 entry.addLink( action.getUrl().toString() + "?transform=" + (format == null ? CDR_ATOM_TRANSFORMER_ID : format), Link.REL_SELF,
                         AtomResponseConstants.ATOM_MIME_TYPE, "View Atom Entry", null, -1 );
                 entry.addLink( action.getUrl().toString(), Link.REL_RELATED, "text/xml", action.getTitle(), null, -1 );
-                // If there is no explicit resource then the metadata serves as
-                // the product/resource so include a link to it here
-                // I didn't see a metadata action provider, but I also couldn't
-                // find where the other action provides like thumbnail are
-                // defined
-                if ( !hasResource ) {
-                    entry.addLink( action.getUrl().toString() + "?transform=metadata", Link.REL_ALTERNATE, "text/xml", "View Product", null, -1 );
-                }
             }
         }
     }

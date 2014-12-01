@@ -46,9 +46,9 @@ public class AtomTransformerWithPayload extends AbstractAtomTransformer {
 
     private Map<String, MetacardTransformer> metacardTransformerMap = null;
 
-    public AtomTransformerWithPayload( ConfigurationWatcherImpl configWatcher, ActionProvider viewMetacardProvider, ActionProvider resourceProvider,
+    public AtomTransformerWithPayload( ConfigurationWatcherImpl configWatcher, ActionProvider viewMetacardProvider, ActionProvider metadataProvider, ActionProvider resourceProvider,
             ActionProvider thumbnailProvider, MimeType thumbnailMime, MimeType viewMime ) {
-        super( configWatcher, viewMetacardProvider, resourceProvider, thumbnailProvider, thumbnailMime, viewMime );
+        super( configWatcher, viewMetacardProvider, metadataProvider, resourceProvider, thumbnailProvider, thumbnailMime, viewMime );
         metacardTransformerMap = new HashMap<String, MetacardTransformer>();
     }
 
