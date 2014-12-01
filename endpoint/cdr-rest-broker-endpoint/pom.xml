@@ -47,7 +47,6 @@
         <dependency>
             <groupId>ddf.registry.core</groupId>
             <artifactId>registry-core-api</artifactId>
-            <version>${ddf.registry.version}</version>
         </dependency>
 
 
@@ -64,7 +63,6 @@
                         <Embed-Transitive>true</Embed-Transitive>
                         <Embed-Dependency>
                             catalog-core-api-impl,
-                            platform-configuration-impl,
                         </Embed-Dependency>
                         <Import-Package>
                             META-INF.cxf,

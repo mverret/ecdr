@@ -27,9 +27,20 @@
 
 
     <dependencies>
+         <dependency>
+            <groupId>net.di2e.ecdr.transformer</groupId>
+            <artifactId>cdr-transformer-mapper</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+         
         <dependency>
             <groupId>org.codice.ddf</groupId>
             <artifactId>platform-configuration-impl</artifactId>
+        </dependency>
+        
+        <dependency>
+            <groupId>ddf.registry.core</groupId>
+            <artifactId>registry-core-api</artifactId>
         </dependency>
 
         <dependency>
@@ -88,7 +99,8 @@
                         </Import-Package>
                         <Export-Package>
                             net.di2e.ecdr.commons.*,
-                            net.di2e.ecdr.search.api.*
+                            net.di2e.ecdr.search.api.*,
+                            org.codice.ddf.configuration.impl,
                         </Export-Package>
                         <Private-Package>
                             org.objectweb.*,

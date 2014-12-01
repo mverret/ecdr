@@ -29,6 +29,8 @@
 
     <reference id="viewMetacardActionProvider" interface="ddf.action.ActionProvider" filter="(id=catalog.data.metacard.view)"
         availability="optional" />
+    <reference id="metadataActionProvider" interface="ddf.action.ActionProvider" filter="(id=catalog.data.metacard.metadata)"
+        availability="optional" />
     <reference id="resourceActionProvider" interface="ddf.action.ActionProvider" filter="(id=catalog.data.metacard.resource)"
         availability="optional" />
     <reference id="thumbnailActionProvider" interface="ddf.action.ActionProvider" filter="(id=catalog.data.metacard.thumbnail)"
@@ -46,6 +48,7 @@
         <cm:managed-properties persistent-id="cdr-atom-result-xformer" update-strategy="container-managed" />
         <argument ref="configurationWatcherAtom" />
         <argument ref="viewMetacardActionProvider" />
+        <argument ref="metadataActionProvider" />
         <argument ref="resourceActionProvider" />
         <argument ref="thumbnailActionProvider" />
         <argument ref="jpegMimeType" />
@@ -64,6 +67,7 @@
         <cm:managed-properties persistent-id="cdr-atom-result-xformer" update-strategy="container-managed" />
         <argument ref="configurationWatcherAtom" />
         <argument ref="viewMetacardActionProvider" />
+        <argument ref="metadataActionProvider" />
         <argument ref="resourceActionProvider" />
         <argument ref="thumbnailActionProvider" />
         <argument ref="jpegMimeType" />

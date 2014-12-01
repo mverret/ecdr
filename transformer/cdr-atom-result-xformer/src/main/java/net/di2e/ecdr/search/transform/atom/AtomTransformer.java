@@ -28,9 +28,9 @@ import ddf.catalog.operation.SourceResponse;
 
 public class AtomTransformer extends AbstractAtomTransformer {
 
-    public AtomTransformer( ConfigurationWatcherImpl configWatcher, ActionProvider viewMetacardProvider, ActionProvider resourceProvider,
+    public AtomTransformer( ConfigurationWatcherImpl configWatcher, ActionProvider viewMetacardProvider, ActionProvider metadataProvider, ActionProvider resourceProvider,
             ActionProvider thumbnailProvider, MimeType thumbnailMime, MimeType viewMime ) {
-        super( configWatcher, viewMetacardProvider, resourceProvider, thumbnailProvider, thumbnailMime, viewMime );
+        super( configWatcher, viewMetacardProvider, metadataProvider, resourceProvider, thumbnailProvider, thumbnailMime, viewMime );
     }
 
     @Override

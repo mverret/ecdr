@@ -99,11 +99,12 @@ public class AtomTransformerTest extends net.di2e.ecdr.search.transform.atom.res
     private Entry performTransform(String locationWKT, boolean useGMLEncoding) throws Exception {
         ConfigurationWatcherImpl configurationWatcher = new ConfigurationWatcherImpl();
         ActionProvider viewMetacardProvider = mock(ActionProvider.class);
+        ActionProvider metadataProvider = mock(ActionProvider.class);
         ActionProvider resourceProvider = mock(ActionProvider.class);
         ActionProvider thumbnailProvider = mock(ActionProvider.class);
         MimeType thumbnailMime = new MimeType();
         MimeType viewMime = new MimeType();
-        AtomTransformer transformer = new AtomTransformer( configurationWatcher, viewMetacardProvider, resourceProvider, thumbnailProvider, thumbnailMime, viewMime );
+        AtomTransformer transformer = new AtomTransformer( configurationWatcher, viewMetacardProvider, metadataProvider, resourceProvider, thumbnailProvider, thumbnailMime, viewMime );
         MetacardImpl metacard = new MetacardImpl();
         metacard.setLocation(locationWKT);
         transformer.setUseGMLEncoding(useGMLEncoding);
