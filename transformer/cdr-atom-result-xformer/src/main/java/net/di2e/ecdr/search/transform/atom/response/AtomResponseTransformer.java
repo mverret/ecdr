@@ -92,12 +92,18 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
         Feed feed = atomDoc.getRoot();
 
         List<Entry> entries = feed.getEntries();
+        int size = entries.size();
         for ( Entry entry : entries ) {
-            Metacard metacard = entryToMetacard( entry, siteName );
-            resultList.add( metacardToResult( entry, metacard ) );
+            if (isValidEntry( entry )) {
+                Metacard metacard = entryToMetacard( entry, siteName );
+                resultList.add( metacardToResult( entry, metacard ) );
+            } else {
+                LOGGER.debug( "Skipping invalid entry: {}", entry );
+                size--;
+            }
         }
 
-        long totalResults = entries.size();
+        long totalResults = size;
         Element totalResultsElement = atomDoc.getRoot().getExtension( OpenSearchConstants.TOTAL_RESULTS );
 
         if ( totalResultsElement != null ) {
@@ -297,6 +303,23 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
 
         }
         return wkt;
+    }
+
+    /**
+     * Check to see if entry is a valid ATOM Entry conforming to the specification.
+     * @param entry
+     * @return true if incoming entry conforms to the specification, false if it does not.
+     */
+    private boolean isValidEntry(Entry entry) {
+        if (entry == null) {
+            return false;
+        }
+        // RFC4287 Section 4.1.2
+        // atom:entry elements MUST contain exactly one atom:id element.
+        // atom:entry elements MUST contain exactly one atom:title element.
+        // atom:entry elements MUST contain exactly one atom:updated element.
+        // quick check to make sure that the entry contains those elements.
+        return (entry.getIdElement() != null && entry.getTitleElement() != null && entry.getUpdatedElement() != null);
     }
 
 }
