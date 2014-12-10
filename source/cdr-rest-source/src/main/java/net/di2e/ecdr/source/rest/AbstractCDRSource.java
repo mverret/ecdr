@@ -149,13 +149,13 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
                     AtomResponseTransformer transformer = new AtomResponseTransformer( getFilterConfig() );
                     // TODO check why "atom" is passed in here
                     sourceResponse = transformer.processSearchResponse( (InputStream) response.getEntity(), "atom", queryRequest, getId() );
-                    // TODO update this with better cahce
+                    // TODO update this with better cache
                     sourceResponse = enhanceResults( sourceResponse );
 
                 } else {
                     Object entity = response.getEntity();
                     if ( entity != null ) {
-                        LOGGER.warn( "Error recieved when querying site [{}] \n[{}]", getId(), IOUtils.toString( (InputStream) entity ) );
+                        LOGGER.warn( "Error received when querying site [{}] \n[{}]", getId(), IOUtils.toString( (InputStream) entity ) );
                     }
                     throw new UnsupportedQueryException( "Query to remote source returned http status code " + response.getStatus() );
                 }
@@ -352,7 +352,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
             for ( Entry<String, String> entry : filterParameters.entrySet() ) {
                 cdrRestClient.replaceQueryParam( entry.getKey(), entry.getValue() );
             }
-            // Dynamic paraameter map exists so use that and do the mapping
+            // Dynamic parameter map exists so use that and do the mapping
         } else {
 
             for ( Entry<String, String> entry : filterParameters.entrySet() ) {

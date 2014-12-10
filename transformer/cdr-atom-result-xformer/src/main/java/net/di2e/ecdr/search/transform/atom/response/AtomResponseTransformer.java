@@ -129,8 +129,6 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
         // Set the source to the original source name
         // TODO revist this
         String resultSource = entry.getSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, AtomResponseConstants.RESULT_SOURCE_ELEMENT, AtomResponseConstants.CDRB_NAMESPACE_PREFIX );
-        // metacard.setSourceId( resultSource == null ? siteName : resultSource
-        // );
         metacard.setSourceId( siteName );
 
         List<Category> categories = entry.getCategories();
@@ -158,22 +156,24 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
 
         AtomContentXmlWrapOption wrap = filterConfig.getAtomContentXmlWrapOption();
         String metadata = entry.getContent();
-        if ( metadata != null && wrap != null && !wrap.equals( AtomContentXmlWrapOption.NEVER_WRAP ) ) {
-            if ( wrap.equals( AtomContentXmlWrapOption.WRAP_HTML_AND_TEXT ) ) {
-                Content.Type contentType = entry.getContentType();
-                // certain content types may not follow XML structure
-                switch ( contentType ) {
-                case TEXT:
-                case HTML:
-                    // add content element to make sure it has single root
+        if ( metadata != null ) {
+            if (wrap != null && !wrap.equals( AtomContentXmlWrapOption.NEVER_WRAP ) ) {
+                if ( wrap.equals( AtomContentXmlWrapOption.WRAP_HTML_AND_TEXT ) ) {
+                    Content.Type contentType = entry.getContentType();
+                    // certain content types may not follow XML structure
+                    switch ( contentType ) {
+                    case TEXT:
+                    case HTML:
+                        // add content element to make sure it has single root
+                        metadata = "<xml-fragment>" + metadata + "</xml-fragment>";
+                        break;
+                    default:
+                        // other items are xml-based
+                        break;
+                    }
+                } else {
                     metadata = "<xml-fragment>" + metadata + "</xml-fragment>";
-                    break;
-                default:
-                    // other items are xml-based
-                    break;
                 }
-            } else {
-                metadata = "<xml-fragment>" + metadata + "</xml-fragment>";
             }
             metacard.setMetadata( metadata );
         }
