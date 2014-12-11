@@ -1,4 +1,4 @@
-![Build Status](https://codeship.com/projects/62bc24d0-6397-0132-6fd9-32c060907738/status?branch=master)
+[ ![Codeship Status for di2e/ecdr](https://codeship.com/projects/62bc24d0-6397-0132-6fd9-32c060907738/status?branch=master)](https://codeship.com/projects/52378)
 edcr (Enterprise Content Discovery & Retrieval)
 =======
 
