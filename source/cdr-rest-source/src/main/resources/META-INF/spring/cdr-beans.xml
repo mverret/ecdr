@@ -24,8 +24,7 @@
         http://www.springframework.org/schema/beans/spring-beans.xsd">
 
     <osgi:reference id="filterAdapter" interface="ddf.catalog.filter.FilterAdapter" />
-    <osgi:reference id="sslClientConfig" interface="net.di2e.ecdr.security.ssl.client.cxf.CxfSSLClientConfiguration" />
-
+    
     <osgix:managed-service-factory id="net.di2e.ecdr.source.rest.CDRRestSource" factory-pid="ecdr-rest-source"
         update-strategy="container-managed">
 
@@ -35,7 +34,6 @@
 
         <beans:bean id="CDRRestSourceBean" class="net.di2e.ecdr.source.rest.CDRRestSource">
             <beans:constructor-arg ref="filterAdapter" />
-            <beans:constructor-arg ref="sslClientConfig"/>
 
             <beans:property name="defaultResponseFormat" value="atom-ddms" />
             <beans:property name="title" value="CDR REST Federated Source" />

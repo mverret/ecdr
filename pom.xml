@@ -622,8 +622,7 @@
     <modules>
         <module>libs</module>
         <module>plugin</module>
-		<module>security</module>
-        <module>transformer</module>
+		<module>transformer</module>
         <module>federation</module>
         <module>endpoint</module>
         <module>source</module>
