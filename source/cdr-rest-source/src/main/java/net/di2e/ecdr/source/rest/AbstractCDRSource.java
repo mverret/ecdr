@@ -497,6 +497,10 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
         }
     }
 
+    /*
+     * This method is needed because of a CXF deficiency of not using the keystore values from hte java system properties.
+     * So this specifically pulls the values from the system properties then sets them to a KeyManager being used
+     */
     protected TLSClientParameters getTlsClientParameters() {
         TLSClientParameters tlsClientParameters = new TLSClientParameters();
         String keystore = System.getProperty( SSL_KEYSTORE_JAVA_PROPERTY );
