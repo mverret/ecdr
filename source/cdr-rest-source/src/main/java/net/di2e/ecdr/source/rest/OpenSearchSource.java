@@ -22,7 +22,6 @@ import net.di2e.ecdr.commons.filter.config.FilterConfig.AtomContentXmlWrapOption
 import net.di2e.ecdr.commons.util.SearchConstants;
 import net.di2e.ecdr.libs.cache.Cache;
 import net.di2e.ecdr.libs.cache.CacheManager;
-import net.di2e.ecdr.security.ssl.client.cxf.CxfSSLClientConfiguration;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -57,9 +56,9 @@ public class OpenSearchSource extends AbstractCDRSource {
     private CacheManager<Metacard> cacheManager = null;
     private Cache<Metacard> metacardCache = null;
     private String cacheId = null;
-    
-    public OpenSearchSource( FilterAdapter adapter, CxfSSLClientConfiguration sslClient, CacheManager<Metacard> manager ) {
-        super( adapter, sslClient );
+
+    public OpenSearchSource( FilterAdapter adapter, CacheManager<Metacard> manager ) {
+        super( adapter );
         filterConfig = new FilterConfig();
         cacheManager = manager;
     }
@@ -87,7 +86,6 @@ public class OpenSearchSource extends AbstractCDRSource {
         }
         return sourceResponse;
     }
-
 
     @Override
     public Map<String, String> getDynamicUrlParameterMap() {
@@ -154,7 +152,8 @@ public class OpenSearchSource extends AbstractCDRSource {
             filterConfig.setZeroBasedStartIndex( Integer.parseInt( startNumber ) == 0 );
             LOGGER.debug( "ConfigUpdate: Updating the Start Index Numbering value from [{}] to [{}]", oldIndex, startNumber );
         } catch ( NumberFormatException e ) {
-            LOGGER.warn( "ConfigUpdate Failed: Attempted to update the 'start index number method' due to non valid (must be 1 or 0) start index numbering passed in[" + startNumber + "]" );
+            LOGGER.warn( "ConfigUpdate Failed: Attempted to update the 'start index number method' due to non valid (must be 1 or 0) start index numbering passed in["
+                    + startNumber + "]" );
         }
     }
 
@@ -236,7 +235,8 @@ public class OpenSearchSource extends AbstractCDRSource {
                 cacheManager.removeCacheInstance( cacheId );
             }
             cacheId = getId() + "-" + UUID.randomUUID();
-            LOGGER.debug( "ConfigUpdate: Creating a cache with id [{}] for Metacard id lookups for source [{}] with an cache expiration time of [{}] minutes", cacheId, getId(), minutes );
+            LOGGER.debug( "ConfigUpdate: Creating a cache with id [{}] for Metacard id lookups for source [{}] with an cache expiration time of [{}] minutes",
+                    cacheId, getId(), minutes );
             // TODO populate the cache porperties via config
             metacardCache = cacheManager.createCacheInstance( cacheId, null );
         }

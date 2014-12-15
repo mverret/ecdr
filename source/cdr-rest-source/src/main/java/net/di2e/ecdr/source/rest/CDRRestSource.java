@@ -16,7 +16,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.di2e.ecdr.commons.filter.config.FilterConfig;
-import net.di2e.ecdr.security.ssl.client.cxf.CxfSSLClientConfiguration;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,10 +33,10 @@ public class CDRRestSource extends AbstractCDRSource {
 
     private FilterConfig filterConfig = null;
 
-    public CDRRestSource( FilterAdapter filterAdapter, CxfSSLClientConfiguration sslClient ) {
-        super( filterAdapter, sslClient );
+    public CDRRestSource( FilterAdapter filterAdapter ) {
+        super( filterAdapter );
         filterConfig = new FilterConfig();
-        LOGGER.info("Creating a new CDRRestSource.");
+        LOGGER.info( "Creating a new CDRRestSource." );
     }
 
     @Override
@@ -76,9 +75,9 @@ public class CDRRestSource extends AbstractCDRSource {
     }
 
     @Override
-    public void setSourceProperties(Map<String, String> props) {
-        //TODO future work!
-        LOGGER.warn("Got some properties but do not know what to do with them.");
+    public void setSourceProperties( Map<String, String> props ) {
+        // TODO future work!
+        LOGGER.warn( "Got some properties but do not know what to do with them." );
 
     }
 

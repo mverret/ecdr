@@ -48,12 +48,6 @@
         </dependency>
 
         <dependency>
-            <groupId>net.di2e.ecdr.security</groupId>
-            <artifactId>cdr-sslclient-config</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
             <groupId>ddf.registry.core</groupId>
             <artifactId>registry-core-api</artifactId>
         </dependency>

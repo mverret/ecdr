@@ -22,17 +22,12 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 
 import java.net.SocketException;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.net.ssl.SSLHandshakeException;
 import javax.ws.rs.client.ClientException;
 
-import net.di2e.ecdr.security.ssl.client.cxf.CxfSSLClientConfiguration;
-import net.di2e.ecdr.security.ssl.client.cxf.CxfSSLClientConfigurationImpl;
 import net.di2e.ecdr.source.rest.AbstractCDRSource.PingMethod;
 
-import org.codice.ddf.configuration.ConfigurationManager;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.DefaultHandler;
@@ -54,13 +49,18 @@ import ddf.catalog.filter.FilterAdapter;
 public class CDRRestSourceTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger( CDRRestSourceTest.class );
-
+    
     private static Server server;
-
     private static int serverPort = 0;
+    
+    static final String SSL_KEYSTORE_JAVA_PROPERTY = "javax.net.ssl.keyStore";
+    static final String SSL_KEYSTORE_PASSWORD_JAVA_PROPERTY = "javax.net.ssl.keyStorePassword";
+    static final String SSL_TRUSTSTORE_JAVA_PROPERTY = "javax.net.ssl.trustStore";
+    static final String SSL_TRUSTSTORE_PASSWORD_JAVA_PROPERTY = "javax.net.ssl.trustStorePassword";
 
     @BeforeClass
     public static void startServer() {
+
         // create jetty server
         server = new Server();
         server.setStopAtShutdown( true );
@@ -104,7 +104,7 @@ public class CDRRestSourceTest {
     @Test
     public void testGoodCertificates() {
 
-        CDRRestSource restSource = createSecuredSource( getCxfSSLConfig( "/serverKeystore.jks", "changeit", "/serverTruststore.jks", "changeit" ) );
+        CDRRestSource restSource = createSecuredSource( "/serverKeystore.jks", "changeit", "/serverTruststore.jks", "changeit" );
         // hit server
         if ( restSource.isAvailable() == false ) {
             fail( "Could not get capabilities from the test server. This means no connection was established." );
@@ -119,7 +119,7 @@ public class CDRRestSourceTest {
     @Test
     public void testBadClientCertificate() {
 
-        CDRRestSource restSource = createSecuredSource( getCxfSSLConfig( "/client-bad.jks", "", "/serverTruststore.jks", "changeit" ) );
+        CDRRestSource restSource = createSecuredSource( "/client-bad.jks", "", "/serverTruststore.jks", "changeit" );
         // hit server
         try {
             if ( restSource.isAvailable() ) {
@@ -137,7 +137,7 @@ public class CDRRestSourceTest {
     // @Test
     public void testBadServerCertificate() {
 
-        CDRRestSource restSource = createSecuredSource( getCxfSSLConfig( "/serverKeystore.jks", "changeit", "/client-bad.jks", "" ) );
+        CDRRestSource restSource = createSecuredSource( "/serverKeystore.jks", "changeit", "/client-bad.jks", "" );
         // hit server
         try {
             if ( restSource.isAvailable() ) {
@@ -152,9 +152,14 @@ public class CDRRestSourceTest {
     /**
      * Creates the Rest Source and sets the ping method and no ping caching so it the tests will return the proper value
      */
-    private CDRRestSource createSecuredSource( CxfSSLClientConfiguration cxfConfig ) {
+    private CDRRestSource createSecuredSource( String keyStorePath, String keyStorePassword, String trustStorePath, String trustStorePassword ) {
+        System.setProperty( SSL_KEYSTORE_JAVA_PROPERTY, CDRRestSourceTest.class.getResource( keyStorePath ).getPath() );
+        System.setProperty( SSL_KEYSTORE_PASSWORD_JAVA_PROPERTY, keyStorePassword );
+        System.setProperty( SSL_TRUSTSTORE_JAVA_PROPERTY, CDRRestSourceTest.class.getResource( trustStorePath ).getPath() );
+        System.setProperty( SSL_TRUSTSTORE_PASSWORD_JAVA_PROPERTY, trustStorePassword );
+        
         FilterAdapter filterAdapter = mock( FilterAdapter.class );
-        CDRRestSource source = new CDRRestSource( filterAdapter, cxfConfig );
+        CDRRestSource source = new CDRRestSource( filterAdapter );
 
         source.setPingUrl( "https://localhost:" + serverPort + "/" );
         source.setPingMethod( PingMethod.GET );
@@ -163,17 +168,5 @@ public class CDRRestSourceTest {
         return source;
     }
 
-    private CxfSSLClientConfiguration getCxfSSLConfig( String keyStorePath, String keyStorePassword, String trustStorePath, String trustStorePassword ) {
-        CxfSSLClientConfigurationImpl config = new CxfSSLClientConfigurationImpl();
-        Map<String, String> configProperties = new HashMap<String, String>();
-
-        configProperties.put( ConfigurationManager.KEY_STORE, getClass().getResource( keyStorePath ).getPath() );
-        configProperties.put( ConfigurationManager.KEY_STORE_PASSWORD, keyStorePassword );
-        configProperties.put( ConfigurationManager.TRUST_STORE, getClass().getResource( trustStorePath ).getPath() );
-        configProperties.put( ConfigurationManager.TRUST_STORE_PASSWORD, trustStorePassword );
-
-        config.configurationUpdateCallback( configProperties );
-        return config;
-    }
 
 }
