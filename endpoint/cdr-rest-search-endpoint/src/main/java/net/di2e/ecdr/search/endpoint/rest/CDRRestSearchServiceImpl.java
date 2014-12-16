@@ -27,6 +27,7 @@ import net.di2e.ecdr.commons.query.rest.parsers.QueryParser;
 import net.di2e.ecdr.search.transform.mapper.TransformIdMapper;
 
 import org.codice.ddf.configuration.impl.ConfigurationWatcherImpl;
+import org.opengis.filter.sort.SortBy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +55,7 @@ public class CDRRestSearchServiceImpl extends AbstractRestSearchEndpoint {
     private static final String RELATIVE_URL = "/services/cdr/search/rest";
     private static final String SERVICE_TYPE = "CDR REST Search Service";
 
-    private FederationStrategy fifoFedStrategy = null;
+    private FederationStrategy sortedFedStrategy = null;
 
     /**
      * Constructor for JAX RS CDR Search Service. Values should ideally be
@@ -75,13 +76,13 @@ public class CDRRestSearchServiceImpl extends AbstractRestSearchEndpoint {
      * @param mapper
      *            The transformation mapper for handling mapping the external
      *            CDR transform name to the internal DDF transform name
-     * @param fifoFedStrategy
+     * @param sortedFedStrategy
      *            Federation strategy to use
      */
     public CDRRestSearchServiceImpl( CatalogFramework framework, ConfigurationWatcherImpl config, FilterBuilder builder, QueryParser parser,
-            TransformIdMapper mapper, FederationStrategy fifoFedStrategy ) {
+            TransformIdMapper mapper, FederationStrategy sortedFedStrategy ) {
         super( framework, config, builder, parser, mapper );
-        this.fifoFedStrategy = fifoFedStrategy;
+        this.sortedFedStrategy = sortedFedStrategy;
     }
 
     @HEAD
@@ -122,7 +123,13 @@ public class CDRRestSearchServiceImpl extends AbstractRestSearchEndpoint {
             throws SourceUnavailableException, UnsupportedQueryException, FederationException {
         QueryRequest queryRequest = new QueryRequestImpl( query, false, query.getSiteNames(), getQueryParser().getQueryProperties( queryParameters,
                 localSourceId ) );
-        QueryResponse queryResponse = getCatalogFramework().query( queryRequest, fifoFedStrategy );
+        SortBy originalSortBy = getQueryParser().getSortBy( queryParameters );
+        QueryResponse queryResponse;
+        if (originalSortBy == null) {
+            queryResponse = getCatalogFramework().query( queryRequest );
+        } else {
+            queryResponse = getCatalogFramework().query( queryRequest, sortedFedStrategy );
+        }
         return queryResponse;
     }
 

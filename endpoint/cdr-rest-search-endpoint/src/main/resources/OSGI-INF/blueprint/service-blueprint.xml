@@ -49,13 +49,14 @@
     </reference-list>
     
     <bean id="pool" class="java.util.concurrent.Executors" factory-method="newCachedThreadPool" />
-    
-    <bean id="fifo" class="net.di2e.ecdr.federation.FifoFederationStrategy">
-        <cm:managed-properties persistent-id="net.di2e.ecdr.federation.FifoFederationStrategy"
-            update-strategy="container-managed" />
+
+    <bean id="sorted" class="net.di2e.ecdr.federation.SimpleSortedFederationStrategy">
+        <cm:managed-properties persistent-id="net.di2e.ecdr.federation.SimpleSortedFederationStrategy"
+                               update-strategy="container-managed" />
         <argument ref="pool" />
         <argument ref="preFederatedQuerySortedList" />
         <argument ref="postFederatedQuerySortedList" />
+        <property name="maxStartIndex" value="50000" />
     </bean>
 
     <reference id="transformIdMapper" interface="net.di2e.ecdr.search.transform.mapper.TransformIdMapper" />
@@ -81,7 +82,7 @@
         <argument ref="filterBuilder" />
         <argument ref="queryParser" />
         <argument ref="transformIdMapper" />
-        <argument ref="fifo" />
+        <argument ref="sorted" />
     </bean>
 
     <service ref="cdrRestSearchService" auto-export="interfaces" />
