@@ -64,6 +64,11 @@ public class CDRRestSource extends AbstractCDRSource {
         return null;
     }
 
+    @Override
+    public boolean canHandleUidQuery() {
+        return true;
+    }
+
     public void setDoSourcePing( boolean doPing ) {
         LOGGER.debug( "ConfigUpdate: Updating the doSourcePing value from to [{}]", doPing );
         setPingMethod( doPing ? PingMethod.HEAD : PingMethod.NONE );

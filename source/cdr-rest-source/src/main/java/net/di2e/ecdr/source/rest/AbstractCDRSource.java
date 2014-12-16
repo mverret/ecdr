@@ -124,52 +124,27 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
 
     public abstract SourceResponse lookupById( QueryRequest queryRequest, String id ) throws UnsupportedQueryException;
 
+    public abstract boolean canHandleUidQuery();
+
     @Override
     public SourceResponse query( QueryRequest queryRequest ) throws UnsupportedQueryException {
         try {
-
             Query query = queryRequest.getQuery();
+            SourceResponse sourceResponse;
             // TODO Add in default radius
             Map<String, String> filterParameters = filterAdapter.adapt( query, new StrictFilterDelegate( false, 50000.00, getFilterConfig() ) );
+
             String id = filterParameters.get( SearchConstants.UID_PARAMETER );
-
-            SourceResponse sourceResponse = null;
-            // check if it is an id query and that the UID parameter is NOT
-            // supported by the federated OS source
-            if ( id != null && StringUtils.isBlank( getDynamicUrlParameterMap().get( SearchConstants.UID_PARAMETER ) ) ) {
-                sourceResponse = lookupById( queryRequest, id );
+            // check if this is an id-only query
+            if (id == null) {
+                // non-id query, perform normal search
+                sourceResponse = doQuery( filterParameters, queryRequest );
             } else {
-                // Check to see if this is a remote Metacard Lookup
-                // Response response = getResponseIfRemoteMetacard(
-                // filterParameters );
-                Response response = null;
-
-                // If the custom metacard lookup didn't produce anything, then
-                // down
-                // the normal query path
-                if ( response == null ) {
-                    filterParameters.putAll( getIntialFilterParameters( queryRequest ) );
-                    setURLQueryString( filterParameters );
-
-                    LOGGER.debug( "Executing http GET query to source [{}] with url [{}]", getId(), cdrRestClient.getCurrentURI().toString() );
-                    response = cdrRestClient.get();
-                    LOGGER.debug( "Query to source [{}] returned http status code [{}] and media type [{}]", getId(), response.getStatus(),
-                            response.getMediaType() );
-                }
-
-                if ( response.getStatus() == Status.OK.getStatusCode() ) {
-                    AtomResponseTransformer transformer = new AtomResponseTransformer( getFilterConfig() );
-                    // TODO check why "atom" is passed in here
-                    sourceResponse = transformer.processSearchResponse( (InputStream) response.getEntity(), "atom", queryRequest, getId() );
-                    // TODO update this with better cache
-                    sourceResponse = enhanceResults( sourceResponse );
-
+                // id-only query, check if remote source supports it
+                if (canHandleUidQuery()) {
+                    sourceResponse = doQuery( filterParameters, queryRequest );
                 } else {
-                    Object entity = response.getEntity();
-                    if ( entity != null ) {
-                        LOGGER.warn( "Error received when querying site [{}] \n[{}]", getId(), IOUtils.toString( (InputStream) entity ) );
-                    }
-                    throw new UnsupportedQueryException( "Query to remote source returned http status code " + response.getStatus() );
+                    sourceResponse = lookupById( queryRequest, id );
                 }
             }
             return sourceResponse;
@@ -178,7 +153,31 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
             LOGGER.error( e.getMessage(), e );
             throw new UnsupportedQueryException( "Could not complete query to site [" + getId() + "] due to: " + e.getMessage(), e );
         }
+    }
 
+    protected SourceResponse doQuery(Map<String, String> filterParameters, QueryRequest queryRequest) throws Exception {
+        SourceResponse sourceResponse;
+        filterParameters.putAll( getIntialFilterParameters( queryRequest ) );
+        setURLQueryString( filterParameters );
+
+        LOGGER.debug( "Executing http GET query to source [{}] with url [{}]", getId(), cdrRestClient.getCurrentURI().toString() );
+        Response response = cdrRestClient.get();
+        LOGGER.debug( "Query to source [{}] returned http status code [{}] and media type [{}]", getId(), response.getStatus(), response.getMediaType() );
+
+        if ( response.getStatus() == Status.OK.getStatusCode() ) {
+            AtomResponseTransformer transformer = new AtomResponseTransformer( getFilterConfig() );
+            // TODO check why "atom" is passed in here
+            sourceResponse = transformer.processSearchResponse( (InputStream) response.getEntity(), "atom", queryRequest, getId() );
+            // TODO update this with better cache
+            sourceResponse = enhanceResults( sourceResponse );
+        } else {
+            Object entity = response.getEntity();
+            if ( entity != null ) {
+                LOGGER.warn( "Error received when querying site [{}] \n[{}]", getId(), IOUtils.toString( (InputStream) entity ) );
+            }
+            throw new UnsupportedQueryException( "Query to remote source returned http status code " + response.getStatus() );
+        }
+        return sourceResponse;
     }
 
     // private Response getResponseIfRemoteMetacard( Map<String, String>
