@@ -137,7 +137,7 @@ public abstract class AbstractRestSearchEndpoint implements RegistrableService {
             LOGGER.error( e.getMessage(), e );
             response = Response.status( Response.Status.BAD_REQUEST ).build();
         } catch ( Exception e ) {
-            LOGGER.error( "Unexpected exeption recieved [" + e.getMessage() + "]", e );
+            LOGGER.error( "Unexpected exception received [" + e.getMessage() + "]", e );
             response = Response.status( Response.Status.INTERNAL_SERVER_ERROR ).build();
         }
 

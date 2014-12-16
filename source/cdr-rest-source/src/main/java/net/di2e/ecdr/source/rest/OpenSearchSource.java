@@ -88,6 +88,11 @@ public class OpenSearchSource extends AbstractCDRSource {
     }
 
     @Override
+    public boolean canHandleUidQuery() {
+        return StringUtils.isNotBlank( getDynamicUrlParameterMap().get( SearchConstants.UID_PARAMETER ) );
+    }
+
+    @Override
     public Map<String, String> getDynamicUrlParameterMap() {
         return parameterMap;
     }
