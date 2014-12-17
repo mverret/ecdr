@@ -72,21 +72,6 @@
         <property name="maxStartIndex" value="50000" />
     </bean>
 
-    <bean id="fifo" class="net.di2e.ecdr.federation.FifoFederationStrategy">
-        <cm:managed-properties persistent-id="net.di2e.ecdr.federation.FifoFederationStrategy"
-            update-strategy="container-managed" />
-        <argument ref="pool" />
-        <argument ref="preFederatedQuerySortedList" />
-        <argument ref="postFederatedQuerySortedList" />
-    </bean>
-    <!-- <bean id="fifo" class="ddf.catalog.federation.impl.FifoFederationStrategy">
-        <cm:managed-properties persistent-id="net.di2e.ecdr.federation.FifoFederationStrategy"
-            update-strategy="container-managed" />
-        <argument ref="pool" />
-        <argument ref="preFederatedQuerySortedList" />
-        <argument ref="postFederatedQuerySortedList" />
-    </bean>-->
-
     <bean id="cdrRestSearchService" class="net.di2e.ecdr.broker.endpoint.rest.CDRRestBrokerServiceImpl">
         <argument ref="catalogFramework" />
         <argument ref="configurationWatcher" />
@@ -94,7 +79,6 @@
         <argument ref="queryParser" />
         <argument ref="transformIdMapper" />
         <argument ref="sorted" />
-        <argument ref="fifo" />
     </bean>
 
     <service ref="cdrRestSearchService" auto-export="interfaces" />

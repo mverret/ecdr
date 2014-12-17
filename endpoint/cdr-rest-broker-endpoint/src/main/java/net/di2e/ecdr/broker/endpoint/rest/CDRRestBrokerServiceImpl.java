@@ -61,7 +61,6 @@ public class CDRRestBrokerServiceImpl extends AbstractRestSearchEndpoint {
     private static final String SERVICE_TYPE = "CDR Brokered REST Search";
 
     private FederationStrategy sortedFedStrategy = null;
-    private FederationStrategy fifoFedStrategy = null;
 
     /**
      * Constructor for JAX RS CDR Search Service. Values should ideally be passed into the constructor using a
@@ -77,11 +76,10 @@ public class CDRRestBrokerServiceImpl extends AbstractRestSearchEndpoint {
      *            The instance of the QueryParser to use which will determine how to parse the parameters from the queyr
      *            String. Query parsers are tied to different versions of a query profile
      */
-    public CDRRestBrokerServiceImpl( CatalogFramework framework, ConfigurationWatcherImpl config, FilterBuilder builder, QueryParser parser, TransformIdMapper mapper, FederationStrategy strategy,
-            FederationStrategy fifo ) {
+    public CDRRestBrokerServiceImpl( CatalogFramework framework, ConfigurationWatcherImpl config, FilterBuilder builder, QueryParser parser, TransformIdMapper mapper,
+        FederationStrategy sortedFedStrategy ) {
         super( framework, config, builder, parser, mapper );
-        this.sortedFedStrategy = strategy;
-        this.fifoFedStrategy = fifo;
+        this.sortedFedStrategy = sortedFedStrategy;
     }
 
     @HEAD
@@ -134,8 +132,13 @@ public class CDRRestBrokerServiceImpl extends AbstractRestSearchEndpoint {
         // Collection<String> siteNames = Collections.singletonList( "SELF" );
 
         QueryRequest queryRequest = new QueryRequestImpl( query, siteNames.isEmpty(), siteNames, getQueryParser().getQueryProperties( queryParameters, localSourceId ) );
-        SortBy sortBy = getQueryParser().getSortBy( queryParameters );
-        QueryResponse queryResponse = getCatalogFramework().query( queryRequest, sortBy == null ? fifoFedStrategy : sortedFedStrategy );
+        SortBy originalSortBy = getQueryParser().getSortBy( queryParameters );
+        QueryResponse queryResponse;
+        if (originalSortBy == null) {
+            queryResponse = getCatalogFramework().query( queryRequest );
+        } else {
+            queryResponse = getCatalogFramework().query( queryRequest, sortedFedStrategy );
+        }
         return queryResponse;
     }
 
