@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import net.di2e.ecdr.commons.util.SearchConstants;
+import net.di2e.ecdr.libs.result.relevance.RelevanceNormalizer;
 
 import org.opengis.filter.expression.PropertyName;
 import org.opengis.filter.sort.SortBy;
@@ -62,14 +63,18 @@ import ddf.catalog.util.impl.TemporalResultComparator;
  * @see Query
  * @see SortBy
  */
-public class SimpleSortedFederationStrategy extends AbstractFederationStrategy {
+public class NormalizingSortedFederationStrategy extends AbstractFederationStrategy {
 
     /**
      * The default comparator for sorting by {@link Result.RELEVANCE}, {@link SortOrder.DESCENDING}
      */
     protected static final Comparator<Result> DEFAULT_COMPARATOR = new RelevanceResultComparator( SortOrder.DESCENDING );
 
-    private static final XLogger LOGGER = new XLogger( LoggerFactory.getLogger( SimpleSortedFederationStrategy.class ) );
+    private static final XLogger LOGGER = new XLogger( LoggerFactory.getLogger( NormalizingSortedFederationStrategy.class ) );
+
+    private boolean normalizeResults = true;
+
+    private RelevanceNormalizer relevanceNormalizer = null;
 
     /**
      * Instantiates a {@code SortedFederationStrategy} with the provided {@link ExecutorService}.
@@ -77,14 +82,21 @@ public class SimpleSortedFederationStrategy extends AbstractFederationStrategy {
      * @param queryExecutorService
      *            the {@link ExecutorService} for queries
      */
-    public SimpleSortedFederationStrategy( ExecutorService queryExecutorService, List<PreFederatedQueryPlugin> preQuery, List<PostFederatedQueryPlugin> postQuery ) {
+    public NormalizingSortedFederationStrategy( ExecutorService queryExecutorService, List<PreFederatedQueryPlugin> preQuery, List<PostFederatedQueryPlugin> postQuery, 
+            RelevanceNormalizer normalizer ) {
         super( queryExecutorService, preQuery, postQuery );
+        relevanceNormalizer = normalizer;
     }
 
     @Override
     protected Runnable createMonitor( final ExecutorService pool, final Map<Source, Future<SourceResponse>> futures, final QueryResponseImpl returnResults, final Query query ) {
 
         return new SortedQueryMonitor( pool, futures, returnResults, query );
+    }
+
+    @Override
+    public void setNormalizeResults( boolean normalize ) {
+        this.normalizeResults = normalize;
     }
 
     private class SortedQueryMonitor implements Runnable {
@@ -120,7 +132,10 @@ public class SimpleSortedFederationStrategy extends AbstractFederationStrategy {
                 LOGGER.debug( "Sorting by Order: " + sortBy.getSortOrder() );
 
                 // Temporal searches are currently sorted by the effective time
-                if ( Metacard.EFFECTIVE.equals( sortType ) || Result.TEMPORAL.equals( sortType ) ) {
+                // TODO Update this to handle more sorting date type (push to DDF)
+                if ( Metacard.EFFECTIVE.equals( sortType ) || Metacard.MODIFIED.equals( sortType ) || Metacard.CREATED.equals( sortType ) ) {
+                    coreComparator = new TemporalResultComparator( sortOrder, sortType );
+                } else if ( Result.TEMPORAL.equals( sortType ) ) {
                     coreComparator = new TemporalResultComparator( sortOrder );
                 } else if ( Result.DISTANCE.equals( sortType ) ) {
                     coreComparator = new DistanceResultComparator( sortOrder );
@@ -195,9 +210,11 @@ public class SimpleSortedFederationStrategy extends AbstractFederationStrategy {
                 }
             }
             LOGGER.debug( "all sites finished returning results: " + resultList.size() );
-
+            if ( normalizeResults ) {
+                resultList = relevanceNormalizer.normalize( resultList, query );
+            }
+            LOGGER.debug( "Sorting the results by {}", coreComparator );
             Collections.sort( resultList, coreComparator );
-
             returnResults.setHits( totalHits );
             int maxResults = query.getPageSize() > 0 ? query.getPageSize() : Integer.MAX_VALUE;
 

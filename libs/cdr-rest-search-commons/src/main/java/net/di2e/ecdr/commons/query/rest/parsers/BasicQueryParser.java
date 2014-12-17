@@ -70,9 +70,25 @@ public class BasicQueryParser implements QueryParser {
         SORTKEYS_MAP.put( "entry/date", Metacard.MODIFIED );
         SORTKEYS_MAP.put( "score", Result.RELEVANCE );
         SORTKEYS_MAP.put( "distance", Result.DISTANCE );
-
     }
 
+    private static final Map<String, SortOrder> DEFAULT_SORTORDER_MAP = new HashMap<String, SortOrder>();
+
+    static {
+        DEFAULT_SORTORDER_MAP.put( "created", SortOrder.DESCENDING );
+        DEFAULT_SORTORDER_MAP.put( "updated", SortOrder.DESCENDING );
+        DEFAULT_SORTORDER_MAP.put( "posted", SortOrder.DESCENDING );
+        DEFAULT_SORTORDER_MAP.put( "infoCutOff", SortOrder.DESCENDING );
+        DEFAULT_SORTORDER_MAP.put( "validTil", SortOrder.ASCENDING );
+        DEFAULT_SORTORDER_MAP.put( "temporalCoverage", SortOrder.DESCENDING );
+        DEFAULT_SORTORDER_MAP.put( "effective", SortOrder.DESCENDING );
+
+        DEFAULT_SORTORDER_MAP.put( "entry/title", SortOrder.ASCENDING );
+        DEFAULT_SORTORDER_MAP.put( "entry/date", SortOrder.DESCENDING );
+        DEFAULT_SORTORDER_MAP.put( "score", SortOrder.DESCENDING );
+        DEFAULT_SORTORDER_MAP.put( "distance", SortOrder.ASCENDING );
+    }
+    
     private static final List<String> LANGUAGE_LIST = new ArrayList<String>();
     static {
         LANGUAGE_LIST.add( SearchConstants.CDR_KEYWORD_QUERY_LANGUAGE );
@@ -282,11 +298,16 @@ public class BasicQueryParser implements QueryParser {
             String sortKey = sortValues[0];
             String sortValue = SORTKEYS_MAP.get( sortKey );
             if ( sortValue != null ) {
-                SortOrder sortOrder = SortOrder.ASCENDING;
+                SortOrder sortOrder = null;
                 if ( sortValues.length >= 3 ) {
                     if ( "false".equalsIgnoreCase( sortValues[2] ) ) {
                         sortOrder = SortOrder.DESCENDING;
                     }
+                } else {
+                    sortOrder = DEFAULT_SORTORDER_MAP.get( sortKey );
+                }
+                if ( sortOrder == null ) {
+                    sortOrder = SortOrder.ASCENDING;
                 }
                 sortBy = new SortByImpl( sortValue, sortOrder );
             }

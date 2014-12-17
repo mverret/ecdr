@@ -89,6 +89,15 @@ public class BrokerQueryParser extends LegacyQueryParser {
         return queryProperties;
     }
 
+    @Override
+    public boolean isValidQuery( MultivaluedMap<String, String> queryParameters, String sourceId ) {
+        boolean isValidQuery = super.isValidQuery( queryParameters, sourceId );
+        if ( isValidQuery && !isBooleanNullOrBlank( queryParameters.getFirst( BrokerConstants.DEDUP_PARAMETER ) ) ) {
+            isValidQuery = false;
+        }
+        return isValidQuery;
+    }
+
     protected boolean isUniqueQuery( MultivaluedMap<String, String> queryParameters, String sourceId ) {
         boolean uniqueQuery = true;
         QueryRequestCache queryRequestCache = getQueryRequestCache();

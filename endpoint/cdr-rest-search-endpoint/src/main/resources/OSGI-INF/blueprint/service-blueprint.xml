@@ -50,15 +50,6 @@
     
     <bean id="pool" class="java.util.concurrent.Executors" factory-method="newCachedThreadPool" />
 
-    <bean id="sorted" class="net.di2e.ecdr.federation.SimpleSortedFederationStrategy">
-        <cm:managed-properties persistent-id="net.di2e.ecdr.federation.SimpleSortedFederationStrategy"
-                               update-strategy="container-managed" />
-        <argument ref="pool" />
-        <argument ref="preFederatedQuerySortedList" />
-        <argument ref="postFederatedQuerySortedList" />
-        <property name="maxStartIndex" value="50000" />
-    </bean>
-
     <reference id="transformIdMapper" interface="net.di2e.ecdr.search.transform.mapper.TransformIdMapper" />
     <reference id="catalogFramework" interface="ddf.catalog.CatalogFramework" />
     <reference id="filterBuilder" interface="ddf.catalog.filter.FilterBuilder" />
@@ -82,7 +73,6 @@
         <argument ref="filterBuilder" />
         <argument ref="queryParser" />
         <argument ref="transformIdMapper" />
-        <argument ref="sorted" />
     </bean>
 
     <service ref="cdrRestSearchService" auto-export="interfaces" />

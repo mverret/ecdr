@@ -621,7 +621,6 @@
 
     <modules>
         <module>libs</module>
-        <module>plugin</module>
 		<module>transformer</module>
         <module>federation</module>
         <module>endpoint</module>

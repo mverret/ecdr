@@ -10,7 +10,31 @@
  * <http://www.gnu.org/licenses/lgpl.html>.
  *
  **/
-package net.di2e.ecdr.plugin.relevance;
+package net.di2e.ecdr.libs.result.relevance;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import net.di2e.ecdr.libs.result.relevance.RelevanceNormalizer;
+
+import org.apache.commons.io.IOUtils;
+import org.junit.Test;
+import org.opengis.filter.Filter;
+import org.opengis.filter.expression.PropertyName;
+import org.opengis.filter.sort.SortOrder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import ddf.catalog.data.Result;
 import ddf.catalog.data.impl.MetacardImpl;
@@ -23,29 +47,8 @@ import ddf.catalog.operation.QueryResponse;
 import ddf.catalog.operation.impl.QueryImpl;
 import ddf.catalog.operation.impl.QueryRequestImpl;
 import ddf.catalog.operation.impl.QueryResponseImpl;
-import org.apache.commons.io.IOUtils;
-import org.junit.Test;
-import org.opengis.filter.Filter;
-import org.opengis.filter.expression.PropertyName;
-import org.opengis.filter.sort.SortOrder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-public class RelevancePluginTest {
+public class RelevanceNormalizerTest {
 
     private static final String SEARCH_KEY = "q";
     private static final String EXAMPLE_PHRASE = "snow";
@@ -56,7 +59,7 @@ public class RelevancePluginTest {
     private static final double ORIG_SCORE1 = .225;
     private static final double ORIG_SCORE2 = .556;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger( RelevancePluginTest.class );
+    private static final Logger LOGGER = LoggerFactory.getLogger( RelevanceNormalizerTest.class );
 
     /**
      * Tests out that the scores of results are changed after the plugin is run.
@@ -72,10 +75,10 @@ public class RelevancePluginTest {
         Map<String, String> paramMap = new HashMap<>();
         paramMap.put( SEARCH_KEY, EXAMPLE_PHRASE );
         FilterAdapter filterAdapter = createAdapter( paramMap );
-        RelevancePlugin plugin = new RelevancePlugin( filterAdapter );
-        QueryResponse returnResponse = plugin.process( queryResponse );
-        assertNotSame( queryResponse, returnResponse );
-        for ( Result curResult : returnResponse.getResults() ) {
+        RelevanceNormalizer resultNormalizer = new RelevanceNormalizer( filterAdapter );
+        List<Result> returnResponse = resultNormalizer.normalize( queryResponse.getResults(), queryResponse.getRequest().getQuery() );
+        assertNotSame( queryResponse.getResults(), returnResponse );
+        for ( Result curResult : returnResponse ) {
             if ( ID_1.equals( curResult.getMetacard().getId() ) ) {
                 compareResults( result1, curResult );
             } else if ( ID_2.equals( curResult.getMetacard().getId() ) ) {
@@ -98,9 +101,9 @@ public class RelevancePluginTest {
         Map<String, String> paramMap = new HashMap<>();
         paramMap.put( SEARCH_KEY, EXAMPLE_PHRASE );
         FilterAdapter filterAdapter = createAdapter( paramMap );
-        RelevancePlugin plugin = new RelevancePlugin( filterAdapter );
-        QueryResponse returnResponse = plugin.process( queryResponse );
-        assertEquals( queryResponse, returnResponse );
+        RelevanceNormalizer resultNormalizer = new RelevanceNormalizer( filterAdapter );
+        List<Result> returnResponse = resultNormalizer.normalize( queryResponse.getResults(), queryResponse.getRequest().getQuery() );
+        assertEquals( queryResponse.getResults(), returnResponse );
     }
 
     /**
@@ -114,9 +117,9 @@ public class RelevancePluginTest {
         Map<String, String> paramMap = new HashMap<>();
         paramMap.put( SEARCH_KEY, EXAMPLE_PHRASE );
         FilterAdapter filterAdapter = createAdapter( paramMap );
-        RelevancePlugin plugin = new RelevancePlugin( filterAdapter );
-        QueryResponse returnResponse = plugin.process( queryResponse );
-        assertEquals( queryResponse, returnResponse );
+        RelevanceNormalizer resultNormalizer = new RelevanceNormalizer( filterAdapter );
+        List<Result> returnResponse = resultNormalizer.normalize( queryResponse.getResults(), queryResponse.getRequest().getQuery() );
+        assertEquals( queryResponse.getResults(), returnResponse );
     }
 
     /**
@@ -128,9 +131,9 @@ public class RelevancePluginTest {
     public void testNoSearchPhrase() throws Exception {
         QueryResponse queryResponse = createResponse( new PropertyNameImpl( Result.DISTANCE ), SortOrder.ASCENDING, Collections.<Result>emptyList() );
         FilterAdapter filterAdapter = createAdapter( Collections.<String, String>emptyMap() );
-        RelevancePlugin plugin = new RelevancePlugin( filterAdapter );
-        QueryResponse returnResponse = plugin.process( queryResponse );
-        assertEquals( queryResponse, returnResponse );
+        RelevanceNormalizer resultNormalizer = new RelevanceNormalizer( filterAdapter );
+        List<Result> returnResponse = resultNormalizer.normalize( queryResponse.getResults(), queryResponse.getRequest().getQuery() );
+        assertEquals( queryResponse.getResults(), returnResponse );
     }
 
     /**

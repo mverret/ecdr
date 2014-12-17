@@ -22,12 +22,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 import net.di2e.ecdr.commons.util.SearchConstants;
+import net.di2e.ecdr.federation.api.NormalizingFederationStrategy;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ddf.catalog.data.Result;
-import ddf.catalog.federation.FederationStrategy;
 import ddf.catalog.operation.Query;
 import ddf.catalog.operation.QueryRequest;
 import ddf.catalog.operation.QueryResponse;
@@ -42,11 +42,11 @@ import ddf.catalog.plugin.StopProcessingException;
 import ddf.catalog.source.Source;
 
 /**
- * This class serves as a base implementation of the {@link FederationStrategy} interface. Other classes can extend this
- * class to create specific attributes to sort by.
+ * This class serves as a base implementation of the FederationStrategy interface. Other classes can extend this class
+ * to create specific attributes to sort by.
  * 
  */
-public abstract class AbstractFederationStrategy implements FederationStrategy {
+public abstract class AbstractFederationStrategy implements NormalizingFederationStrategy {
     private static final Logger LOGGER = LoggerFactory.getLogger( AbstractFederationStrategy.class );
 
     // private static XLogger logger = new
@@ -274,7 +274,7 @@ public abstract class AbstractFederationStrategy implements FederationStrategy {
             int resultsSent = 0;
             Result result = null;
 
-            while ( resultsSent < pageSize && originalResults.hasMoreResults() )  {
+            while ( resultsSent < pageSize && originalResults.hasMoreResults() ) {
                 result = originalResults.take();
                 if ( result != null ) {
                     if ( queryResultIndex >= offset ) {

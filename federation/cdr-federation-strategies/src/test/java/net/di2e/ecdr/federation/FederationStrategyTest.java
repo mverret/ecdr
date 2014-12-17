@@ -37,9 +37,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import net.di2e.ecdr.commons.util.SearchConstants;
-import net.di2e.ecdr.federation.AbstractFederationStrategy;
-import net.di2e.ecdr.federation.FifoFederationStrategy;
-import net.di2e.ecdr.federation.SimpleSortedFederationStrategy;
 
 import org.geotools.filter.FilterFactoryImpl;
 import org.junit.Test;
@@ -118,7 +115,8 @@ public class FederationStrategyTest {
         runner.bind( provider );
 
         // Must have more than one thread or sleeps will block the monitor
-        SimpleSortedFederationStrategy fedStrategy = new SimpleSortedFederationStrategy( EXECUTOR, new ArrayList<PreFederatedQueryPlugin>(), new ArrayList<PostFederatedQueryPlugin>() );
+        NormalizingSortedFederationStrategy fedStrategy = new NormalizingSortedFederationStrategy( EXECUTOR, new ArrayList<PreFederatedQueryPlugin>(), new ArrayList<PostFederatedQueryPlugin>(), null );
+        fedStrategy.setNormalizeResults( false );
 
         CatalogFrameworkImpl framework = new CatalogFrameworkImpl( Collections.singletonList( (CatalogProvider) provider ), null, new ArrayList<PreIngestPlugin>(), new ArrayList<PostIngestPlugin>(),
                 new ArrayList<PreQueryPlugin>(), new ArrayList<PostQueryPlugin>(), new ArrayList<PreResourcePlugin>(), new ArrayList<PostResourcePlugin>(), new ArrayList<ConnectedSource>(),
@@ -184,7 +182,8 @@ public class FederationStrategyTest {
         List<Source> sources = new ArrayList<Source>();
         sources.add( mockProvider );
 
-        SimpleSortedFederationStrategy sortedStrategy = new SimpleSortedFederationStrategy( EXECUTOR, new ArrayList<PreFederatedQueryPlugin>(), new ArrayList<PostFederatedQueryPlugin>() );
+        NormalizingSortedFederationStrategy sortedStrategy = new NormalizingSortedFederationStrategy( EXECUTOR, new ArrayList<PreFederatedQueryPlugin>(), new ArrayList<PostFederatedQueryPlugin>(), null );
+        sortedStrategy.setNormalizeResults( false );
 
         QueryResponse fedResponse = sortedStrategy.federate( sources, fedQueryRequest );
         assertEquals( 1, fedResponse.getResults().size() );
@@ -281,7 +280,8 @@ public class FederationStrategyTest {
         QueryResponseImpl offsetResultQueue = new QueryResponseImpl( queryRequest, null );
         PowerMockito.whenNew( QueryResponseImpl.class ).withArguments( queryRequest, (Map<String, Serializable>) null ).thenReturn( mockOriginalResults, offsetResultQueue );
 
-        SimpleSortedFederationStrategy strategy = new SimpleSortedFederationStrategy( EXECUTOR, new ArrayList<PreFederatedQueryPlugin>(), new ArrayList<PostFederatedQueryPlugin>() );
+        NormalizingSortedFederationStrategy strategy = new NormalizingSortedFederationStrategy( EXECUTOR, new ArrayList<PreFederatedQueryPlugin>(), new ArrayList<PostFederatedQueryPlugin>(), null );
+        strategy.setNormalizeResults( false );
 
         // Run Test
         QueryResponse federatedResponse = strategy.federate( sources, queryRequest );
@@ -363,7 +363,8 @@ public class FederationStrategyTest {
         List<Source> sources = new ArrayList<Source>( 1 );
         sources.add( mockSource1 );
 
-        SimpleSortedFederationStrategy strategy = new SimpleSortedFederationStrategy( EXECUTOR, new ArrayList<PreFederatedQueryPlugin>(), new ArrayList<PostFederatedQueryPlugin>() );
+        NormalizingSortedFederationStrategy strategy = new NormalizingSortedFederationStrategy( EXECUTOR, new ArrayList<PreFederatedQueryPlugin>(), new ArrayList<PostFederatedQueryPlugin>(), null );
+        strategy.setNormalizeResults( false );
 
         // Run Test
         QueryResponse federatedResponse = strategy.federate( sources, queryRequest );
@@ -451,7 +452,8 @@ public class FederationStrategyTest {
         sources.add( mockSource1 );
         sources.add( mockSource2 );
 
-        SimpleSortedFederationStrategy strategy = new SimpleSortedFederationStrategy( EXECUTOR, new ArrayList<PreFederatedQueryPlugin>(), new ArrayList<PostFederatedQueryPlugin>() );
+        NormalizingSortedFederationStrategy strategy = new NormalizingSortedFederationStrategy( EXECUTOR, new ArrayList<PreFederatedQueryPlugin>(), new ArrayList<PostFederatedQueryPlugin>(), null );
+        strategy.setNormalizeResults( false );
 
         // Run Test
         QueryResponse federatedResponse = strategy.federate( sources, queryRequest );
@@ -535,7 +537,8 @@ public class FederationStrategyTest {
         List<Source> sources = new ArrayList<Source>( 1 );
         sources.add( mockSource1 );
 
-        SimpleSortedFederationStrategy strategy = new SimpleSortedFederationStrategy( EXECUTOR, new ArrayList<PreFederatedQueryPlugin>(), new ArrayList<PostFederatedQueryPlugin>() );
+        NormalizingSortedFederationStrategy strategy = new NormalizingSortedFederationStrategy( EXECUTOR, new ArrayList<PreFederatedQueryPlugin>(), new ArrayList<PostFederatedQueryPlugin>(), null );
+        strategy.setNormalizeResults( false );
 
         // Run Test
         QueryResponse federatedResponse = strategy.federate( sources, queryRequest );

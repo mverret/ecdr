@@ -26,6 +26,7 @@ import javax.ws.rs.core.UriInfo;
 import net.di2e.ecdr.commons.endpoint.rest.AbstractRestSearchEndpoint;
 import net.di2e.ecdr.commons.query.rest.CDRQueryImpl;
 import net.di2e.ecdr.commons.query.rest.parsers.QueryParser;
+import net.di2e.ecdr.federation.api.NormalizingFederationStrategy;
 import net.di2e.ecdr.search.transform.mapper.TransformIdMapper;
 
 import org.codice.ddf.configuration.impl.ConfigurationWatcherImpl;
@@ -35,7 +36,6 @@ import org.slf4j.LoggerFactory;
 
 import ddf.catalog.CatalogFramework;
 import ddf.catalog.federation.FederationException;
-import ddf.catalog.federation.FederationStrategy;
 import ddf.catalog.filter.FilterBuilder;
 import ddf.catalog.operation.QueryRequest;
 import ddf.catalog.operation.QueryResponse;
@@ -60,7 +60,7 @@ public class CDRRestBrokerServiceImpl extends AbstractRestSearchEndpoint {
     private static final String RELATIVE_URL = "/services/cdr/broker/rest";
     private static final String SERVICE_TYPE = "CDR Brokered REST Search";
 
-    private FederationStrategy sortedFedStrategy = null;
+    private NormalizingFederationStrategy sortedFedStrategy = null;
 
     /**
      * Constructor for JAX RS CDR Search Service. Values should ideally be passed into the constructor using a
@@ -77,7 +77,7 @@ public class CDRRestBrokerServiceImpl extends AbstractRestSearchEndpoint {
      *            String. Query parsers are tied to different versions of a query profile
      */
     public CDRRestBrokerServiceImpl( CatalogFramework framework, ConfigurationWatcherImpl config, FilterBuilder builder, QueryParser parser, TransformIdMapper mapper,
-        FederationStrategy sortedFedStrategy ) {
+            NormalizingFederationStrategy sortedFedStrategy ) {
         super( framework, config, builder, parser, mapper );
         this.sortedFedStrategy = sortedFedStrategy;
     }
@@ -129,16 +129,10 @@ public class CDRRestBrokerServiceImpl extends AbstractRestSearchEndpoint {
     public QueryResponse executeQuery( String localSourceId, MultivaluedMap<String, String> queryParameters, CDRQueryImpl query ) throws SourceUnavailableException, UnsupportedQueryException,
             FederationException {
         Collection<String> siteNames = query.getSiteNames();
-        // Collection<String> siteNames = Collections.singletonList( "SELF" );
 
         QueryRequest queryRequest = new QueryRequestImpl( query, siteNames.isEmpty(), siteNames, getQueryParser().getQueryProperties( queryParameters, localSourceId ) );
         SortBy originalSortBy = getQueryParser().getSortBy( queryParameters );
-        QueryResponse queryResponse;
-        if (originalSortBy == null) {
-            queryResponse = getCatalogFramework().query( queryRequest );
-        } else {
-            queryResponse = getCatalogFramework().query( queryRequest, sortedFedStrategy );
-        }
+        QueryResponse queryResponse = originalSortBy == null ? getCatalogFramework().query( queryRequest ) : getCatalogFramework().query( queryRequest, sortedFedStrategy );
         return queryResponse;
     }
 

@@ -17,12 +17,12 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>net.di2e.ecdr</groupId>
-        <artifactId>plugin</artifactId>
+        <artifactId>libs</artifactId>
         <version>0.7.0-SNAPSHOT</version>
     </parent>
-    <name>Enterprise CDR :: Plugin :: Relevance PostQuery Plugin</name>
-    <groupId>net.di2e.ecdr.plugin</groupId>
-    <artifactId>cdr-plugin-relevance</artifactId>
+    <name>Enterprise CDR :: Libs :: Result Relevance Normalizer</name>
+    <groupId>net.di2e.ecdr.libs</groupId>
+    <artifactId>cdr-libs-result-relevance-normalizer</artifactId>
     <packaging>bundle</packaging>
 
 
@@ -98,7 +98,9 @@
                             org.apache.lucene.sandbox.queries;resolution:=optional,
                             *
                         </Import-Package>
-                        <Export-Package />
+                        <Export-Package>
+                            net.di2e.ecdr.libs.result.relevance,
+                        </Export-Package>
                     </instructions>
                 </configuration>
             </plugin>

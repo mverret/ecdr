@@ -38,7 +38,12 @@
             <artifactId>cdr-transformer-mapper</artifactId>
             <version>${project.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>net.di2e.ecdr.federation</groupId>
+            <artifactId>cdr-federation-strategies</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        
         <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-bundle</artifactId>

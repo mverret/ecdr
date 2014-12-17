@@ -27,13 +27,11 @@ import net.di2e.ecdr.commons.query.rest.parsers.QueryParser;
 import net.di2e.ecdr.search.transform.mapper.TransformIdMapper;
 
 import org.codice.ddf.configuration.impl.ConfigurationWatcherImpl;
-import org.opengis.filter.sort.SortBy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ddf.catalog.CatalogFramework;
 import ddf.catalog.federation.FederationException;
-import ddf.catalog.federation.FederationStrategy;
 import ddf.catalog.filter.FilterBuilder;
 import ddf.catalog.operation.QueryRequest;
 import ddf.catalog.operation.QueryResponse;
@@ -42,8 +40,7 @@ import ddf.catalog.source.SourceUnavailableException;
 import ddf.catalog.source.UnsupportedQueryException;
 
 /**
- * JAX-RS Web Service which implements the CDR REST Search Specification which
- * is based on Open Search
+ * JAX-RS Web Service which implements the CDR REST Search Specification which is based on Open Search
  *
  * @author Jeff Vettraino
  */
@@ -55,34 +52,27 @@ public class CDRRestSearchServiceImpl extends AbstractRestSearchEndpoint {
     private static final String RELATIVE_URL = "/services/cdr/search/rest";
     private static final String SERVICE_TYPE = "CDR REST Search Service";
 
-    private FederationStrategy sortedFedStrategy = null;
-
     /**
-     * Constructor for JAX RS CDR Search Service. Values should ideally be
-     * passed into the constructor using a dependency injection framework like
-     * blueprint
+     * Constructor for JAX RS CDR Search Service. Values should ideally be passed into the constructor using a
+     * dependency injection framework like blueprint
      *
      * @param framework
      *            Catalog Framework which will be used for search
      * @param config
-     *            ConfigurationWatcherImpl used to get the platform
-     *            configuration values
+     *            ConfigurationWatcherImpl used to get the platform configuration values
      * @param builder
      *            FilterBuilder implementation
      * @param parser
-     *            The instance of the QueryParser to use which will determine
-     *            how to parse the parameters from the queyr String. Query
-     *            parsers are tied to different versions of a query profile
+     *            The instance of the QueryParser to use which will determine how to parse the parameters from the queyr
+     *            String. Query parsers are tied to different versions of a query profile
      * @param mapper
-     *            The transformation mapper for handling mapping the external
-     *            CDR transform name to the internal DDF transform name
+     *            The transformation mapper for handling mapping the external CDR transform name to the internal DDF
+     *            transform name
      * @param sortedFedStrategy
      *            Federation strategy to use
      */
-    public CDRRestSearchServiceImpl( CatalogFramework framework, ConfigurationWatcherImpl config, FilterBuilder builder, QueryParser parser,
-            TransformIdMapper mapper, FederationStrategy sortedFedStrategy ) {
+    public CDRRestSearchServiceImpl( CatalogFramework framework, ConfigurationWatcherImpl config, FilterBuilder builder, QueryParser parser, TransformIdMapper mapper ) {
         super( framework, config, builder, parser, mapper );
-        this.sortedFedStrategy = sortedFedStrategy;
     }
 
     @HEAD
@@ -119,17 +109,10 @@ public class CDRRestSearchServiceImpl extends AbstractRestSearchEndpoint {
     }
 
     @Override
-    public QueryResponse executeQuery( String localSourceId, MultivaluedMap<String, String> queryParameters, CDRQueryImpl query )
-            throws SourceUnavailableException, UnsupportedQueryException, FederationException {
-        QueryRequest queryRequest = new QueryRequestImpl( query, false, query.getSiteNames(), getQueryParser().getQueryProperties( queryParameters,
-                localSourceId ) );
-        SortBy originalSortBy = getQueryParser().getSortBy( queryParameters );
-        QueryResponse queryResponse;
-        if (originalSortBy == null) {
-            queryResponse = getCatalogFramework().query( queryRequest );
-        } else {
-            queryResponse = getCatalogFramework().query( queryRequest, sortedFedStrategy );
-        }
+    public QueryResponse executeQuery( String localSourceId, MultivaluedMap<String, String> queryParameters, CDRQueryImpl query ) throws SourceUnavailableException, UnsupportedQueryException,
+            FederationException {
+        QueryRequest queryRequest = new QueryRequestImpl( query, false, query.getSiteNames(), getQueryParser().getQueryProperties( queryParameters, localSourceId ) );
+        QueryResponse queryResponse = getCatalogFramework().query( queryRequest );
         return queryResponse;
     }
 
