@@ -63,6 +63,7 @@ public final class SearchConstants {
     public static final String OID_PARAMETER = "oid";
     
     public static final String CDR_KEYWORD_QUERY_LANGUAGE = "cdr-kw-basic-2.0";
+    public static final String CDR_CQL_QUERY_LANGUAGE = "cql-1.2";
 
     public static final String GEORSS_RESULT_FORMAT_PARAMETER = "georssFormat";
     public static final String GEORSS_SIMPLE_FORMAT = "simple";

@@ -92,6 +92,7 @@ public class BasicQueryParser implements QueryParser {
     private static final List<String> LANGUAGE_LIST = new ArrayList<String>();
     static {
         LANGUAGE_LIST.add( SearchConstants.CDR_KEYWORD_QUERY_LANGUAGE );
+        LANGUAGE_LIST.add( SearchConstants.CDR_CQL_QUERY_LANGUAGE );
     }
 
     private static DateTimeFormatter formatter;

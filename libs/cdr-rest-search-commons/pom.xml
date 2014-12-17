@@ -68,6 +68,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-cql</artifactId>
+            <version>8.4</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-bundle</artifactId>
             <scope>provided</scope>
@@ -91,7 +97,7 @@
                             platform-configuration-impl,
                             parboiled*;scope=compile|runtime,
                             asm*;scope=compile|runtime,
-
+                            gt-cql;scope=runtime|compile
                         </Embed-Dependency>
                         <Import-Package>
                             !org.apache.commons.codec.*,
