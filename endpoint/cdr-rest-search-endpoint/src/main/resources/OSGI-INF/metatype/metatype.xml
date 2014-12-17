@@ -43,7 +43,7 @@
             <Option label="Valid Until" value="validTil" />
         </AD>
         
-        <AD name="Query Request Cache Size" id="queryRequestCacheSize" required="true" type="Integer" default="3"
+        <AD name="Query Request Cache Size" id="queryRequestCacheSize" required="true" type="Integer" default="1000"
             description="The number of query IDs (OID) to keep in cache to check against when  checking for unique queries.  Updating this value will clear the current cache." />
             
     </OCD>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright (c) Cohesive Integrations, LLC
+ *
+ * This is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or any later version. 
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details. A copy of the GNU Lesser General Public License is distributed along with this program and can be found at
+ * <http://www.gnu.org/licenses/lgpl.html>.
+ * 
+ **/
+ -->
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.0.0">
+
+    <bean id="preFederatedQuerySortedList" class="ddf.catalog.util.impl.SortedServiceList">
+        <argument ref="blueprintBundleContext" />
+    </bean>
+
+    <bean id="postFederatedQuerySortedList" class="ddf.catalog.util.impl.SortedServiceList">
+        <argument ref="blueprintBundleContext" />
+    </bean>
+
+    <!-- PRE FEDERATED QUERY REFERENCE -->
+    <reference-list id="preFederatedQuery" interface="ddf.catalog.plugin.PreFederatedQueryPlugin"
+        availability="optional">
+        <reference-listener bind-method="bindPlugin" unbind-method="unbindPlugin" ref="preFederatedQuerySortedList" />
+    </reference-list>
+    
+    <!-- POST FEDERATED QUERY REFERENCE -->
+    <reference-list id="postFederatedQuery" interface="ddf.catalog.plugin.PostFederatedQueryPlugin"
+        availability="optional">
+        <reference-listener bind-method="bindPlugin" unbind-method="unbindPlugin" ref="postFederatedQuerySortedList" />
+    </reference-list>
+
+    <bean id="pool" class="java.util.concurrent.Executors" factory-method="newCachedThreadPool" />
+    
+    <reference id="filterAdapter" interface="ddf.catalog.filter.FilterAdapter" />
+
+    <service id="normalizingFederationStrategy" ref="normalizingFederationStrategyBean" interface="net.di2e.ecdr.federation.api.NormalizingFederationStrategy" />
+    
+    <bean id="normalizingFederationStrategyBean" class="net.di2e.ecdr.federation.NormalizingSortedFederationStrategy">
+        <cm:managed-properties persistent-id="cdr-federation-strategies" update-strategy="container-managed"/>
+        <argument ref="pool" />
+        <argument ref="preFederatedQuerySortedList" />
+        <argument ref="postFederatedQuerySortedList" />
+        <argument ref="normalizer" />
+        <property name="maxStartIndex" value="50000" />
+    </bean>
+        
+    <bean id="normalizer" class="net.di2e.ecdr.libs.result.relevance.RelevanceNormalizer">
+        <argument ref="filterAdapter" />
+    </bean>
+
+
+</blueprint>

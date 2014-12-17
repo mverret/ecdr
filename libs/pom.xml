@@ -27,6 +27,7 @@
 
     <modules>
         <module>cdr-libs-cache</module>
+        <module>cdr-libs-result-relevance-normalizer</module>
         <module>cdr-rest-search-commons</module>
     </modules>
 </project>

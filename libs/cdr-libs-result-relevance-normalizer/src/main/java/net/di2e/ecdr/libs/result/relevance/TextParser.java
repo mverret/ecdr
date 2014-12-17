@@ -11,7 +11,7 @@
  * <http://www.gnu.org/licenses/lgpl.html>.
  *
  **/
-package net.di2e.ecdr.plugin.relevance;
+package net.di2e.ecdr.libs.result.relevance;
 
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.stax2.XMLInputFactory2;

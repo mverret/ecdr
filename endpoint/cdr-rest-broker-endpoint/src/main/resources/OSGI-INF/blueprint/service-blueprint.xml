@@ -31,6 +31,7 @@
     <reference id="transformIdMapper" interface="net.di2e.ecdr.search.transform.mapper.TransformIdMapper" />
     <reference id="catalogFramework" interface="ddf.catalog.CatalogFramework" />
     <reference id="filterBuilder" interface="ddf.catalog.filter.FilterBuilder" />
+    <reference id="normalizingFedStrategy" interface="net.di2e.ecdr.federation.api.NormalizingFederationStrategy" />
 
     <service id="cdrRestConfigWatcher" ref="configurationWatcher" interface="org.codice.ddf.configuration.ConfigurationWatcher" />
     <bean id="configurationWatcher" class="org.codice.ddf.configuration.impl.ConfigurationWatcherImpl" />
@@ -41,44 +42,13 @@
         </jaxrs:serviceBeans>
     </jaxrs:server>
 
-    <bean id="preFederatedQuerySortedList" class="ddf.catalog.util.impl.SortedServiceList">
-        <argument ref="blueprintBundleContext" />
-    </bean>
-
-    <bean id="postFederatedQuerySortedList" class="ddf.catalog.util.impl.SortedServiceList">
-        <argument ref="blueprintBundleContext" />
-    </bean>
-
-    <!-- PRE FEDERATED QUERY REFERENCE -->
-    <reference-list id="preFederatedQuery" interface="ddf.catalog.plugin.PreFederatedQueryPlugin"
-        availability="optional">
-        <reference-listener bind-method="bindPlugin" unbind-method="unbindPlugin" ref="preFederatedQuerySortedList" />
-    </reference-list>
-    
-    <!-- POST FEDERATED QUERY REFERENCE -->
-    <reference-list id="postFederatedQuery" interface="ddf.catalog.plugin.PostFederatedQueryPlugin"
-        availability="optional">
-        <reference-listener bind-method="bindPlugin" unbind-method="unbindPlugin" ref="postFederatedQuerySortedList" />
-    </reference-list>
-
-    <bean id="pool" class="java.util.concurrent.Executors" factory-method="newCachedThreadPool" />
-
-    <bean id="sorted" class="net.di2e.ecdr.federation.SimpleSortedFederationStrategy">
-        <cm:managed-properties persistent-id="net.di2e.ecdr.federation.SimpleSortedFederationStrategy"
-            update-strategy="container-managed" />
-        <argument ref="pool" />
-        <argument ref="preFederatedQuerySortedList" />
-        <argument ref="postFederatedQuerySortedList" />
-        <property name="maxStartIndex" value="50000" />
-    </bean>
-
     <bean id="cdrRestSearchService" class="net.di2e.ecdr.broker.endpoint.rest.CDRRestBrokerServiceImpl">
         <argument ref="catalogFramework" />
         <argument ref="configurationWatcher" />
         <argument ref="filterBuilder" />
         <argument ref="queryParser" />
         <argument ref="transformIdMapper" />
-        <argument ref="sorted" />
+        <argument ref="normalizingFedStrategy" />
     </bean>
 
     <service ref="cdrRestSearchService" auto-export="interfaces" />
