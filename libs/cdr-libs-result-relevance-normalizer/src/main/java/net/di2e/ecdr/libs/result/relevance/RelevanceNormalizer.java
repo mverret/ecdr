@@ -70,8 +70,9 @@ public class RelevanceNormalizer {
 
     /**
      * Normalize the relevance score for the results in the query response based on the contextual query criteria
-     * 
-     * @param queryResponse
+     *
+     * @param results
+     * @param originalQuery
      * @return
      */
     public List<Result> normalize( List<Result> results, Query originalQuery ) {
@@ -123,9 +124,16 @@ public class RelevanceNormalizer {
                     // loop through the indexed search results and update the scores in the original query results
                     for ( ScoreDoc curHit : hits ) {
                         Document doc = iSearcher.doc( curHit.doc );
-                        Result result = docMap.get( doc.getField( ID_FIELD ).stringValue() );
+                        String id = doc.getField( ID_FIELD ).stringValue();
+                        Result result = docMap.get( id );
+                        docMap.remove( id );
                         updatedResults.add( updateResult( result, curHit.score ) );
                         LOGGER.debug( "Relevance for result {} was changed FROM {} TO {}", result.getMetacard().getId(), result.getRelevanceScore(), curHit.score );
+                    }
+                    // check if there are any results left that did not match the keyword query
+                    for (Map.Entry<String, Result> curEntry : docMap.entrySet()) {
+                        // add result in with 0 relevance score
+                        updatedResults.add( updateResult( curEntry.getValue(), 0 ) );
                     }
                     // create new query response
                     return updatedResults;
