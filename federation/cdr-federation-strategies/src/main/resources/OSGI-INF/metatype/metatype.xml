@@ -18,7 +18,7 @@
 
     <OCD name="CDR Query Result Normalization" id="cdr-federation-strategies">
 
-        <AD name="Normalize Relevance Score" id="normalizeRelevance" required="true" type="Boolean" default="true"
+        <AD name="Normalize Relevance Score" id="normalizeResults" required="true" type="Boolean" default="true"
             description="Normalizes the relevance score/ranking, on queries that request to be sorted by relevance" />
     </OCD>
 

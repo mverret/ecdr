@@ -96,6 +96,7 @@ public class NormalizingSortedFederationStrategy extends AbstractFederationStrat
 
     @Override
     public void setNormalizeResults( boolean normalize ) {
+        LOGGER.debug( "Setting the normalizeResults flag to {}", normalize );
         this.normalizeResults = normalize;
     }
 
