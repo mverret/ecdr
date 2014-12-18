@@ -268,7 +268,9 @@
                     <version>${maven.surefire.plugin.version}</version>
                     <configuration>
                         <argLine>-Djava.awt.headless=true</argLine>
+                        <argLine>-XX:-UseSplitVerifier</argLine>
                     </configuration>
+                    
                 </plugin>
 
                 <plugin>
