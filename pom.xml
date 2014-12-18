@@ -41,7 +41,7 @@
 
     <issueManagement>
         <system>Jira</system>
-        <url>https://contentdiscovery.atlassian.net/</url>
+        <url>https://di2e-ecdr.atlassian.net/</url>
     </issueManagement>
 
 	<!--<mailingLists>
@@ -355,7 +355,7 @@
                     <configuration>
                         <serverId>sonatype-nexus-staging</serverId>
                         <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                        <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        <autoReleaseAfterClose>false</autoReleaseAfterClose>
                     </configuration>
                 </plugin>
 
