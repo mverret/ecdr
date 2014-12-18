@@ -18,7 +18,7 @@
     <parent>
         <groupId>net.di2e.ecdr</groupId>
         <artifactId>libs</artifactId>
-        <version>0.7.0-SNAPSHOT</version>
+        <version>0.8.0</version>
     </parent>
     <name>Enterprise CDR :: Libs :: Result Relevance Normalizer</name>
     <groupId>net.di2e.ecdr.libs</groupId>
