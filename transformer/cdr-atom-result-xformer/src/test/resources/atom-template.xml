@@ -40,8 +40,17 @@
         <updated>2014-10-15T16:20:39.436Z</updated>
         <category term="myType" scheme="myVersion" label="Content Type"/>
         <cdrb:resultSource cdrb:sourceId="ddf.distribution">ddf.distribution</cdrb:resultSource>
+        <link href="http://localhost:8181/services/catalog/sources/SELF/57185033d7b34a61932b21f8a802891b?transform=metadata" rel="alternate" type="text/xml" title="View Product"/>
+        <link href="http://localhost:8181/services/catalog/sources/SELF/57185033d7b34a61932b21f8a802891b?transform=atom" rel="self" type="application/atom+xml" title="View Atom Entry"/>
+        <link href="http://localhost:8181/services/catalog/sources/SELF/57185033d7b34a61932b21f8a802891b?transform=thumbnail" rel="preview" type="image/jpeg" title="View Thumbnail"/>
+        <link href="http://localhost:8181/services/catalog/sources/SELF/57185033d7b34a61932b21f8a802891b" rel="related" type="text/xml" title="View Complete Metacard"/>
         $LOCATION
         <metacard:createdDate>2014-10-15T09:20:39.436-07:00</metacard:createdDate>
         <relevance:score>1.0</relevance:score>
+        <content>
+            <metacard:Resource>
+                <value>Sample Resource</value>
+            </metacard:Resource>
+        </content>
     </entry>
 </feed>
