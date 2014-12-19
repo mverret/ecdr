@@ -105,6 +105,10 @@ public class CDRRestSourceTest {
     public void testGoodCertificates() {
 
         CDRRestSource restSource = createSecuredSource( "/serverKeystore.jks", "changeit", "/serverTruststore.jks", "changeit" );
+        // quick check that getters do not cause exceptions
+        restSource.getContentTypes();
+        restSource.getOptions( null );
+        restSource.getSupportedSchemes();
         // hit server
         if ( restSource.isAvailable() == false ) {
             fail( "Could not get capabilities from the test server. This means no connection was established." );
@@ -162,8 +166,14 @@ public class CDRRestSourceTest {
         CDRRestSource source = new CDRRestSource( filterAdapter );
 
         source.setPingUrl( "https://localhost:" + serverPort + "/" );
+        source.setPingMethodString( PingMethod.HEAD.toString() );
         source.setPingMethod( PingMethod.GET );
         source.setAvailableCheckCacheTime( 0 );
+        source.setMaxResultCount( 10 );
+        source.setDefaultResponseFormat( "atom-cdr" );
+        source.setEndpointUrl( "https://localhost:" + serverPort + "/" );
+        source.setReceiveTimeoutSeconds( 10 );
+        source.setConnectionTimeoutSeconds( 1 );
 
         return source;
     }
