@@ -13,6 +13,7 @@
 package net.di2e.ecdr.libs.cache.impl;
 
 import ddf.catalog.data.Metacard;
+import ddf.catalog.data.impl.MetacardImpl;
 import net.di2e.ecdr.libs.cache.Cache;
 import net.di2e.ecdr.libs.cache.CacheManager;
 
@@ -24,8 +25,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public abstract class MetacardCacheManagerTest {
 
@@ -53,6 +57,12 @@ public abstract class MetacardCacheManagerTest {
         assertNotNull(cache1);
         assertNotNull(cache2);
         assertNotNull(cache3);
+
+        // verify cache works
+        MetacardImpl metacard = new MetacardImpl();
+        metacard.setId( CACHE_ID );
+        cache1.put( CACHE_ID, metacard );
+        assertEquals(CACHE_ID, cache1.get( CACHE_ID ).getId());
 
         // test duplicate check
         try {

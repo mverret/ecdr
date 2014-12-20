@@ -1,0 +1,4 @@
+<!-- Obtained from the National Snow and Ice Data Center, University of Colorado, Boulder. - http://nsidc.org/ -->
+<DIF xmlns="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/ http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/dif_v9.7.1.xsd">
+    <example>text</example>
+</DIF>

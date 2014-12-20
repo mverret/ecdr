@@ -54,10 +54,13 @@ public class RelevanceNormalizerTest {
     private static final String EXAMPLE_PHRASE = "snow";
     private static final String ID_1 = "metacard1";
     private static final String ID_2 = "metacard2";
+    private static final String ID_3 = "metacard3";
     private static final String XML_FILE1 = "example1.xml";
     private static final String XML_FILE2 = "example2.xml";
+    private static final String XML_FILE3 = "example3.xml";
     private static final double ORIG_SCORE1 = .225;
     private static final double ORIG_SCORE2 = .556;
+    private static final double ORIG_SCORE3 = .121;
 
     private static final Logger LOGGER = LoggerFactory.getLogger( RelevanceNormalizerTest.class );
 
@@ -70,7 +73,8 @@ public class RelevanceNormalizerTest {
     public void testReindexScores() throws Exception {
         Result result1 = createResult( ID_1, XML_FILE1, ORIG_SCORE1 );
         Result result2 = createResult( ID_2, XML_FILE2, ORIG_SCORE2 );
-        List<Result> results = Arrays.asList( result1, result2 );
+        Result result3 = createResult( ID_3, XML_FILE3, ORIG_SCORE3 );
+        List<Result> results = Arrays.asList( result1, result2, result3 );
         QueryResponse queryResponse = createResponse( new PropertyNameImpl( Result.RELEVANCE ), SortOrder.DESCENDING, results );
         Map<String, String> paramMap = new HashMap<>();
         paramMap.put( SEARCH_KEY, EXAMPLE_PHRASE );
@@ -83,11 +87,29 @@ public class RelevanceNormalizerTest {
                 compareResults( result1, curResult );
             } else if ( ID_2.equals( curResult.getMetacard().getId() ) ) {
                 compareResults( result2, curResult );
+            } else if (ID_3.equals( curResult.getMetacard().getId() ) ) {
+                compareResults( result3, curResult );
+                // should not have matched on search
+                assertEquals(Double.valueOf( 0 ), curResult.getRelevanceScore());
             } else {
                 fail( "metacard IDs do not match original metacards." );
             }
         }
 
+    }
+
+    /**
+     * Verifies that the plugin is skipped when search phrase is not present
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testNoPhraseSort() throws Exception {
+        QueryResponse queryResponse = createResponse( new PropertyNameImpl( Result.RELEVANCE ), SortOrder.DESCENDING, Collections.<Result>emptyList() );
+        FilterAdapter filterAdapter = createAdapter( Collections.<String, String>emptyMap() );
+        RelevanceNormalizer resultNormalizer = new RelevanceNormalizer( filterAdapter );
+        List<Result> returnResponse = resultNormalizer.normalize( queryResponse.getResults(), queryResponse.getRequest().getQuery() );
+        assertEquals( queryResponse.getResults(), returnResponse );
     }
 
     /**
