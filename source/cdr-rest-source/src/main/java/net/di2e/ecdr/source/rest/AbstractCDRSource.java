@@ -157,7 +157,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
 
     protected SourceResponse doQuery(Map<String, String> filterParameters, QueryRequest queryRequest) throws Exception {
         SourceResponse sourceResponse;
-        filterParameters.putAll( getIntialFilterParameters( queryRequest ) );
+        filterParameters.putAll( getInitialFilterParameters( queryRequest ) );
         setURLQueryString( filterParameters );
 
         LOGGER.debug( "Executing http GET query to source [{}] with url [{}]", getId(), cdrRestClient.getCurrentURI().toString() );
@@ -217,7 +217,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
                 }
 
             } else {
-                LOGGER.debug( "Pulling availability of CDR Rest Federated Source named [{}] from cache, isAvaialble=[{}]", getId(), isCurrentlyAvailable );
+                LOGGER.debug( "Pulling availability of CDR Rest Federated Source named [{}] from cache, isAvailable=[{}]", getId(), isCurrentlyAvailable );
             }
             if ( siteAvailabilityCallback != null ) {
                 if ( isCurrentlyAvailable ) {
@@ -283,81 +283,88 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
         if ( uri != null ) {
             LOGGER.debug( "Retrieving the remote resource using the uri [{}]", uri );
             WebClient retrieveWebClient = WebClient.create( uri );
-            Long bytesToSkip = null;
-            // If a bytesToSkip property is present add range header
-            if ( requestProperties.containsKey( BYTES_TO_SKIP ) ) {
-                bytesToSkip = (Long) requestProperties.get( BYTES_TO_SKIP );
-                if ( bytesToSkip != null ) {
-                    LOGGER.debug( "Setting Range header on retrieve request from remote CDR Source [{}] with bytes to skip [{}]", getId(), bytesToSkip );
-                    // This creates a Range header in the following manner if
-                    // 100 bytes were to be skipped. The end -
-                    // means its open ended
-                    // Range: bytes=100-
-                    retrieveWebClient.header( HEADER_RANGE, BYTES_EQUAL + bytesToSkip + "-" );
-                }
+            return doRetrieval( retrieveWebClient, requestProperties );
+        }
+        LOGGER.warn( "Could not retrieve resource from CDR Source named [{}] using uri [{}]", getId(), uri );
+        throw new ResourceNotFoundException( "Could not retrieve resource from source [" + getId() + "] and uri [" + uri + "]" );
+    }
+
+    protected ResourceResponse doRetrieval(WebClient retrieveWebClient, Map<String, Serializable> requestProperties ) throws ResourceNotFoundException, IOException {
+        URI uri = retrieveWebClient.getCurrentURI();
+        Long bytesToSkip = null;
+        // If a bytesToSkip property is present add range header
+        if ( requestProperties.containsKey( BYTES_TO_SKIP ) ) {
+            bytesToSkip = (Long) requestProperties.get( BYTES_TO_SKIP );
+            if ( bytesToSkip != null ) {
+                LOGGER.debug( "Setting Range header on retrieve request from remote CDR Source [{}] with bytes to skip [{}]", getId(), bytesToSkip );
+                // This creates a Range header in the following manner if
+                // 100 bytes were to be skipped. The end -
+                // means its open ended
+                // Range: bytes=100-
+                retrieveWebClient.header( HEADER_RANGE, BYTES_EQUAL + bytesToSkip + "-" );
             }
+        }
 
-            Response clientResponse = retrieveWebClient.get();
+        Response clientResponse = retrieveWebClient.get();
 
-            MediaType mediaType = clientResponse.getMediaType();
-            MimeType mimeType = null;
+        MediaType mediaType = clientResponse.getMediaType();
+        MimeType mimeType = null;
+        try {
+            mimeType = (mediaType == null) ? new MimeType( "application/octet-stream" ) : new MimeType( mediaType.toString() );
+            LOGGER.debug( "Creating mime type from CDR Source named [{}] using uri [{}] with value [{}] defaulting to [{}]", getId(), uri, mediaType );
+        } catch ( MimeTypeParseException e ) {
             try {
-                mimeType = (mediaType == null) ? new MimeType( "application/octet-stream" ) : new MimeType( mediaType.toString() );
-                LOGGER.debug( "Creating mime type from CDR Source named [{}] using uri [{}] with value [{}] defaulting to [{}]", getId(), uri, mediaType );
-            } catch ( MimeTypeParseException e ) {
-                try {
-                    mimeType = new MimeType( "application/octet-stream" );
-                    LOGGER.warn( "Creating mime type from CDR Source named [{}] using uri [{}] with value [{}] defaulting to [{}]", getId(), uri,
-                            "application/octet-stream" );
-                } catch ( MimeTypeParseException e1 ) {
-                    LOGGER.error( "Could not create MIMEType for resource being retrieved", e1 );
-                }
-
+                mimeType = new MimeType( "application/octet-stream" );
+                LOGGER.warn( "Creating mime type from CDR Source named [{}] using uri [{}] with value [{}] defaulting to [{}]", getId(), uri,
+                    "application/octet-stream" );
+            } catch ( MimeTypeParseException e1 ) {
+                LOGGER.error( "Could not create MIMEType for resource being retrieved", e1 );
             }
 
-            String dispositionString = clientResponse.getHeaderString( HEADER_CONTENT_DISPOSITION );
+        }
 
-            String fileName = null;
-            if ( dispositionString != null ) {
-                ContentDisposition contentDisposition = new ContentDisposition( dispositionString );
-                fileName = contentDisposition.getParameter( "filename" );
-                if ( fileName == null ) {
-                    fileName = contentDisposition.getParameter( "\"filename\"" );
-                }
-                if ( fileName == null ) {
-                    // TODO use MIMEType parser to get the file extension in
-                    // this case
-                    fileName = getId() + "-" + System.currentTimeMillis();
-                }
-            } else {
-                // TODO use MIMEType parser to get the file extension in this
-                // case
+        String dispositionString = clientResponse.getHeaderString( HEADER_CONTENT_DISPOSITION );
+
+        String fileName = null;
+        if ( dispositionString != null ) {
+            ContentDisposition contentDisposition = new ContentDisposition( dispositionString );
+            fileName = contentDisposition.getParameter( "filename" );
+            if ( fileName == null ) {
+                fileName = contentDisposition.getParameter( "\"filename\"" );
+            }
+            if ( fileName == null ) {
+                // TODO use MIMEType parser to get the file extension in
+                // this case
                 fileName = getId() + "-" + System.currentTimeMillis();
             }
+        } else {
+            // TODO use MIMEType parser to get the file extension in this
+            // case
+            fileName = getId() + "-" + System.currentTimeMillis();
+        }
 
-            InputStream binaryStream = (InputStream) clientResponse.getEntity();
-            if ( binaryStream != null ) {
-                Map<String, Serializable> responseProperties = new HashMap<String, Serializable>();
-                if ( bytesToSkip != null ) {
-                    // Since we sent a range header an accept-ranges header
-                    // should be returned if the
-                    // remote endpoint support it. If is not present, the
-                    // inputStream hasn't skipped ahead
-                    // by the given number of bytes, so we need to take care of
-                    // it here.
-                    String rangeHeader = clientResponse.getHeaderString( HEADER_ACCEPT_RANGES );
-                    if ( rangeHeader == null || !rangeHeader.equals( BYTES ) ) {
-                        LOGGER.debug( "Skipping {} bytes in CDR Remote Source because endpoint didn't support Range Headers", bytesToSkip );
-                        binaryStream.skip( bytesToSkip );
-                        responseProperties.put( BYTES_SKIPPED_RESPONSE, Boolean.TRUE );
-                    } else if ( (rangeHeader != null) && rangeHeader.equals( BYTES ) ) {
-                        LOGGER.debug( "CDR Remote source supports Range Headers, only retrieving part of file that has not been downloaded yet." );
-                        responseProperties.put( BYTES_SKIPPED_RESPONSE, Boolean.TRUE );
-                    }
+        InputStream binaryStream = (InputStream) clientResponse.getEntity();
+        if ( binaryStream != null ) {
+            Map<String, Serializable> responseProperties = new HashMap<String, Serializable>();
+            if ( bytesToSkip != null ) {
+                // Since we sent a range header an accept-ranges header
+                // should be returned if the
+                // remote endpoint support it. If is not present, the
+                // inputStream hasn't skipped ahead
+                // by the given number of bytes, so we need to take care of
+                // it here.
+                String rangeHeader = clientResponse.getHeaderString( HEADER_ACCEPT_RANGES );
+                if ( rangeHeader == null || !rangeHeader.equals( BYTES ) ) {
+                    LOGGER.debug( "Skipping {} bytes in CDR Remote Source because endpoint didn't support Range Headers", bytesToSkip );
+                    binaryStream.skip( bytesToSkip );
+                    responseProperties.put( BYTES_SKIPPED_RESPONSE, Boolean.TRUE );
+                } else if ( (rangeHeader != null) && rangeHeader.equals( BYTES ) ) {
+                    LOGGER.debug( "CDR Remote source supports Range Headers, only retrieving part of file that has not been downloaded yet." );
+                    responseProperties.put( BYTES_SKIPPED_RESPONSE, Boolean.TRUE );
                 }
-                return new ResourceResponseImpl( new ResourceRequestByProductUri( uri, requestProperties ), responseProperties, new ResourceImpl( binaryStream,
-                        mimeType, fileName ) );
             }
+            return new ResourceResponseImpl( new ResourceRequestByProductUri( uri, requestProperties ), responseProperties, new ResourceImpl( binaryStream,
+                mimeType, fileName ) );
         }
         LOGGER.warn( "Could not retrieve resource from CDR Source named [{}] using uri [{}]", getId(), uri );
         throw new ResourceNotFoundException( "Could not retrieve resource from source [" + getId() + "] and uri [" + uri + "]" );
@@ -389,7 +396,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
         }
     }
 
-    protected Map<String, String> getIntialFilterParameters( QueryRequest request ) {
+    protected Map<String, String> getInitialFilterParameters( QueryRequest request ) {
         Map<String, String> filterParameters = new HashMap<String, String>();
         Map<String, Serializable> queryRequestProps = request.getProperties();
 
@@ -556,7 +563,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
         if ( newCacheTime < 1 ) {
             newCacheTime = 1;
         }
-        LOGGER.debug( "ConfigUpdate: Updating the Availanle Check Cache Time value from [{}] to [{}] seconds", availableCheckCacheTime / 1000, newCacheTime );
+        LOGGER.debug( "ConfigUpdate: Updating the Available Check Cache Time value from [{}] to [{}] seconds", availableCheckCacheTime / 1000, newCacheTime );
         this.availableCheckCacheTime = newCacheTime * 1000;
     }
 
@@ -591,6 +598,14 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
     public void setDefaultResponseFormat( String defaultFormat ) {
         LOGGER.debug( "ConfigUpdate: Updating the default response format value from [{}] to [{}]", defaultResponseFormat, defaultFormat );
         defaultResponseFormat = defaultFormat;
+    }
+
+    protected void setCdrRestClient( WebClient restClient ) {
+        this.cdrRestClient = restClient;
+    }
+
+    protected void setCdrAvailabilityCheckClient( WebClient availabilityCheckClient ) {
+        this.cdrAvailabilityCheckClient = availabilityCheckClient;
     }
 
 }

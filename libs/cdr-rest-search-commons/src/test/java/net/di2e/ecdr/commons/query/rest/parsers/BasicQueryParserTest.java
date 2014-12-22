@@ -16,11 +16,15 @@ import java.util.Arrays;
 
 import javax.ws.rs.core.MultivaluedMap;
 
+import net.di2e.ecdr.commons.query.GeospatialCriteria;
 import net.di2e.ecdr.commons.util.SearchConstants;
 
 import org.apache.cxf.jaxrs.impl.MetadataMap;
 import org.junit.Assert;
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Unit tests for BasicQueryParser class
@@ -41,11 +45,43 @@ public class BasicQueryParserTest {
 
         props.clear();
         props.putSingle( SearchConstants.GEORSS_RESULT_FORMAT_PARAMETER, "value" );
-        Assert.assertEquals( "value", parser.getGeoRSSFormat( props ) );
+        assertEquals( "value", parser.getGeoRSSFormat( props ) );
         
         props.clear();
         props.put( SearchConstants.GEORSS_RESULT_FORMAT_PARAMETER, Arrays.asList( "value1", "value2" ) );
-        Assert.assertEquals( "value1", parser.getGeoRSSFormat( props ) );
+        assertEquals( "value1", parser.getGeoRSSFormat( props ) );
+    }
+
+    @Test
+    public void testGeospatialBasicQueryParser() throws Exception {
+        BasicQueryParser parser = new BasicQueryParser();
+        parser.setDefaultRadiusMeters( 10.0 );
+        parser.setDefaultTimeoutSeconds( 1000 );
+        parser.setDefaultResponseFormat( "atom" );
+        assertTrue(parser.isBoolean( Boolean.TRUE.toString() ));
+        assertTrue(parser.isBoolean( "1" ));
+        // point radius
+        GeospatialCriteria geospatialCriteria = parser.createGeospatialCriteria("10", "10", "10", null, null, null, false);
+        assertEquals(new Double(10.0), geospatialCriteria.getLatitude());
+        assertEquals(new Double(10.0), geospatialCriteria.getLongitude());
+        // bbox
+        geospatialCriteria = parser.createGeospatialCriteria(null, null, null, "-10 -10 10 10", null, null, false);
+        assertTrue( geospatialCriteria.isBBox() );
+        // geometry
+        geospatialCriteria = parser.createGeospatialCriteria(null, null, null, null, "POLYGON((-10.0 -10.0,-10.0 10.0,10.0 10.0,10.0 -10.0,-10.0 -10.0))", null, false);
+        assertEquals( "POLYGON((-10.0 -10.0,-10.0 10.0,10.0 10.0,10.0 -10.0,-10.0 -10.0))", geospatialCriteria.getGeometryWKT() );
+        // polygon
+        geospatialCriteria = parser.createGeospatialCriteria(null, null, null, null, null, "-10.0,-10.0,-10.0,10.0,10.0,10.0,10.0,-10.0,-10.0,-10.0", false);
+        assertEquals( "POLYGON((-10.0 -10.0,-10.0 10.0,10.0 10.0,10.0 -10.0,-10.0 -10.0))", geospatialCriteria.getGeometryWKT());
+    }
+
+    @Test
+    public void testTemporalBasicQueryParser() throws Exception {
+        BasicQueryParser parser = new BasicQueryParser();
+        parser.setDefaultDateType( "created" );
+        parser.setQueryRequestCacheSize( 2 );
+        parser.createTemporalCriteria( "2014-05-05T00:00:00Z", "2014-05-05T00:00:00Z", "created" );
+        parser.createTemporalCriteria( "2014-05-05T00:00:00Z", "2014-05-05T00:00:00Z", "" );
     }
 
 }

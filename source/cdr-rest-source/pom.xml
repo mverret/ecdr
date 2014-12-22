@@ -84,6 +84,15 @@
             <version>2.2</version>
         </dependency>
 
+        <!-- Test Dependencies -->
+
+        <dependency>
+            <groupId>ddf.catalog.core</groupId>
+            <artifactId>filter-proxy</artifactId>
+            <version>2.4.0</version>
+            <scope>test</scope>
+        </dependency>
+
         <!-- Two-way SSL Testing -->
         <dependency>
             <groupId>javax.servlet</groupId>
