@@ -77,8 +77,6 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
 
     private static final String SSL_KEYSTORE_JAVA_PROPERTY = "javax.net.ssl.keyStore";
     private static final String SSL_KEYSTORE_PASSWORD_JAVA_PROPERTY = "javax.net.ssl.keyStorePassword";
-    private static final String SSL_TRUSTSTORE_JAVA_PROPERTY = "javax.net.ssl.trustStore";
-    private static final String SSL_TRUSTSTORE_PASSWORD_JAVA_PROPERTY = "javax.net.ssl.trustStorePassword";
 
     // TODO check the retrieve resuming from previous place capability
     // compare with existing DDF code as it may have been updated recently

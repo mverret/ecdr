@@ -13,6 +13,7 @@
 package net.di2e.ecdr.search.transform.atom;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.util.HashMap;
@@ -91,13 +92,15 @@ public class AtomTransformerWithPayload extends AbstractAtomTransformer {
                     BinaryContent binaryContent = metacardTransformer.transform( metacard, null );
                     String mimeValue = binaryContent.getMimeTypeValue();
                     if ( StringUtils.isNotBlank( mimeValue ) && mimeValue.contains( "xml" ) ) {
-                        metadata = IOUtils.toString( binaryContent.getInputStream() );
+                        try ( InputStream inputStream = binaryContent.getInputStream() ) {
+                            metadata = IOUtils.toString( inputStream );
+                        } catch ( IOException e ) {
+                            LOGGER.warn( "Error while writing transformed Metacard into a String: " + e.getMessage(), e );
+                        }
                     }
                 } catch ( CatalogTransformerException e ) {
                     LOGGER.warn( "Error while transforming metacard using the [{}] MetacardTransformer", format );
                     LOGGER.warn( e.getMessage(), e );
-                } catch ( IOException e ) {
-                    LOGGER.warn( "Error while writing transformed Metacard into a String: " + e.getMessage(), e );
                 }
             }
         }

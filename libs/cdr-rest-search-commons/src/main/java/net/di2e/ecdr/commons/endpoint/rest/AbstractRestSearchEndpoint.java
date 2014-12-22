@@ -12,6 +12,7 @@
  **/
 package net.di2e.ecdr.commons.endpoint.rest;
 
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Map;
@@ -120,7 +121,9 @@ public abstract class AbstractRestSearchEndpoint implements RegistrableService {
             transformProperties.put( SearchConstants.METACARD_TRANSFORMER_NAME, transformMapper.getMetacardTransformValue( format ) );
             BinaryContent content = catalogFramework.transform( queryResponse, internalTransformerFormat, transformProperties );
 
-            response = Response.ok( content.getInputStream(), content.getMimeTypeValue() ).build();
+            try ( InputStream is = content.getInputStream() ) {
+                response = Response.ok( is, content.getMimeTypeValue() ).build();
+            }
 
         } catch ( UnsupportedQueryException e ) {
             LOGGER.error( e.getMessage(), e );
