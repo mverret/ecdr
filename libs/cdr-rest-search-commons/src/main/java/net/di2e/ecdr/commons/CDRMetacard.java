@@ -44,6 +44,8 @@ public class CDRMetacard extends MetacardImpl {
     
     public static final String METADATA_LINK = "metadata-link";
 
+    private static final String THUMBNAIL_N_A = "N/A";
+
     private static final XLogger LOGGER = new XLogger( LoggerFactory.getLogger( CDRMetacard.class ) );
 
     private static final long serialVersionUID = 1L;
@@ -228,7 +230,7 @@ public class CDRMetacard extends MetacardImpl {
     @Override
     public String getResourceSize() {
         String size = originalMetacard.getResourceSize();
-        return StringUtils.isNotBlank( size ) && !size.equalsIgnoreCase( "N/A" ) ? size : null;
+        return StringUtils.isNotBlank( size ) && !THUMBNAIL_N_A.equalsIgnoreCase( size ) ? size : null;
     }
 
     @Override
