@@ -179,7 +179,7 @@ public class StrictFilterDelegate extends AbstractFilterDelegate<Map<String, Str
                     filterContainer.put( SearchConstants.CASESENSITIVE_PARAMETER, "1" );
                 }
             } else {
-                // The geo:uis parameter is used to uniquely find an entry so we must map the Metacard.ID to geo:uid
+                // The geo:uid parameter is used to uniquely find an entry so we must map the Metacard.ID to geo:uid
                 if ( Metacard.ID.equals( propertyName ) ) {
                     filterContainer.put( SearchConstants.UID_PARAMETER, literal );
                 } else {

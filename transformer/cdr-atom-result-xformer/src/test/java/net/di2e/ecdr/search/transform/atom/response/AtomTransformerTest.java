@@ -15,11 +15,29 @@ package net.di2e.ecdr.search.transform.atom.response;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
+import java.io.InputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import javax.activation.MimeType;
 
+import ddf.catalog.operation.ProcessingDetails;
+import ddf.catalog.operation.QueryRequest;
+import ddf.catalog.operation.SourceResponse;
+import ddf.catalog.operation.impl.ProcessingDetailsImpl;
+import ddf.catalog.operation.impl.QueryImpl;
+import ddf.catalog.operation.impl.QueryRequestImpl;
+import ddf.catalog.operation.impl.QueryResponseImpl;
+import ddf.catalog.source.UnsupportedQueryException;
+import net.di2e.ecdr.commons.filter.config.FilterConfig;
+import net.di2e.ecdr.commons.util.BrokerConstants;
+import net.di2e.ecdr.commons.util.SearchConstants;
 import net.di2e.ecdr.search.transform.atom.AtomTransformer;
 import net.di2e.ecdr.search.transform.atom.geo.GeoHelper;
 
@@ -30,6 +48,7 @@ import org.apache.abdera.model.Entry;
 import org.codice.ddf.configuration.impl.ConfigurationWatcherImpl;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
+import org.geotools.filter.text.cql2.CQL;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -41,6 +60,8 @@ import ddf.catalog.data.impl.MetacardImpl;
  * Test out the atom transformer
  */
 public class AtomTransformerTest extends net.di2e.ecdr.search.transform.atom.response.AtomTest {
+
+    private static final String RESPONSE_FILE = "/exampleResponse.xml";
 
     @BeforeClass
     public static void setUp() {
@@ -96,17 +117,76 @@ public class AtomTransformerTest extends net.di2e.ecdr.search.transform.atom.res
         compareXML(SIMPLE_POLYGON, entry.getExtension(GeoHelper.QNAME_SIMPLE_POLYGON));
     }
 
+    @Test
+    public void testResponseTransform() throws Exception {
+        String sourceName = "Example";
+        String sourceName2 = "Bad Example";
+        AtomResponseTransformer responseTransformer = new AtomResponseTransformer( new FilterConfig() );
+        QueryRequest request = new QueryRequestImpl( new QueryImpl( CQL.toFilter( "title like 'test'" ) ) );
+        SourceResponse sourceResponse = responseTransformer.processSearchResponse( getClass().getResourceAsStream( RESPONSE_FILE ), "atom", request, sourceName );
+        QueryResponseImpl queryResponse = new QueryResponseImpl( sourceResponse, sourceName );
+        Map<String, Serializable> queryProperties = new HashMap<>();
+        queryProperties.put( "site-list", new ArrayList<>( Arrays.asList( sourceName, sourceName2 ) ) );
+        queryProperties.put( sourceName, getSiteMap() );
+        queryProperties.put( sourceName2, getSiteMap() );
+        queryResponse.setProperties( queryProperties );
+        Set<ProcessingDetails> details = new HashSet<>();
+        ProcessingDetailsImpl goodSite = new ProcessingDetailsImpl();
+        goodSite.setSourceId( sourceName );
+        details.add( goodSite );
+        ProcessingDetailsImpl badSite = new ProcessingDetailsImpl();
+        badSite.setSourceId( sourceName2 );
+        badSite.setException( new UnsupportedQueryException( "Unsupported test query" ) );
+        badSite.setWarnings( Arrays.asList( "Example Warning" ) );
+        details.add( badSite );
+        queryResponse.setProcessingDetails( details );
+        AtomTransformer transformer = createTransformer();
+        Map<String, Serializable> properties = new HashMap<>();
+        properties.put( SearchConstants.STATUS_PARAMETER, Boolean.TRUE );
+        properties.put( BrokerConstants.PATH_PARAMETER, "/path" );
+        transformer.transform( queryResponse, properties );
+    }
+
+    @Test
+    public void testResponseTransformNoDetails() throws Exception {
+        String sourceName = "Example";
+        AtomResponseTransformer responseTransformer = new AtomResponseTransformer( new FilterConfig() );
+        QueryRequest request = new QueryRequestImpl( new QueryImpl( CQL.toFilter( "title like 'test'" ) ) );
+        SourceResponse sourceResponse = responseTransformer.processSearchResponse( getClass().getResourceAsStream( RESPONSE_FILE ), "atom", request, sourceName );
+        QueryResponseImpl queryResponse = new QueryResponseImpl( sourceResponse, sourceName );
+        Map<String, Serializable> queryProperties = new HashMap<>();
+        queryProperties.put( "site-list", new ArrayList<>( Arrays.asList( sourceName ) ) );
+        queryProperties.put( sourceName, getSiteMap() );
+        queryResponse.setProperties( queryProperties );
+        AtomTransformer transformer = createTransformer();
+        Map<String, Serializable> properties = new HashMap<>();
+        properties.put( SearchConstants.STATUS_PARAMETER, Boolean.TRUE );
+        properties.put( BrokerConstants.PATH_PARAMETER, "/path" );
+        transformer.transform( queryResponse, properties );
+    }
+
+    @Test
+    public void testLocalResponseTransform() throws Exception {
+        String sourceName = "Example";
+        AtomResponseTransformer responseTransformer = new AtomResponseTransformer( new FilterConfig() );
+        QueryRequest request = new QueryRequestImpl( new QueryImpl( CQL.toFilter( "title like 'test'" ) ) );
+        SourceResponse sourceResponse = responseTransformer.processSearchResponse( getClass().getResourceAsStream( RESPONSE_FILE ), "atom", request, sourceName );
+        QueryResponseImpl queryResponse = new QueryResponseImpl( sourceResponse, sourceName );
+        Map<String, Serializable> queryProperties = new HashMap<>();
+        queryProperties.put( sourceName, getSiteMap() );
+        queryResponse.setProperties( queryProperties );
+        AtomTransformer transformer = createTransformer();
+        Map<String, Serializable> properties = new HashMap<>();
+        properties.put( SearchConstants.STATUS_PARAMETER, Boolean.TRUE );
+        properties.put( BrokerConstants.PATH_PARAMETER, "/path" );
+        transformer.transform( queryResponse, properties );
+    }
+
     private Entry performTransform(String locationWKT, boolean useGMLEncoding) throws Exception {
-        ConfigurationWatcherImpl configurationWatcher = new ConfigurationWatcherImpl();
-        ActionProvider viewMetacardProvider = mock(ActionProvider.class);
-        ActionProvider metadataProvider = mock(ActionProvider.class);
-        ActionProvider resourceProvider = mock(ActionProvider.class);
-        ActionProvider thumbnailProvider = mock(ActionProvider.class);
-        MimeType thumbnailMime = new MimeType();
-        MimeType viewMime = new MimeType();
-        AtomTransformer transformer = new AtomTransformer( configurationWatcher, viewMetacardProvider, metadataProvider, resourceProvider, thumbnailProvider, thumbnailMime, viewMime );
+
         MetacardImpl metacard = new MetacardImpl();
         metacard.setLocation(locationWKT);
+        AtomTransformer transformer = createTransformer();
         transformer.setUseGMLEncoding(useGMLEncoding);
         BinaryContent content = transformer.transform(metacard, new HashMap<String, Serializable>());
         // parse into abdera
@@ -116,9 +196,28 @@ public class AtomTransformerTest extends net.di2e.ecdr.search.transform.atom.res
 
     }
 
+    private AtomTransformer createTransformer() throws Exception {
+        ConfigurationWatcherImpl configurationWatcher = new ConfigurationWatcherImpl();
+        ActionProvider viewMetacardProvider = mock(ActionProvider.class);
+        ActionProvider metadataProvider = mock(ActionProvider.class);
+        ActionProvider resourceProvider = mock(ActionProvider.class);
+        ActionProvider thumbnailProvider = mock(ActionProvider.class);
+        MimeType thumbnailMime = new MimeType("image/jpeg");
+        MimeType viewMime = new MimeType("text/html");
+        return new AtomTransformer( configurationWatcher, viewMetacardProvider, metadataProvider, resourceProvider, thumbnailProvider, thumbnailMime, viewMime );
+    }
+
     private void compareXML(String expectedXML, Element atomElement) throws Exception {
         Diff diff = XMLUnit.compareXML(expectedXML, atomElement.toString());
         assertTrue(diff.similar());
+    }
+
+    private HashMap<String, Serializable> getSiteMap() {
+        HashMap<String, Serializable> siteMap = new HashMap<String, Serializable>();
+        siteMap.put( "elapsed-time", new Long(1000) );
+        siteMap.put( "total-hits", new Long(20) );
+        siteMap.put( "total-results-returned", 20 );
+        return siteMap;
     }
 
 }
