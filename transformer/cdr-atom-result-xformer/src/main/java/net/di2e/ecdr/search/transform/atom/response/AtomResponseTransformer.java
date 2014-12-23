@@ -243,7 +243,6 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
 
                 }
             }
-
         } finally {
             Thread.currentThread().setContextClassLoader( tccl );
         }
@@ -264,7 +263,6 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
                 }
             }
         }
-
         return new CDRMetacard( metacard );
     }
 

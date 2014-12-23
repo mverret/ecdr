@@ -225,7 +225,7 @@ public abstract class AbstractFederationStrategy implements NormalizingFederatio
         return offset + pageSize - 1;
     }
 
-    private final static class CallableSourceResponse implements Callable<SourceResponse> {
+    private static final class CallableSourceResponse implements Callable<SourceResponse> {
 
         private Query query = null;
 
