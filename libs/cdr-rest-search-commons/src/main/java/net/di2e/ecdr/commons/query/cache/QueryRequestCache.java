@@ -45,7 +45,7 @@ public class QueryRequestCache {
         cache.put( id, Boolean.TRUE );
     }
 
-    private class LRUCache<K, V> extends LinkedHashMap<K, V> {
+    private static final class LRUCache<K, V> extends LinkedHashMap<K, V> {
 
         private static final long serialVersionUID = 1L;
         private int cacheSize = 0;

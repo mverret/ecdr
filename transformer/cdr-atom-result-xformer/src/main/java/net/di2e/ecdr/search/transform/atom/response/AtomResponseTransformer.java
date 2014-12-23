@@ -128,7 +128,8 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
 
         // Set the source to the original source name
         // TODO revist this
-        String resultSource = entry.getSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, AtomResponseConstants.RESULT_SOURCE_ELEMENT, AtomResponseConstants.CDRB_NAMESPACE_PREFIX );
+        // String resultSource = entry.getSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE,
+        // AtomResponseConstants.RESULT_SOURCE_ELEMENT, AtomResponseConstants.CDRB_NAMESPACE_PREFIX );
         metacard.setSourceId( siteName );
 
         List<Category> categories = entry.getCategories();
@@ -242,7 +243,6 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
 
                 }
             }
-
         } finally {
             Thread.currentThread().setContextClassLoader( tccl );
         }
@@ -263,7 +263,6 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
                 }
             }
         }
-
         return new CDRMetacard( metacard );
     }
 

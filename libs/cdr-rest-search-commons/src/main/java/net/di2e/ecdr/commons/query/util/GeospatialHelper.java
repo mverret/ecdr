@@ -18,22 +18,22 @@ public final class GeospatialHelper {
     }
 
     public static String polygonToWKT( String polygon ) {
-        String wkt = "POLYGON((";
+        StringBuilder wkt = new StringBuilder( "POLYGON((" );
         int coordinatePair = 0;
         String[] coords = polygon.split( "," );
         int size = coords.length;
         for ( int i = size - 1; i >= 0; i-- ) {
             coordinatePair++;
             if ( coordinatePair == 2 ) {
-                wkt += " ";
+                wkt.append( " " );
             } else if ( coordinatePair > 2 ) {
-                wkt += ",";
+                wkt.append( "," );
                 coordinatePair = 1;
             }
-            wkt += coords[i];
+            wkt.append( coords[i] );
         }
-        wkt += "))";
-        return wkt;
+        wkt.append( "))" );
+        return wkt.toString();
     }
 
 }
