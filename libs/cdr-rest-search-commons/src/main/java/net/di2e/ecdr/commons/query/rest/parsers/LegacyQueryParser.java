@@ -12,7 +12,9 @@
  **/
 package net.di2e.ecdr.commons.query.rest.parsers;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.List;
@@ -64,17 +66,19 @@ public class LegacyQueryParser extends BasicQueryParser {
             if ( StringUtils.isNotEmpty( uriString ) ) {
                 URI uri = URI.create( uriString );
                 if ( DAD_SCHEME.equals( uri.getScheme() ) ) {
+                    String path = uri.getPath();
                     try {
-
-                        String path = uri.getPath();
                         path = URLDecoder.decode( path.startsWith( "/" ) ? path.substring( 1 ) : path, "UTF-8" );
 
                         uri = new URI( DAD_SCHEME + ":///" + URLEncoder.encode( path, "UTF-8" ) + "?"
                                 + URLEncoder.encode( URLDecoder.decode( uri.getQuery(), "UTF-8" ), "UTF-8" ).replaceAll( "\\+", "%20" ) + "#"
                                 + URLEncoder.encode( URLDecoder.decode( uri.getFragment(), "UTF-8" ), "UTF-8" ) );
-                    } catch ( Exception e ) {
-                        LOGGER.warn( "Error converting dad scheme specific URI: " + e.getMessage() );
+                    } catch ( UnsupportedEncodingException e ) {
+                        LOGGER.error( "Unsupported URL enciding [UTF-8]: " + e.getMessage(), e );
+                    } catch ( URISyntaxException e ) {
+                        LOGGER.warn( "Error converting dad scheme specific URI: " + e.getMessage(), e );
                     }
+
                 }
                 criteriaList.add( new PropertyCriteria( Metacard.RESOURCE_URI, uri.toString(), Operator.EQUALS ) );
             }

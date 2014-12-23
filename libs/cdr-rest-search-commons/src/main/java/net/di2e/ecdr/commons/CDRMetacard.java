@@ -12,8 +12,10 @@
  **/
 package net.di2e.ecdr.commons;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.Date;
 
@@ -213,8 +215,10 @@ public class CDRMetacard extends MetacardImpl {
                 try ( InputStream in = metadataURI.toURL().openStream() ) {
                     metadata = IOUtils.toString( in );
                     originalMetacard.setAttribute( new AttributeImpl( Metacard.METADATA, metadata ) );
-                } catch ( Exception e ) {
-                    LOGGER.warn( "Could not read thumbnail from remote URL[" + metadataURI + "] due to: " + e.getMessage(), e );
+                } catch ( MalformedURLException e ) {
+                    LOGGER.warn( "Cannot read metadata due to Invalid metadata URL[" + metadataURI + "]: " + e.getMessage(), e );
+                } catch ( IOException e ) {
+                    LOGGER.warn( "Could not read metadata from remote URL[" + metadataURI + "] due to: " + e.getMessage(), e );
                 }
             }
         }
@@ -249,10 +253,12 @@ public class CDRMetacard extends MetacardImpl {
         if ( thumbnail == null ) {
             URI thumbnailURI = getThumbnailURL();
             if ( thumbnailURI != null ) {
-                try ( InputStream in = thumbnailURI.toURL().openStream() ) {
+                 try ( InputStream in = thumbnailURI.toURL().openStream() ) {
                     thumbnail = IOUtils.toByteArray( in );
                     originalMetacard.setAttribute( new AttributeImpl( Metacard.THUMBNAIL, thumbnail ) );
-                } catch ( Exception e ) {
+                } catch ( MalformedURLException e ) {
+                    LOGGER.warn( "Cannot read thumbnail due to invalid thumbnail URL[" + thumbnailURI + "]: " + e.getMessage(), e );
+                } catch ( IOException e ) {
                     LOGGER.warn( "Could not read thumbnail from remote URL[" + thumbnailURI + "] due to: " + e.getMessage(), e );
                 }
             }

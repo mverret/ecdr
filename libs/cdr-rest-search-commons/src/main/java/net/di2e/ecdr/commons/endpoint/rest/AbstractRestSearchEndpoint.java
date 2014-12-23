@@ -12,6 +12,7 @@
  **/
 package net.di2e.ecdr.commons.endpoint.rest;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Collections;
@@ -123,6 +124,9 @@ public abstract class AbstractRestSearchEndpoint implements RegistrableService {
 
             try ( InputStream is = content.getInputStream() ) {
                 response = Response.ok( is, content.getMimeTypeValue() ).build();
+            } catch ( IOException e ) {
+                LOGGER.error( "Error reading resposne [" + e.getMessage() + "]", e );
+                response = Response.status( Response.Status.INTERNAL_SERVER_ERROR ).build();
             }
 
         } catch ( UnsupportedQueryException e ) {
@@ -139,7 +143,7 @@ public abstract class AbstractRestSearchEndpoint implements RegistrableService {
         } catch ( CatalogTransformerException | IllegalArgumentException e ) {
             LOGGER.error( e.getMessage(), e );
             response = Response.status( Response.Status.BAD_REQUEST ).build();
-        } catch ( Exception e ) {
+        } catch ( RuntimeException e ) {
             LOGGER.error( "Unexpected exception received [" + e.getMessage() + "]", e );
             response = Response.status( Response.Status.INTERNAL_SERVER_ERROR ).build();
         }

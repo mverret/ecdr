@@ -215,16 +215,15 @@ public class OpenSearchSource extends AbstractCDRSource {
     public void setHardCodedParameters( String hardcodedString ) {
         harcodedParamMap.clear();
         LOGGER.debug( "ConfigUpdate: Updating the hard coded parameters to [{}]", hardcodedString );
-        try {
-            if ( StringUtils.isNotBlank( hardcodedString ) ) {
-                String[] params = hardcodedString.split( "," );
-                for ( String param : params ) {
-                    String[] singleParam = param.split( "=" );
+
+        if ( StringUtils.isNotBlank( hardcodedString ) ) {
+            String[] params = hardcodedString.split( "," );
+            for ( String param : params ) {
+                String[] singleParam = param.split( "=" );
+                if ( singleParam.length == 2 ) {
                     harcodedParamMap.put( singleParam[0], singleParam[1] );
                 }
             }
-        } catch ( Exception e ) {
-            LOGGER.warn( "Could not update hard coded parameters because the String was not in the correct foramt [{}]", hardcodedString );
         }
     }
 
