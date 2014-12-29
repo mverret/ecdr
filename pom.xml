@@ -101,8 +101,8 @@
         <ddf.action.version>2.4.0</ddf.action.version>
 		<ddf.platform.version>2.3.1</ddf.platform.version>
         <ddf.libs.platform-config-impl.version>1.0.0</ddf.libs.platform-config-impl.version>
-        <ddf.compression.version>2.6.0-SNAPSHOT</ddf.compression.version>
-        <ddf.registry.version>0.1.0-SNAPSHOT</ddf.registry.version>
+        <ddf.compression.version>2.6.0</ddf.compression.version>
+        <ddf.registry.version>0.1.0</ddf.registry.version>
         
        <!--  <checkstyle.config.location>src/main/resources/cdr-checkstyle.xml</checkstyle.config.location>
          <checkstyle.header.location>src/main/resources/header.txt</checkstyle.header.location>-->
