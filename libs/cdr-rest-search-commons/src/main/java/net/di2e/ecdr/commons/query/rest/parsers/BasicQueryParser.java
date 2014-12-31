@@ -22,6 +22,7 @@ import java.util.Map;
 
 import javax.ws.rs.core.MultivaluedMap;
 
+import net.di2e.ecdr.commons.constants.SearchConstants;
 import net.di2e.ecdr.commons.query.GeospatialCriteria;
 import net.di2e.ecdr.commons.query.PropertyCriteria;
 import net.di2e.ecdr.commons.query.PropertyCriteria.Operator;
@@ -29,7 +30,6 @@ import net.di2e.ecdr.commons.query.TemporalCriteria;
 import net.di2e.ecdr.commons.query.TextualCriteria;
 import net.di2e.ecdr.commons.query.cache.QueryRequestCache;
 import net.di2e.ecdr.commons.query.util.GeospatialHelper;
-import net.di2e.ecdr.commons.util.SearchConstants;
 
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.format.DateTimeFormatter;

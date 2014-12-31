@@ -17,9 +17,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import net.di2e.ecdr.commons.constants.SearchConstants;
 import net.di2e.ecdr.commons.filter.config.FilterConfig;
 import net.di2e.ecdr.commons.filter.config.FilterConfig.AtomContentXmlWrapOption;
-import net.di2e.ecdr.commons.util.SearchConstants;
 import net.di2e.ecdr.libs.cache.Cache;
 import net.di2e.ecdr.libs.cache.CacheManager;
 
@@ -241,7 +241,7 @@ public class OpenSearchSource extends AbstractCDRSource {
             cacheId = getId() + "-" + UUID.randomUUID();
             LOGGER.debug( "ConfigUpdate: Creating a cache with id [{}] for Metacard id lookups for source [{}] with an cache expiration time of [{}] minutes",
                     cacheId, getId(), minutes );
-            // TODO populate the cache porperties via config
+            // ECDR-75 populate the cache porperties via config
             metacardCache = cacheManager.createCacheInstance( cacheId, null );
         }
     }

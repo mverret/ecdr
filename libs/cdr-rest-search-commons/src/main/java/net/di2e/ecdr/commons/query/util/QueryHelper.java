@@ -19,7 +19,7 @@ import java.util.Map;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
-import net.di2e.ecdr.commons.util.SearchConstants;
+import net.di2e.ecdr.commons.constants.SearchConstants;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;

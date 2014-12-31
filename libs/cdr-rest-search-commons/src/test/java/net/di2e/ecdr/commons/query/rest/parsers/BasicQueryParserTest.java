@@ -16,8 +16,8 @@ import java.util.Arrays;
 
 import javax.ws.rs.core.MultivaluedMap;
 
+import net.di2e.ecdr.commons.constants.SearchConstants;
 import net.di2e.ecdr.commons.query.GeospatialCriteria;
-import net.di2e.ecdr.commons.util.SearchConstants;
 
 import org.apache.cxf.jaxrs.impl.MetadataMap;
 import org.junit.Assert;

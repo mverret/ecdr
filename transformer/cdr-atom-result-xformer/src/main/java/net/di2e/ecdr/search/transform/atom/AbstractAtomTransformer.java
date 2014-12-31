@@ -29,8 +29,8 @@ import javax.activation.MimeTypeParseException;
 import javax.xml.namespace.QName;
 
 import net.di2e.ecdr.commons.CDRMetacard;
-import net.di2e.ecdr.commons.util.BrokerConstants;
-import net.di2e.ecdr.commons.util.SearchConstants;
+import net.di2e.ecdr.commons.constants.BrokerConstants;
+import net.di2e.ecdr.commons.constants.SearchConstants;
 import net.di2e.ecdr.search.transform.atom.constants.AtomResponseConstants;
 import net.di2e.ecdr.search.transform.atom.constants.SecurityConstants;
 import net.di2e.ecdr.search.transform.atom.geo.GeoHelper;
@@ -69,7 +69,6 @@ import ddf.catalog.transform.CatalogTransformerException;
 import ddf.catalog.transform.MetacardTransformer;
 import ddf.catalog.transform.QueryResponseTransformer;
 
-//TODO Add in support for result deduplication
 public abstract class AbstractAtomTransformer implements MetacardTransformer, QueryResponseTransformer {
 
     private static final String CDR_ATOM_TRANSFORMER_ID = "cdr-atom";
@@ -400,7 +399,7 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
         if ( effective != null ) {
             entry.setPublished( effective );
         }
-        // TODO Add more categories
+
         entry.addCategory( metacard.getContentTypeVersion(), metacard.getContentTypeName(), "Content Type" );
 
         String sourceId = metacard.getSourceId();

@@ -36,7 +36,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import net.di2e.ecdr.commons.util.SearchConstants;
+import net.di2e.ecdr.commons.constants.SearchConstants;
 
 import org.geotools.filter.FilterFactoryImpl;
 import org.junit.Test;

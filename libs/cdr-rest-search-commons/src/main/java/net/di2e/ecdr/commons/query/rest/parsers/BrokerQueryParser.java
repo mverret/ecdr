@@ -22,9 +22,9 @@ import java.util.UUID;
 
 import javax.ws.rs.core.MultivaluedMap;
 
+import net.di2e.ecdr.commons.constants.BrokerConstants;
+import net.di2e.ecdr.commons.constants.SearchConstants;
 import net.di2e.ecdr.commons.query.cache.QueryRequestCache;
-import net.di2e.ecdr.commons.util.BrokerConstants;
-import net.di2e.ecdr.commons.util.SearchConstants;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;

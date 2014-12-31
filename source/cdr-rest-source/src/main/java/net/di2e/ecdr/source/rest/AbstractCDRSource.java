@@ -34,9 +34,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import net.di2e.ecdr.commons.constants.SearchConstants;
 import net.di2e.ecdr.commons.filter.StrictFilterDelegate;
 import net.di2e.ecdr.commons.filter.config.FilterConfig;
-import net.di2e.ecdr.commons.util.SearchConstants;
 import net.di2e.ecdr.search.transform.atom.response.AtomResponseTransformer;
 
 import org.apache.commons.io.IOUtils;
@@ -78,8 +78,6 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
     private static final String SSL_KEYSTORE_JAVA_PROPERTY = "javax.net.ssl.keyStore";
     private static final String SSL_KEYSTORE_PASSWORD_JAVA_PROPERTY = "javax.net.ssl.keyStorePassword";
 
-    // TODO check the retrieve resuming from previous place capability
-    // compare with existing DDF code as it may have been updated recently
     private static final String HEADER_ACCEPT_RANGES = "Accept-Ranges";
     private static final String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
     private static final String HEADER_RANGE = "Range";
@@ -129,7 +127,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
         try {
             Query query = queryRequest.getQuery();
             SourceResponse sourceResponse;
-            // TODO Add in default radius
+            // ECDR-72 Add in default radius
             Map<String, String> filterParameters = filterAdapter.adapt( query, new StrictFilterDelegate( false, 50000.00, getFilterConfig() ) );
 
             String id = filterParameters.get( SearchConstants.UID_PARAMETER );
@@ -164,9 +162,8 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
 
         if ( response.getStatus() == Status.OK.getStatusCode() ) {
             AtomResponseTransformer transformer = new AtomResponseTransformer( getFilterConfig() );
-            // TODO check why "atom" is passed in here
-            sourceResponse = transformer.processSearchResponse( (InputStream) response.getEntity(), "atom", queryRequest, getId() );
-            // TODO update this with better cache
+
+            sourceResponse = transformer.processSearchResponse( (InputStream) response.getEntity(), queryRequest, getId() );
             sourceResponse = enhanceResults( sourceResponse );
         } else {
             Object entity = response.getEntity();
@@ -325,12 +322,11 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
                     fileName = contentDisposition.getParameter( "\"filename\"" );
                 }
                 if ( fileName == null ) {
-                    // TODO use MIMEType parser to get the file extension in
-                    // this case
+                    // ECDR-74 use MIMEType parser to get the file extension in
                     fileName = getId() + "-" + System.currentTimeMillis();
                 }
             } else {
-                // TODO use MIMEType parser to get the file extension in this case
+                // ECDR-74 use MIMEType parser to get the file extension in this case
                 fileName = getId() + "-" + System.currentTimeMillis();
             }
 
@@ -388,7 +384,6 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
             for ( Entry<String, String> entry : filterParameters.entrySet() ) {
                 String parameterName = urlParameterMap.get( entry.getKey() );
                 if ( StringUtils.isNotBlank( parameterName ) ) {
-                    // TODO fix this
                     cdrRestClient.replaceQueryParam( parameterName, entry.getValue() );
                 }
             }
@@ -464,7 +459,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
         setURLQueryString( uriMap );
         Response response = cdrRestClient.get();
         AtomResponseTransformer transformer = new AtomResponseTransformer( getFilterConfig() );
-        SourceResponse sourceResponse = transformer.processSearchResponse( (InputStream) response.getEntity(), "atom", null, getId() );
+        SourceResponse sourceResponse = transformer.processSearchResponse( (InputStream) response.getEntity(), null, getId() );
         List<Result> results = sourceResponse.getResults();
         if ( !results.isEmpty() ) {
             returnUri = results.get( 0 ).getMetacard().getResourceURI();

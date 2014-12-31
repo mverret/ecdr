@@ -14,8 +14,9 @@ package net.di2e.ecdr.commons.filter;
 
 import ddf.catalog.filter.proxy.adapter.GeotoolsFilterAdapterImpl;
 import ddf.catalog.operation.impl.QueryImpl;
+import net.di2e.ecdr.commons.constants.SearchConstants;
 import net.di2e.ecdr.commons.filter.config.FilterConfig;
-import net.di2e.ecdr.commons.util.SearchConstants;
+
 import org.geotools.filter.text.cql2.CQL;
 import org.junit.Test;
 

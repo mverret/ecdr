@@ -22,7 +22,7 @@ import java.util.Map;
 import javax.activation.MimeType;
 
 import net.di2e.ecdr.commons.CDRMetacard;
-import net.di2e.ecdr.commons.util.SearchConstants;
+import net.di2e.ecdr.commons.constants.SearchConstants;
 
 import org.apache.abdera.Abdera;
 import org.apache.abdera.model.Entry;

@@ -30,7 +30,7 @@ import java.util.Map;
 
 import javax.ws.rs.core.Response;
 
-import net.di2e.ecdr.commons.util.SearchConstants;
+import net.di2e.ecdr.commons.constants.SearchConstants;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.cxf.jaxrs.client.WebClient;

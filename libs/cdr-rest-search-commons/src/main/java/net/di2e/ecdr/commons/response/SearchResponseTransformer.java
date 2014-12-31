@@ -19,5 +19,5 @@ import ddf.catalog.operation.SourceResponse;
 
 public interface SearchResponseTransformer {
 
-    SourceResponse processSearchResponse( InputStream inputStream, String format, QueryRequest request, String siteName );
+    SourceResponse processSearchResponse( InputStream inputStream, QueryRequest request, String siteName );
 }

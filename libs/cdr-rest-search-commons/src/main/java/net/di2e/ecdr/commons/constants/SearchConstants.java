@@ -10,7 +10,7 @@
  * <http://www.gnu.org/licenses/lgpl.html>.
  * 
  **/
-package net.di2e.ecdr.commons.util;
+package net.di2e.ecdr.commons.constants;
 
 public final class SearchConstants {
     
@@ -81,8 +81,7 @@ public final class SearchConstants {
     // Constants for Strategies
     public static final String TOTAL_HITS = "total-hits";
     public static final String SITE_LIST = "site-list";
-    // TODO add support for source list if DDF changes from site-list to source-list
-    // public static final String SOURCE_LIST = "source-list";
+
     public static final String TOTAL_RESULTS_RETURNED = "total-results-returned";
     public static final String ELAPSED_TIME = "elapsed-time";
     
