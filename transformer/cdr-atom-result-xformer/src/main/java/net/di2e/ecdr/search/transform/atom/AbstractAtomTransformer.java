@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -120,7 +121,9 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
 
     @Override
     public BinaryContent transform( SourceResponse response, Map<String, Serializable> properties ) throws CatalogTransformerException {
-
+        if ( properties == null ) {
+            properties = new HashMap<String, Serializable>();
+        }
         ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
         Feed feed = null;
         // The Adbera.getInstance.newFeed() spins up a new thread so must do
@@ -351,6 +354,9 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
 
     @Override
     public BinaryContent transform( Metacard metacard, Map<String, Serializable> properties ) throws CatalogTransformerException {
+        if ( properties == null ){
+            properties = new HashMap<String, Serializable>();
+        }
         Entry entry = getMetacardEntry( new CDRMetacard( metacard ), properties );
 
         BinaryContent binaryContent = null;

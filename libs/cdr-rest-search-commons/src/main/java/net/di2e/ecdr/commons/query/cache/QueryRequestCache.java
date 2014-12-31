@@ -25,12 +25,12 @@ public class QueryRequestCache {
         cache = new LRUCache<String, Boolean>( cacheSize );
     }
 
-    public boolean isQueryIdUnique( String id, boolean addIfMissing ) {
+    public boolean isQueryIdUnique( String id ) {
         boolean unique = true;
         if ( StringUtils.isNotBlank( id ) ) {
             if ( cache.containsKey( id ) ) {
                 unique = false;
-            } else if ( addIfMissing ) {
+            } else {
                 cache.put( id, Boolean.TRUE );
             }
         }

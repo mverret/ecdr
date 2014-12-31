@@ -74,16 +74,9 @@ public class CDRRestSource extends AbstractCDRSource {
         setPingMethod( doPing ? PingMethod.HEAD : PingMethod.NONE );
     }
 
-    public synchronized void setEndpointUrl( String endpointUrl ) {
+    public synchronized void setUrl(String endpointUrl) {
         super.setPingUrl( endpointUrl );
-        super.setEndpointUrl( endpointUrl );
-    }
-
-    @Override
-    public void setSourceProperties( Map<String, String> props ) {
-        // TODO future work!
-        LOGGER.warn( "Got some properties but do not know what to do with them." );
-
+        super.setUrl(endpointUrl);
     }
 
 }

@@ -20,7 +20,7 @@
     <OCD description="CDR OpenSearch Federated Source" name="CDR OpenSearch Federated Source" id="ecdr-opensearch-source">
         <AD name="Source Name" id="id" required="true" type="String" default="OpenSearch Source" />
 
-        <AD name="Search Endpoint URL" id="endpointUrl" required="true" type="String" default=""
+        <AD name="Search Endpoint URL" id="url" required="true" type="String" default=""
             description="OpenSearch base endpoint URL, should include everything up to (and not including) the '?'" />
 
         <AD name="Response Timeout" id="receiveTimeoutSeconds" required="true" type="Integer" default="0"

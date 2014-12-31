@@ -379,7 +379,7 @@ public class BasicQueryParser implements QueryParser {
     }
 
     protected boolean isUniqueQuery( MultivaluedMap<String, String> queryParameters, String sourceId ) {
-        return queryRequestCache.isQueryIdUnique( queryParameters.getFirst( SearchConstants.OID_PARAMETER ), true );
+        return queryRequestCache.isQueryIdUnique( queryParameters.getFirst( SearchConstants.OID_PARAMETER ) );
     }
 
     protected GeospatialCriteria createGeospatialCriteria( String rad, String lat, String lon, String box, String geom, String polygon, boolean strictMode )

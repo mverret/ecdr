@@ -103,7 +103,7 @@ public class BrokerQueryParser extends LegacyQueryParser {
         QueryRequestCache queryRequestCache = getQueryRequestCache();
         String oid = queryParameters.getFirst( SearchConstants.OID_PARAMETER );
         if ( StringUtils.isNotBlank( oid ) ) {
-            uniqueQuery = queryRequestCache.isQueryIdUnique( oid, true );
+            uniqueQuery = queryRequestCache.isQueryIdUnique( oid );
         } else {
             String uuid = UUID.randomUUID().toString();
             queryParameters.putSingle( SearchConstants.OID_PARAMETER, uuid );
