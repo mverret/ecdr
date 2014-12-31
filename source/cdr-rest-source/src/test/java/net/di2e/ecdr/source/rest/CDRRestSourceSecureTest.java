@@ -171,7 +171,7 @@ public class CDRRestSourceSecureTest {
         source.setAvailableCheckCacheTime( 0 );
         source.setMaxResultCount( 10 );
         source.setDefaultResponseFormat( "atom-cdr" );
-        source.setEndpointUrl( "https://localhost:" + serverPort + "/" );
+        source.setUrl( "https://localhost:" + serverPort + "/" );
         source.setReceiveTimeoutSeconds( 10 );
         source.setConnectionTimeoutSeconds( 1 );
 

@@ -12,13 +12,13 @@
  **/
 package net.di2e.ecdr.source.rest;
 
-import ddf.catalog.data.Metacard;
 import net.di2e.ecdr.commons.filter.config.FilterConfig;
 import net.di2e.ecdr.libs.cache.CacheManager;
 import net.di2e.ecdr.libs.cache.impl.MetacardMemoryCacheManager;
+
 import org.junit.Test;
 
-import java.util.Collections;
+import ddf.catalog.data.Metacard;
 
 public class CDROpenSearchSourceTest extends CDRAbstractSourceTest {
 
@@ -47,7 +47,6 @@ public class CDROpenSearchSourceTest extends CDRAbstractSourceTest {
         source.setProxyProductUrls( true );
         source.setWrapContentWithXmlOption( FilterConfig.AtomContentXmlWrapOption.NEVER_WRAP.toString() );
         source.setHardCodedParameters( "test=example" );
-        source.setSourceProperties( Collections.<String, String>emptyMap() );
         return source;
     }
 

@@ -70,9 +70,8 @@ import ddf.catalog.source.FederatedSource;
 import ddf.catalog.source.SourceMonitor;
 import ddf.catalog.source.UnsupportedQueryException;
 import ddf.catalog.util.impl.MaskableImpl;
-import ddf.registry.api.DynamicExternalSource;
 
-public abstract class AbstractCDRSource extends MaskableImpl implements FederatedSource, ConnectedSource, DynamicExternalSource {
+public abstract class AbstractCDRSource extends MaskableImpl implements FederatedSource, ConnectedSource {
 
     private static final Logger LOGGER = LoggerFactory.getLogger( AbstractCDRSource.class );
 
@@ -473,7 +472,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
         return returnUri;
     }
 
-    public synchronized void setEndpointUrl( String endpointUrl ) {
+    public synchronized void setUrl(String endpointUrl) {
         String existingUrl = cdrRestClient == null ? null : cdrRestClient.getCurrentURI().toString();
         if ( StringUtils.isNotBlank( endpointUrl ) && !endpointUrl.equals( existingUrl ) ) {
             LOGGER.debug( "ConfigUpdate: Updating the source endpoint url value from [{}] to [{}] for sourceId [{}]", existingUrl, endpointUrl, getId() );

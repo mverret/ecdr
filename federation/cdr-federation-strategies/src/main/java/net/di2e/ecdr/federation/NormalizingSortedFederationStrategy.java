@@ -132,16 +132,16 @@ public class NormalizingSortedFederationStrategy extends AbstractFederationStrat
                 LOGGER.debug( "Sorting by type: " + sortType );
                 LOGGER.debug( "Sorting by Order: " + sortBy.getSortOrder() );
 
-                // Temporal searches are currently sorted by the effective time
-                // TODO Update this to handle more sorting date type (push to DDF)
-                if ( Metacard.EFFECTIVE.equals( sortType ) || Metacard.MODIFIED.equals( sortType ) || Metacard.CREATED.equals( sortType ) ) {
-                    coreComparator = new TemporalResultComparator( sortOrder, sortType );
-                } else if ( Result.TEMPORAL.equals( sortType ) ) {
+                if ( Result.TEMPORAL.equals( sortType ) ) {
                     coreComparator = new TemporalResultComparator( sortOrder );
                 } else if ( Result.DISTANCE.equals( sortType ) ) {
                     coreComparator = new DistanceResultComparator( sortOrder );
                 } else if ( Result.RELEVANCE.equals( sortType ) ) {
                     coreComparator = new RelevanceResultComparator( sortOrder );
+                } else {
+                    // ECDR-67 should improve on this, but right now we will just default to
+                    // temporal sort to handle created, effective, modified, etc.
+                    coreComparator = new TemporalResultComparator( sortOrder, sortType );
                 }
             }
 
@@ -188,11 +188,6 @@ public class NormalizingSortedFederationStrategy extends AbstractFederationStrat
                             originalSourceProperties.remove( SearchConstants.ELAPSED_TIME );
                             LOGGER.debug( "Setting the elapsedTime responseProperty to {} for source {}", object, site.getId() );
                         }
-
-                        // TODO for now add all properties into outgoing response's properties.
-                        // this is not the best idea because we could get properties from records
-                        // that get eliminated by the max results enforcement done below.
-                        // See DDF-1183 for a possible solution.
                         returnProperties.putAll( originalSourceProperties );
                     }
                     returnProperties.put( site.getId(), (Serializable) newSourceProperties );

@@ -12,14 +12,13 @@
  **/
 package net.di2e.ecdr.commons.query.rest;
 
-import com.vividsolutions.jts.geom.Coordinate;
-import com.vividsolutions.jts.io.WKTWriter;
-import ddf.catalog.data.Metacard;
-import ddf.catalog.data.Result;
-import ddf.catalog.filter.FilterBuilder;
-import ddf.catalog.filter.impl.SortByImpl;
-import ddf.catalog.operation.Query;
-import ddf.catalog.source.UnsupportedQueryException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+
+import javax.ws.rs.core.MultivaluedMap;
+
 import net.di2e.ecdr.commons.query.GeospatialCriteria;
 import net.di2e.ecdr.commons.query.GeospatialCriteria.SpatialOperator;
 import net.di2e.ecdr.commons.query.PropertyCriteria;
@@ -31,6 +30,7 @@ import net.di2e.ecdr.commons.query.util.keywordparser.ASTNode;
 import net.di2e.ecdr.commons.query.util.keywordparser.KeywordTextParser;
 import net.di2e.ecdr.commons.util.BrokerConstants;
 import net.di2e.ecdr.commons.util.SearchConstants;
+
 import org.apache.commons.lang.StringUtils;
 import org.geotools.filter.text.cql2.CQL;
 import org.geotools.filter.text.cql2.CQLException;
@@ -46,11 +46,15 @@ import org.parboiled.support.ParsingResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.core.MultivaluedMap;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
+import com.vividsolutions.jts.geom.Coordinate;
+import com.vividsolutions.jts.io.WKTWriter;
+
+import ddf.catalog.data.Metacard;
+import ddf.catalog.data.Result;
+import ddf.catalog.filter.FilterBuilder;
+import ddf.catalog.filter.impl.SortByImpl;
+import ddf.catalog.operation.Query;
+import ddf.catalog.source.UnsupportedQueryException;
 
 public class CDRQueryImpl implements Query {
 
@@ -82,14 +86,14 @@ public class CDRQueryImpl implements Query {
     private String localSourceId = null;
 
     public CDRQueryImpl( FilterBuilder filterBuilder, MultivaluedMap<String, String> queryParameters, QueryParser parser, boolean useDefaultSort, String localSourceId )
-        throws UnsupportedQueryException {
+            throws UnsupportedQueryException {
         queryParser = parser;
         this.localSourceId = localSourceId;
         this.useDefaultSortIfNotSpecified = useDefaultSort;
 
         createQuery( filterBuilder, queryParameters );
         humanReadableQueryBuilder.append( " " + SearchConstants.STRICTMODE_PARAMETER + "=[" + isStrictMode + "] " + SearchConstants.STARTINDEX_PARAMETER + "=[" + startIndex + "] "
-            + SearchConstants.COUNT_PARAMETER + "=[" + count + "]" );
+                + SearchConstants.COUNT_PARAMETER + "=[" + count + "]" );
         humanReadableQueryBuilder.append( " " + SearchConstants.FORMAT_PARAMETER + "=[" + responseFormat + "]" );
 
         sources = queryParser.getSiteNames( queryParameters );
@@ -172,7 +176,7 @@ public class CDRQueryImpl implements Query {
             textualCriteria = queryParser.getTextualCriteria( queryParameters );
             if ( textualCriteria != null ) {
                 LOGGER.debug( "Attempting to create a Contextual filter with params keywords=[{}], isCaseSensitive=[{}], strictMode=[{}]", textualCriteria.getKeywords(),
-                    textualCriteria.isCaseSensitive(), isStrictMode );
+                        textualCriteria.isCaseSensitive(), isStrictMode );
                 Filter filter = getContextualFilter( filterBuilder, textualCriteria.getKeywords(), textualCriteria.isCaseSensitive(), isStrictMode );
                 addFilter( filters, filter );
                 if ( useDefaultSortIfNotSpecified && sortBy == null ) {
@@ -184,9 +188,9 @@ public class CDRQueryImpl implements Query {
             geoCriteria = queryParser.getGeospatialCriteria( queryParameters );
             if ( geoCriteria != null ) {
                 LOGGER.debug( "Attempting to create a Geospatial filter with params radius=[{}], latitude=[{}], longitude=[{}], bbox=[{}] and geometry=[{}]", geoCriteria.getRadius(),
-                    geoCriteria.getLatitude(), geoCriteria.getLongitude(), geoCriteria.getBBoxWKT(), geoCriteria.getGeometryWKT() );
+                        geoCriteria.getLatitude(), geoCriteria.getLongitude(), geoCriteria.getBBoxWKT(), geoCriteria.getGeometryWKT() );
                 Filter filter = getGeoFilter( filterBuilder, geoCriteria.getRadius(), geoCriteria.getLatitude(), geoCriteria.getLongitude(), geoCriteria.getBBoxWKT(), geoCriteria.getGeometryWKT(),
-                    geoCriteria.getSpatialOperator() );
+                        geoCriteria.getSpatialOperator() );
                 addFilter( filters, filter );
                 if ( useDefaultSortIfNotSpecified && sortBy == null ) {
                     sortBy = new SortByImpl( Result.DISTANCE, SortOrder.ASCENDING );
@@ -197,7 +201,7 @@ public class CDRQueryImpl implements Query {
             temporalCriteria = queryParser.getTemporalCriteria( queryParameters );
             if ( temporalCriteria != null ) {
                 LOGGER.debug( "Attempting to create a Temporal filter with params startDate=[{}], endDate=[{}], dateType=[{}]", temporalCriteria.getStartDate(), temporalCriteria.getEndDate(),
-                    temporalCriteria.getDateType() );
+                        temporalCriteria.getDateType() );
                 Filter filter = getTemporalFilter( filterBuilder, temporalCriteria.getStartDate(), temporalCriteria.getEndDate(), temporalCriteria.getDateType() );
                 addFilter( filters, filter );
             }
@@ -207,7 +211,7 @@ public class CDRQueryImpl implements Query {
             if ( propertyCriteriaList != null && !propertyCriteriaList.isEmpty() ) {
                 for ( PropertyCriteria propCriteria : propertyCriteriaList ) {
                     LOGGER.debug( "Attempting to create a Property filter with params property=[{}], value=[{}], operator=[{}]", propCriteria.getProperty(), propCriteria.getValue(),
-                        propCriteria.getOperator() );
+                            propCriteria.getOperator() );
                     Filter filter = getPropertyFilter( filterBuilder, propCriteria.getProperty(), propCriteria.getValue(), propCriteria.getOperator() );
                     addFilter( filters, filter );
                 }
@@ -218,7 +222,7 @@ public class CDRQueryImpl implements Query {
             try {
                 Filter filter = CQL.toFilter( cqlStr );
                 addFilter( filters, filter );
-            } catch (CQLException cqlException) {
+            } catch ( CQLException cqlException ) {
                 throw new UnsupportedQueryException( "Invalid CQL predicate provided.", cqlException );
             }
 
@@ -285,7 +289,7 @@ public class CDRQueryImpl implements Query {
                 }
                 filter = filterBuilder.attribute( type ).during().dates( startDate, endDate );
                 humanReadableQueryBuilder.append( " " + SearchConstants.STARTDATE_PARAMETER + "=[" + startDate + "] " + SearchConstants.ENDDATE_PARAMETER + "=[" + endDate + "] "
-                    + SearchConstants.DATETYPE_PARAMETER + "=[" + type + "]" );
+                        + SearchConstants.DATETYPE_PARAMETER + "=[" + type + "]" );
             } else if ( startDate != null ) {
                 filter = filterBuilder.attribute( type ).after().date( startDate );
                 humanReadableQueryBuilder.append( " " + SearchConstants.STARTDATE_PARAMETER + "=[" + startDate + "] " + SearchConstants.DATETYPE_PARAMETER + "=[" + type + "]" );
@@ -300,7 +304,7 @@ public class CDRQueryImpl implements Query {
 
     protected Filter getPropertyFilter( FilterBuilder filterBuilder, String property, String value, Operator operator ) {
         Filter filter = null;
-        if ( property != null || value != null && operator != null ) {
+        if ( property != null && operator != null ) {
 
             if ( property.equals( Metacard.CONTENT_TYPE ) ) {
                 filter = getContentTypeFilter( filterBuilder, value );
@@ -390,20 +394,20 @@ public class CDRQueryImpl implements Query {
                 // If case sensitive then don't set Fuzzy
                 // If not case sensitive then set fuzzy based on fuzzy boolean
                 return caseSensitive ? filterBuilder.attribute( Metacard.ANY_TEXT ).like().caseSensitiveText( astNode.getKeyword() ) : (fuzzy ? filterBuilder.attribute( Metacard.ANY_TEXT ).like()
-                    .fuzzyText( astNode.getKeyword() ) : filterBuilder.attribute( Metacard.ANY_TEXT ).like().fuzzyText( astNode.getKeyword() ));
+                        .fuzzyText( astNode.getKeyword() ) : filterBuilder.attribute( Metacard.ANY_TEXT ).like().fuzzyText( astNode.getKeyword() ));
             }
         } else if ( astNode.isOperator() ) {
             switch ( astNode.getOperator() ) {
             case AND:
                 return filterBuilder
-                    .allOf( getFilterFromASTNode( filterBuilder, astNode.left(), caseSensitive, fuzzy ), getFilterFromASTNode( filterBuilder, astNode.right(), caseSensitive, fuzzy ) );
+                        .allOf( getFilterFromASTNode( filterBuilder, astNode.left(), caseSensitive, fuzzy ), getFilterFromASTNode( filterBuilder, astNode.right(), caseSensitive, fuzzy ) );
             case OR:
 
                 return filterBuilder
-                    .anyOf( getFilterFromASTNode( filterBuilder, astNode.left(), caseSensitive, fuzzy ), getFilterFromASTNode( filterBuilder, astNode.right(), caseSensitive, fuzzy ) );
+                        .anyOf( getFilterFromASTNode( filterBuilder, astNode.left(), caseSensitive, fuzzy ), getFilterFromASTNode( filterBuilder, astNode.right(), caseSensitive, fuzzy ) );
             case NOT: // since NOT really means AND NOT
                 return filterBuilder.allOf( getFilterFromASTNode( filterBuilder, astNode.left(), caseSensitive, fuzzy ),
-                    filterBuilder.not( getFilterFromASTNode( filterBuilder, astNode.right(), caseSensitive, fuzzy ) ) );
+                        filterBuilder.not( getFilterFromASTNode( filterBuilder, astNode.right(), caseSensitive, fuzzy ) ) );
             default:
                 throw new IllegalStateException( "Unable to generate Filter from invalid OperatorASTNode." );
             }

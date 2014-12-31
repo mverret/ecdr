@@ -116,13 +116,13 @@ public abstract class AbstractFilterDelegate<T> extends FilterDelegate<T> {
     @Override
     public T include() {
         logEntry( "include", null, null );
-        return super.include();
+        throw new UnsupportedOperationException( "include() not supported by Filter Delegate." );
     }
 
     @Override
     public T exclude() {
         logEntry( "exclude", null, null );
-        return super.exclude();
+        throw new UnsupportedOperationException( "exclude() not supported by Filter Delegate." );
     }
 
     @Override
@@ -182,13 +182,13 @@ public abstract class AbstractFilterDelegate<T> extends FilterDelegate<T> {
     @Override
     public T propertyIsEqualTo( String propertyName, byte[] literal ) {
         logEntry( "propertyIsEqualTo_Bytes", propertyName, literal );
-        return super.propertyIsEqualTo( propertyName, literal );
+        throw new UnsupportedOperationException( "propertyIsEqualTo(String, byte[]) not supported by Filter Delegate." );
     }
 
     @Override
     public T propertyIsEqualTo( String propertyName, Object literal ) {
         logEntry( "propertyIsEqualTo_Object", propertyName, literal );
-        return super.propertyIsEqualTo( propertyName, literal );
+        throw new UnsupportedOperationException( "propertyIsEqualTo(String, Object) not supported by Filter Delegate." );
     }
 
     @Override
@@ -200,13 +200,13 @@ public abstract class AbstractFilterDelegate<T> extends FilterDelegate<T> {
     @Override
     public T propertyIsNotEqualTo( String propertyName, Date literal ) {
         logEntry( "propertyIsEqualTo_Date", propertyName, literal );
-        return super.propertyIsNotEqualTo( propertyName, literal );
+        throw new UnsupportedOperationException( "propertyIsNotEqualTo(String, Date) not supported by Filter Delegate." );
     }
 
     @Override
     public T propertyIsNotEqualTo( String propertyName, Date startDate, Date endDate ) {
         logEntry( "propertyIsNotEqualTo_Dates", propertyName, startDate, endDate );
-        return super.propertyIsNotEqualTo( propertyName, startDate, endDate );
+        throw new UnsupportedOperationException( "propertyIsNotEqualTo(String, Date, Date) not supported by Filter Delegate." );
     }
 
     @Override
@@ -248,13 +248,13 @@ public abstract class AbstractFilterDelegate<T> extends FilterDelegate<T> {
     @Override
     public T propertyIsNotEqualTo( String propertyName, byte[] literal ) {
         logEntry( "propertyIsNotEqualTo_Bytes", propertyName, literal );
-        return super.propertyIsNotEqualTo( propertyName, literal );
+        throw new UnsupportedOperationException( "propertyIsNotEqualTo(String, byte[]) not supported by Filter Delegate." );
     }
 
     @Override
     public T propertyIsNotEqualTo( String propertyName, Object literal ) {
         logEntry( "propertyIsNotEqualTo", propertyName, literal );
-        return super.propertyIsNotEqualTo( propertyName, literal );
+        throw new UnsupportedOperationException( "propertyIsNotEqualTo(String, Object) not supported by Filter Delegate." );
     }
 
     @Override
@@ -302,7 +302,7 @@ public abstract class AbstractFilterDelegate<T> extends FilterDelegate<T> {
     @Override
     public T propertyIsGreaterThan( String propertyName, Object literal ) {
         logEntry( "propertyIsGreaterThan_Object", propertyName, literal );
-        return super.propertyIsGreaterThan( propertyName, literal );
+        throw new UnsupportedOperationException( "propertyIsGreaterThan(String, Object) not supported by Filter Delegate." );
     }
 
     @Override
@@ -350,7 +350,7 @@ public abstract class AbstractFilterDelegate<T> extends FilterDelegate<T> {
     @Override
     public T propertyIsGreaterThanOrEqualTo( String propertyName, Object literal ) {
         logEntry( "propertyIsGreaterThanOrEqualTo_Object", propertyName, literal );
-        return super.propertyIsGreaterThanOrEqualTo( propertyName, literal );
+        throw new UnsupportedOperationException( "propertyIsGreaterThanOrEqualTo(String, Object) not supported by Filter Delegate." );
     }
 
     @Override
@@ -398,7 +398,7 @@ public abstract class AbstractFilterDelegate<T> extends FilterDelegate<T> {
     @Override
     public T propertyIsLessThan( String propertyName, Object literal ) {
         logEntry( "propertyIsLessThan_Object", propertyName, literal );
-        return super.propertyIsLessThan( propertyName, literal );
+        throw new UnsupportedOperationException( "propertyIsLessThan(String, Object) not supported by Filter Delegate." );
     }
 
     @Override
@@ -446,7 +446,7 @@ public abstract class AbstractFilterDelegate<T> extends FilterDelegate<T> {
     @Override
     public T propertyIsLessThanOrEqualTo( String propertyName, Object literal ) {
         logEntry( "propertyIsLessThanOrEqualTo_Object", propertyName, literal );
-        return super.propertyIsLessThanOrEqualTo( propertyName, literal );
+        throw new UnsupportedOperationException( "propertyIsLessThanOrEqualTo(String, Object) not supported by Filter Delegate." );
     }
 
     @Override
@@ -494,7 +494,7 @@ public abstract class AbstractFilterDelegate<T> extends FilterDelegate<T> {
     @Override
     public T propertyIsBetween( String propertyName, Object lowerBoundary, Object upperBoundary ) {
         logEntry( "propertyIsBetween_Object", propertyName, lowerBoundary, upperBoundary );
-        return super.propertyIsBetween( propertyName, lowerBoundary, upperBoundary );
+        throw new UnsupportedOperationException( "propertyIsBetween(String, Object, Object) not supported by Filter Delegate." );
     }
 
     @Override
