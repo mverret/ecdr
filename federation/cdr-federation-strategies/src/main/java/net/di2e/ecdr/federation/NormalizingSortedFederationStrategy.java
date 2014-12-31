@@ -29,7 +29,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import net.di2e.ecdr.commons.util.SearchConstants;
+import net.di2e.ecdr.commons.constants.SearchConstants;
 import net.di2e.ecdr.libs.result.relevance.RelevanceNormalizer;
 
 import org.opengis.filter.expression.PropertyName;

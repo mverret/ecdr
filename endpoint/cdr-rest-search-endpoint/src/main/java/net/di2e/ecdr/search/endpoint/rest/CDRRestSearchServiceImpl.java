@@ -12,6 +12,9 @@
  **/
 package net.di2e.ecdr.search.endpoint.rest;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.HEAD;
 import javax.ws.rs.HeaderParam;
@@ -51,6 +54,15 @@ public class CDRRestSearchServiceImpl extends AbstractRestSearchEndpoint {
 
     private static final String RELATIVE_URL = "/services/cdr/search/rest";
     private static final String SERVICE_TYPE = "CDR REST Search Service";
+    
+    private static final Map<String, String> REGISTRABLE_PROPERTIES = new HashMap<String, String>();
+    static {
+        REGISTRABLE_PROPERTIES.put( "receiveTimeoutSeconds", "0" );
+        REGISTRABLE_PROPERTIES.put( "connectionTimeoutSeconds", "30" );
+        REGISTRABLE_PROPERTIES.put( "maxResultCount", "0" );
+        REGISTRABLE_PROPERTIES.put( "doSourcePing", "true" );
+        REGISTRABLE_PROPERTIES.put( "availableCheckCacheTime", "60" );
+    }
 
     /**
      * Constructor for JAX RS CDR Search Service. Values should ideally be passed into the constructor using a
@@ -101,6 +113,11 @@ public class CDRRestSearchServiceImpl extends AbstractRestSearchEndpoint {
     @Override
     public String getServiceDescription() {
         return "Provides a RESTful search service using the CDR Search specification.";
+    }
+
+    @Override
+    public Map<String, String> getProperties() {
+        return REGISTRABLE_PROPERTIES;
     }
 
     @Override

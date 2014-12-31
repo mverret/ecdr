@@ -37,6 +37,7 @@ public class CDRRestSource extends AbstractCDRSource {
         super( filterAdapter );
         filterConfig = new FilterConfig();
         LOGGER.info( "Creating a new CDRRestSource." );
+        setPingMethod(PingMethod.HEAD);
     }
 
     @Override

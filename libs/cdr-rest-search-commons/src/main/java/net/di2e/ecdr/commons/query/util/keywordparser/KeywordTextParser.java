@@ -172,10 +172,7 @@ public class KeywordTextParser extends BaseParser<ASTNode> {
      * </p>
      */
     Rule keyword() {
-        // TODO the default value is used to allow the parser to keep running
-        // during error
-        // recovery... is this right?
-        return Sequence( OneOrMore( NoneOf( " \t\n\f()\"" ) ), push( new KeywordASTNode( matchOrDefault( "defaultKeyword" ) ) ) );
+        return Sequence( OneOrMore( NoneOf( " \t\n\f()\"" ) ), push( new KeywordASTNode( matchOrDefault( "*" ) ) ) );
     }
 
     // Previously, all strings were wrapped in Spacing() by this function

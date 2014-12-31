@@ -21,11 +21,11 @@ import java.util.List;
 
 import javax.ws.rs.core.MultivaluedMap;
 
+import net.di2e.ecdr.commons.constants.SearchConstants;
 import net.di2e.ecdr.commons.query.GeospatialCriteria;
 import net.di2e.ecdr.commons.query.GeospatialCriteria.SpatialOperator;
 import net.di2e.ecdr.commons.query.PropertyCriteria;
 import net.di2e.ecdr.commons.query.PropertyCriteria.Operator;
-import net.di2e.ecdr.commons.util.SearchConstants;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.LoggerFactory;

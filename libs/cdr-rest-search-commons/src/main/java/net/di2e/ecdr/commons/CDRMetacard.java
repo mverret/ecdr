@@ -38,7 +38,7 @@ public class CDRMetacard extends MetacardImpl {
 
     public static final String RESOURCE_MIME_TYPE = "resource-mime-type";
     public static final String RESOURCE_TITLE = "resource-title";
-    // TODO populate thumbnail
+
     public static final String THUMBNAIL_LINK = "thumbnail-link";
     public static final String THUMBNAIL_LENGTH = "thumbnail-length";
     public static final String THUMBNAIL_MIMETYPE = "thumbnail-mimetype";
@@ -93,9 +93,9 @@ public class CDRMetacard extends MetacardImpl {
     }
 
     public boolean hasThumbnail() {
-        // ORder is import here especially if the original Metacard is using
-        // Thumbnail links and doesn't pull the
-        // thumbnail until the getThumbnail method is called
+        // Order is import here especially if the original Metacard is using
+        // Thumbnail links and doesn't pull the thumbnail until the getThumbnail
+        // method is called
         return originalMetacard.getAttribute( THUMBNAIL_LINK ) != null || originalMetacard.getThumbnail() != null;
     }
 

@@ -15,11 +15,9 @@ package net.di2e.ecdr.search.transform.atom.response;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
-import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -27,17 +25,9 @@ import java.util.Set;
 
 import javax.activation.MimeType;
 
-import ddf.catalog.operation.ProcessingDetails;
-import ddf.catalog.operation.QueryRequest;
-import ddf.catalog.operation.SourceResponse;
-import ddf.catalog.operation.impl.ProcessingDetailsImpl;
-import ddf.catalog.operation.impl.QueryImpl;
-import ddf.catalog.operation.impl.QueryRequestImpl;
-import ddf.catalog.operation.impl.QueryResponseImpl;
-import ddf.catalog.source.UnsupportedQueryException;
+import net.di2e.ecdr.commons.constants.BrokerConstants;
+import net.di2e.ecdr.commons.constants.SearchConstants;
 import net.di2e.ecdr.commons.filter.config.FilterConfig;
-import net.di2e.ecdr.commons.util.BrokerConstants;
-import net.di2e.ecdr.commons.util.SearchConstants;
 import net.di2e.ecdr.search.transform.atom.AtomTransformer;
 import net.di2e.ecdr.search.transform.atom.geo.GeoHelper;
 
@@ -55,6 +45,14 @@ import org.junit.Test;
 import ddf.action.ActionProvider;
 import ddf.catalog.data.BinaryContent;
 import ddf.catalog.data.impl.MetacardImpl;
+import ddf.catalog.operation.ProcessingDetails;
+import ddf.catalog.operation.QueryRequest;
+import ddf.catalog.operation.SourceResponse;
+import ddf.catalog.operation.impl.ProcessingDetailsImpl;
+import ddf.catalog.operation.impl.QueryImpl;
+import ddf.catalog.operation.impl.QueryRequestImpl;
+import ddf.catalog.operation.impl.QueryResponseImpl;
+import ddf.catalog.source.UnsupportedQueryException;
 
 /**
  * Test out the atom transformer
@@ -123,7 +121,7 @@ public class AtomTransformerTest extends net.di2e.ecdr.search.transform.atom.res
         String sourceName2 = "Bad Example";
         AtomResponseTransformer responseTransformer = new AtomResponseTransformer( new FilterConfig() );
         QueryRequest request = new QueryRequestImpl( new QueryImpl( CQL.toFilter( "title like 'test'" ) ) );
-        SourceResponse sourceResponse = responseTransformer.processSearchResponse( getClass().getResourceAsStream( RESPONSE_FILE ), "atom", request, sourceName );
+        SourceResponse sourceResponse = responseTransformer.processSearchResponse( getClass().getResourceAsStream( RESPONSE_FILE ), request, sourceName );
         QueryResponseImpl queryResponse = new QueryResponseImpl( sourceResponse, sourceName );
         Map<String, Serializable> queryProperties = new HashMap<>();
         queryProperties.put( "site-list", new ArrayList<>( Arrays.asList( sourceName, sourceName2 ) ) );
@@ -152,7 +150,7 @@ public class AtomTransformerTest extends net.di2e.ecdr.search.transform.atom.res
         String sourceName = "Example";
         AtomResponseTransformer responseTransformer = new AtomResponseTransformer( new FilterConfig() );
         QueryRequest request = new QueryRequestImpl( new QueryImpl( CQL.toFilter( "title like 'test'" ) ) );
-        SourceResponse sourceResponse = responseTransformer.processSearchResponse( getClass().getResourceAsStream( RESPONSE_FILE ), "atom", request, sourceName );
+        SourceResponse sourceResponse = responseTransformer.processSearchResponse( getClass().getResourceAsStream( RESPONSE_FILE ), request, sourceName );
         QueryResponseImpl queryResponse = new QueryResponseImpl( sourceResponse, sourceName );
         Map<String, Serializable> queryProperties = new HashMap<>();
         queryProperties.put( "site-list", new ArrayList<>( Arrays.asList( sourceName ) ) );
@@ -170,7 +168,7 @@ public class AtomTransformerTest extends net.di2e.ecdr.search.transform.atom.res
         String sourceName = "Example";
         AtomResponseTransformer responseTransformer = new AtomResponseTransformer( new FilterConfig() );
         QueryRequest request = new QueryRequestImpl( new QueryImpl( CQL.toFilter( "title like 'test'" ) ) );
-        SourceResponse sourceResponse = responseTransformer.processSearchResponse( getClass().getResourceAsStream( RESPONSE_FILE ), "atom", request, sourceName );
+        SourceResponse sourceResponse = responseTransformer.processSearchResponse( getClass().getResourceAsStream( RESPONSE_FILE ), request, sourceName );
         QueryResponseImpl queryResponse = new QueryResponseImpl( sourceResponse, sourceName );
         Map<String, Serializable> queryProperties = new HashMap<>();
         queryProperties.put( sourceName, getSiteMap() );

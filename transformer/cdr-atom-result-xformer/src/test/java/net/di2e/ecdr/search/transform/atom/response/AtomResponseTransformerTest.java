@@ -12,18 +12,20 @@
  **/
 package net.di2e.ecdr.search.transform.atom.response;
 
-import ddf.catalog.data.Result;
-import ddf.catalog.operation.QueryRequest;
-import ddf.catalog.operation.SourceResponse;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+
+import java.util.List;
+
 import net.di2e.ecdr.commons.filter.config.FilterConfig;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 
-import java.util.List;
-
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
+import ddf.catalog.data.Result;
+import ddf.catalog.operation.QueryRequest;
+import ddf.catalog.operation.SourceResponse;
 
 /**
  * Tests that the atom-based search response transformer returns proper atom content.
@@ -114,7 +116,7 @@ public class AtomResponseTransformerTest extends net.di2e.ecdr.search.transform.
         QueryRequest request = mock( QueryRequest.class );
         AtomResponseTransformer transformer = new AtomResponseTransformer( config );
         String atomXML = IOUtils.toString( getClass().getResourceAsStream( ATOM_INVALID_FILE ) );
-        SourceResponse response = transformer.processSearchResponse( IOUtils.toInputStream( atomXML ), "atom", request, SITE_NAME );
+        SourceResponse response = transformer.processSearchResponse( IOUtils.toInputStream( atomXML ), request, SITE_NAME );
         assertEquals( 0, response.getHits() );
         assertEquals( 0, response.getResults().size() );
     }
@@ -125,7 +127,7 @@ public class AtomResponseTransformerTest extends net.di2e.ecdr.search.transform.
         AtomResponseTransformer transformer = new AtomResponseTransformer( config );
         String atomXML = IOUtils.toString( getClass().getResourceAsStream( ATOM_TEMPLATE_FILE ) );
         atomXML = StringUtils.replace( atomXML, LOCATION_MARKER, LOCATION_XML );
-        return transformer.processSearchResponse( IOUtils.toInputStream( atomXML ), "atom", request, SITE_NAME );
+        return transformer.processSearchResponse( IOUtils.toInputStream( atomXML ), request, SITE_NAME );
     }
 
     private void validateWKT( String expectedWKT, SourceResponse response ) {

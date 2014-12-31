@@ -19,6 +19,8 @@ import java.util.List;
 
 import javax.ws.rs.core.MultivaluedMap;
 
+import net.di2e.ecdr.commons.constants.BrokerConstants;
+import net.di2e.ecdr.commons.constants.SearchConstants;
 import net.di2e.ecdr.commons.query.GeospatialCriteria;
 import net.di2e.ecdr.commons.query.GeospatialCriteria.SpatialOperator;
 import net.di2e.ecdr.commons.query.PropertyCriteria;
@@ -28,8 +30,6 @@ import net.di2e.ecdr.commons.query.TextualCriteria;
 import net.di2e.ecdr.commons.query.rest.parsers.QueryParser;
 import net.di2e.ecdr.commons.query.util.keywordparser.ASTNode;
 import net.di2e.ecdr.commons.query.util.keywordparser.KeywordTextParser;
-import net.di2e.ecdr.commons.util.BrokerConstants;
-import net.di2e.ecdr.commons.util.SearchConstants;
 
 import org.apache.commons.lang.StringUtils;
 import org.geotools.filter.text.cql2.CQL;

@@ -73,7 +73,7 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
     }
 
     @Override
-    public SourceResponse processSearchResponse( InputStream inputStream, String format, QueryRequest request, String siteName ) {
+    public SourceResponse processSearchResponse( InputStream inputStream, QueryRequest request, String siteName ) {
         List<Result> resultList = new ArrayList<Result>();
 
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
@@ -126,10 +126,6 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
         }
         metacard.setId( id );
 
-        // Set the source to the original source name
-        // TODO revist this
-        // String resultSource = entry.getSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE,
-        // AtomResponseConstants.RESULT_SOURCE_ELEMENT, AtomResponseConstants.CDRB_NAMESPACE_PREFIX );
         metacard.setSourceId( siteName );
 
         List<Category> categories = entry.getCategories();
@@ -193,7 +189,7 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
             if ( productTitle != null ) {
                 metacard.setAttribute( CDRMetacard.RESOURCE_TITLE, productTitle );
             }
-            // TODO ECDR-41 figure out MIMEType
+            // ECDR-41 figure out MIMEType
             MimeType productType = productLink.getMimeType();
             if ( productType != null ) {
                 metacard.setAttribute( CDRMetacard.RESOURCE_MIME_TYPE, productType.toString() );
@@ -213,7 +209,7 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
                         if ( thumbnailSize > 0 ) {
                             metacard.setAttribute( CDRMetacard.THUMBNAIL_LENGTH, Long.valueOf( thumbnailSize ) );
                         }
-                        // TODO ECDR-41 figure out MIMEType
+                        // ECDR-41 figure out MIMEType
                         metacard.setAttribute( CDRMetacard.THUMBNAIL_MIMETYPE, link.getMimeType() );
                         metacard.setAttribute( CDRMetacard.THUMBNAIL_LINK_TITLE, link.getTitle() );
                     }

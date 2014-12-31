@@ -10,7 +10,7 @@
  * <http://www.gnu.org/licenses/lgpl.html>.
  * 
  **/
-package net.di2e.ecdr.commons.util;
+package net.di2e.ecdr.commons.constants;
 
 public final class BrokerConstants {
     

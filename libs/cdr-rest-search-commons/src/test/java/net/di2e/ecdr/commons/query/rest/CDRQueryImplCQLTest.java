@@ -14,8 +14,9 @@ package net.di2e.ecdr.commons.query.rest;
 
 import ddf.catalog.filter.FilterBuilder;
 import ddf.catalog.source.UnsupportedQueryException;
+import net.di2e.ecdr.commons.constants.SearchConstants;
 import net.di2e.ecdr.commons.query.rest.parsers.BrokerQueryParser;
-import net.di2e.ecdr.commons.util.SearchConstants;
+
 import org.apache.cxf.jaxrs.impl.MetadataMap;
 import org.junit.Test;
 
