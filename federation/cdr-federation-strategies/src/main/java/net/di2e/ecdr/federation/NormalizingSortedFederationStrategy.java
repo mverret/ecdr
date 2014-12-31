@@ -38,7 +38,6 @@ import org.opengis.filter.sort.SortOrder;
 import org.slf4j.LoggerFactory;
 import org.slf4j.ext.XLogger;
 
-import ddf.catalog.data.Metacard;
 import ddf.catalog.data.Result;
 import ddf.catalog.operation.ProcessingDetails;
 import ddf.catalog.operation.Query;

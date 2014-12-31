@@ -90,8 +90,8 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
 
     private boolean defaultToUseGMLEncoding = true;
 
-    public AbstractAtomTransformer( ConfigurationWatcherImpl config, ActionProvider viewMetacard, ActionProvider metadataProvider, ActionProvider resourceProvider,
-            ActionProvider thumbnailProvider, MimeType thumbnailMime, MimeType viewMime ) {
+    public AbstractAtomTransformer( ConfigurationWatcherImpl config, ActionProvider viewMetacard, ActionProvider metadataProvider, ActionProvider resourceProvider, ActionProvider thumbnailProvider,
+            MimeType thumbnailMime, MimeType viewMime ) {
         if ( viewMime == null || thumbnailMime == null ) {
             throw new IllegalArgumentException( "MimeType parameters to constructor cannot be null" );
         }
@@ -112,8 +112,7 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
      * Specifies if GML encoding should be used for location data.
      *
      * @param shouldUseGMLEncoding
-     *            true (default) will return locations as GeoRSS-GML; false will
-     *            return locations as GeoRSS-Simple
+     *            true (default) will return locations as GeoRSS-GML; false will return locations as GeoRSS-Simple
      */
     public void setUseGMLEncoding( boolean shouldUseGMLEncoding ) {
         defaultToUseGMLEncoding = shouldUseGMLEncoding;
@@ -219,24 +218,19 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
                 String sourceId = detail.getSourceId();
                 siteList.remove( sourceId );
 
-                ExtensibleElement sourceStatus = feed.addExtension( AtomResponseConstants.CDRB_NAMESPACE, "sourceStatus",
-                        AtomResponseConstants.CDRB_NAMESPACE_PREFIX );
-                sourceStatus.setAttributeValue( new QName( AtomResponseConstants.CDRB_NAMESPACE, "sourceId", AtomResponseConstants.CDRB_NAMESPACE_PREFIX ),
-                        sourceId );
+                ExtensibleElement sourceStatus = feed.addExtension( AtomResponseConstants.CDRB_NAMESPACE, "sourceStatus", AtomResponseConstants.CDRB_NAMESPACE_PREFIX );
+                sourceStatus.setAttributeValue( new QName( AtomResponseConstants.CDRB_NAMESPACE, "sourceId", AtomResponseConstants.CDRB_NAMESPACE_PREFIX ), sourceId );
                 sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "shortName", AtomResponseConstants.CDRB_NAMESPACE_PREFIX, sourceId );
 
                 String feedPath = (String) properties.get( BrokerConstants.PATH_PARAMETER );
                 if ( detail.hasException() ) {
                     sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "status", AtomResponseConstants.CDRB_NAMESPACE_PREFIX, "error" );
-                    sourceStatus
-                            .addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "resultsRetrieved", AtomResponseConstants.CDRB_NAMESPACE_PREFIX, "0" );
+                    sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "resultsRetrieved", AtomResponseConstants.CDRB_NAMESPACE_PREFIX, "0" );
                     if ( StringUtils.isNotBlank( feedPath ) ) {
                         sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "path", AtomResponseConstants.CDRB_NAMESPACE_PREFIX, feedPath );
                     }
-                    sourceStatus.addSimpleExtension( AtomResponseConstants.CDRS_EXT_NAMESPACE, "warning", AtomResponseConstants.CDRS_EXT_NAMESPACE_PREFIX,
-                            detail.getException().getMessage() );
-                    sourceStatus.addSimpleExtension( AtomResponseConstants.CDRS_EXT_NAMESPACE, "statusMessage",
-                            AtomResponseConstants.CDRS_EXT_NAMESPACE_PREFIX, "Search complete with errors" );
+                    sourceStatus.addSimpleExtension( AtomResponseConstants.CDRS_EXT_NAMESPACE, "warning", AtomResponseConstants.CDRS_EXT_NAMESPACE_PREFIX, detail.getException().getMessage() );
+                    sourceStatus.addSimpleExtension( AtomResponseConstants.CDRS_EXT_NAMESPACE, "statusMessage", AtomResponseConstants.CDRS_EXT_NAMESPACE_PREFIX, "Search complete with errors" );
                 } else {
                     Serializable object = queryResponse.getPropertyValue( sourceId );
 
@@ -244,36 +238,31 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
                         Map<String, Serializable> sourceProperties = (Map<String, Serializable>) object;
                         Long elapsedTime = (Long) sourceProperties.get( "elapsed-time" );
                         if ( elapsedTime != null ) {
-                            sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "elapsedTime", AtomResponseConstants.CDRB_NAMESPACE_PREFIX,
-                                    String.valueOf( elapsedTime ) );
+                            sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "elapsedTime", AtomResponseConstants.CDRB_NAMESPACE_PREFIX, String.valueOf( elapsedTime ) );
                         }
 
                         Long totalHits = (Long) sourceProperties.get( "total-hits" );
                         if ( totalHits != null ) {
-                            sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "totalResults", AtomResponseConstants.CDRB_NAMESPACE_PREFIX,
-                                    String.valueOf( totalHits ) );
+                            sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "totalResults", AtomResponseConstants.CDRB_NAMESPACE_PREFIX, String.valueOf( totalHits ) );
                         }
 
                         Integer totalResultsReturned = (Integer) sourceProperties.get( "total-results-returned" );
                         if ( totalResultsReturned != null ) {
-                            sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "resultsRetrieved",
-                                    AtomResponseConstants.CDRB_NAMESPACE_PREFIX, String.valueOf( totalResultsReturned ) );
+                            sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "resultsRetrieved", AtomResponseConstants.CDRB_NAMESPACE_PREFIX,
+                                    String.valueOf( totalResultsReturned ) );
                         }
                     } else {
-                        sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "resultsRetrieved", AtomResponseConstants.CDRB_NAMESPACE_PREFIX,
-                                String.valueOf( results.size() ) );
+                        sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "resultsRetrieved", AtomResponseConstants.CDRB_NAMESPACE_PREFIX, String.valueOf( results.size() ) );
                     }
                     sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "status", AtomResponseConstants.CDRB_NAMESPACE_PREFIX, "complete" );
 
                     if ( StringUtils.isNotBlank( feedPath ) ) {
                         sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "path", AtomResponseConstants.CDRB_NAMESPACE_PREFIX, feedPath );
                     }
-                    sourceStatus.addSimpleExtension( AtomResponseConstants.CDRS_EXT_NAMESPACE, "statusMessage",
-                            AtomResponseConstants.CDRS_EXT_NAMESPACE_PREFIX, "Search complete with no errors" );
+                    sourceStatus.addSimpleExtension( AtomResponseConstants.CDRS_EXT_NAMESPACE, "statusMessage", AtomResponseConstants.CDRS_EXT_NAMESPACE_PREFIX, "Search complete with no errors" );
                     List<String> warnings = detail.getWarnings();
                     if ( warnings != null && !warnings.isEmpty() ) {
-                        sourceStatus.addSimpleExtension( AtomResponseConstants.CDRS_EXT_NAMESPACE, "warning", AtomResponseConstants.CDRS_EXT_NAMESPACE_PREFIX,
-                                warnings.get( 0 ) );
+                        sourceStatus.addSimpleExtension( AtomResponseConstants.CDRS_EXT_NAMESPACE, "warning", AtomResponseConstants.CDRS_EXT_NAMESPACE_PREFIX, warnings.get( 0 ) );
                     }
                 }
             }
@@ -284,24 +273,17 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
                     sourceId = "SELF";
                 }
 
-                ExtensibleElement sourceStatus = feed.addExtension( AtomResponseConstants.CDRB_NAMESPACE, "sourceStatus",
-                        AtomResponseConstants.CDRB_NAMESPACE_PREFIX );
-                sourceStatus.setAttributeValue( new QName( AtomResponseConstants.CDRB_NAMESPACE, "sourceId", AtomResponseConstants.CDRB_NAMESPACE_PREFIX ),
-                        sourceId );
+                ExtensibleElement sourceStatus = feed.addExtension( AtomResponseConstants.CDRB_NAMESPACE, "sourceStatus", AtomResponseConstants.CDRB_NAMESPACE_PREFIX );
+                sourceStatus.setAttributeValue( new QName( AtomResponseConstants.CDRB_NAMESPACE, "sourceId", AtomResponseConstants.CDRB_NAMESPACE_PREFIX ), sourceId );
                 sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "shortName", AtomResponseConstants.CDRB_NAMESPACE_PREFIX, sourceId );
                 sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "status", AtomResponseConstants.CDRB_NAMESPACE_PREFIX, "complete" );
-                sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "resultsRetrieved", AtomResponseConstants.CDRB_NAMESPACE_PREFIX,
-                        String.valueOf( results.size() ) );
-                sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "totalResults", AtomResponseConstants.CDRB_NAMESPACE_PREFIX,
-                        String.valueOf( response.getHits() ) );
-                sourceStatus.addSimpleExtension( AtomResponseConstants.CDRS_EXT_NAMESPACE, "statusMessage", AtomResponseConstants.CDRS_EXT_NAMESPACE_PREFIX,
-                        "Search complete with no errors" );
+                sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "resultsRetrieved", AtomResponseConstants.CDRB_NAMESPACE_PREFIX, String.valueOf( results.size() ) );
+                sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "totalResults", AtomResponseConstants.CDRB_NAMESPACE_PREFIX, String.valueOf( response.getHits() ) );
+                sourceStatus.addSimpleExtension( AtomResponseConstants.CDRS_EXT_NAMESPACE, "statusMessage", AtomResponseConstants.CDRS_EXT_NAMESPACE_PREFIX, "Search complete with no errors" );
             } else if ( !siteList.isEmpty() ) {
                 for ( String site : siteList ) {
-                    ExtensibleElement sourceStatus = feed.addExtension( AtomResponseConstants.CDRB_NAMESPACE, "sourceStatus",
-                            AtomResponseConstants.CDRB_NAMESPACE_PREFIX );
-                    sourceStatus.setAttributeValue( new QName( AtomResponseConstants.CDRB_NAMESPACE, "sourceId", AtomResponseConstants.CDRB_NAMESPACE_PREFIX ),
-                            site );
+                    ExtensibleElement sourceStatus = feed.addExtension( AtomResponseConstants.CDRB_NAMESPACE, "sourceStatus", AtomResponseConstants.CDRB_NAMESPACE_PREFIX );
+                    sourceStatus.setAttributeValue( new QName( AtomResponseConstants.CDRB_NAMESPACE, "sourceId", AtomResponseConstants.CDRB_NAMESPACE_PREFIX ), site );
                     sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "shortName", AtomResponseConstants.CDRB_NAMESPACE_PREFIX, site );
 
                     String feedPath = (String) properties.get( BrokerConstants.PATH_PARAMETER );
@@ -310,32 +292,27 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
                         Map<String, Serializable> sourceProperties = (Map<String, Serializable>) object;
                         Long elapsedTime = (Long) sourceProperties.get( "elapsed-time" );
                         if ( elapsedTime != null ) {
-                            sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "elapsedTime", AtomResponseConstants.CDRB_NAMESPACE_PREFIX,
-                                    String.valueOf( elapsedTime ) );
+                            sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "elapsedTime", AtomResponseConstants.CDRB_NAMESPACE_PREFIX, String.valueOf( elapsedTime ) );
                         }
 
                         Long totalHits = (Long) sourceProperties.get( "total-hits" );
                         if ( totalHits != null ) {
-                            sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "totalResults", AtomResponseConstants.CDRB_NAMESPACE_PREFIX,
-                                    String.valueOf( totalHits ) );
+                            sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "totalResults", AtomResponseConstants.CDRB_NAMESPACE_PREFIX, String.valueOf( totalHits ) );
                         }
 
                         Integer totalResultsReturned = (Integer) sourceProperties.get( "total-results-returned" );
                         if ( totalResultsReturned != null ) {
-                            sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "resultsRetrieved",
-                                    AtomResponseConstants.CDRB_NAMESPACE_PREFIX, String.valueOf( totalResultsReturned ) );
+                            sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "resultsRetrieved", AtomResponseConstants.CDRB_NAMESPACE_PREFIX,
+                                    String.valueOf( totalResultsReturned ) );
                         }
-                        sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "status", AtomResponseConstants.CDRB_NAMESPACE_PREFIX,
-                                "complete" );
-                        sourceStatus.addSimpleExtension( AtomResponseConstants.CDRS_EXT_NAMESPACE, "statusMessage",
-                                AtomResponseConstants.CDRS_EXT_NAMESPACE_PREFIX, "Search complete with no errors" );
-                    } else {
-                        sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "resultsRetrieved", AtomResponseConstants.CDRB_NAMESPACE_PREFIX,
-                                "0" );
+                        sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "status", AtomResponseConstants.CDRB_NAMESPACE_PREFIX, "complete" );
                         sourceStatus
-                                .addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "status", AtomResponseConstants.CDRB_NAMESPACE_PREFIX, "waiting" );
-                        sourceStatus.addSimpleExtension( AtomResponseConstants.CDRS_EXT_NAMESPACE, "statusMessage",
-                                AtomResponseConstants.CDRS_EXT_NAMESPACE_PREFIX, "Source is still being searched, and has not returned results yet" );
+                                .addSimpleExtension( AtomResponseConstants.CDRS_EXT_NAMESPACE, "statusMessage", AtomResponseConstants.CDRS_EXT_NAMESPACE_PREFIX, "Search complete with no errors" );
+                    } else {
+                        sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "resultsRetrieved", AtomResponseConstants.CDRB_NAMESPACE_PREFIX, "0" );
+                        sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "status", AtomResponseConstants.CDRB_NAMESPACE_PREFIX, "waiting" );
+                        sourceStatus.addSimpleExtension( AtomResponseConstants.CDRS_EXT_NAMESPACE, "statusMessage", AtomResponseConstants.CDRS_EXT_NAMESPACE_PREFIX,
+                                "Source is still being searched, and has not returned results yet" );
                     }
 
                     if ( StringUtils.isNotBlank( feedPath ) ) {
@@ -354,7 +331,7 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
 
     @Override
     public BinaryContent transform( Metacard metacard, Map<String, Serializable> properties ) throws CatalogTransformerException {
-        if ( properties == null ){
+        if ( properties == null ) {
             properties = new HashMap<String, Serializable>();
         }
         Entry entry = getMetacardEntry( new CDRMetacard( metacard ), properties );
@@ -428,8 +405,7 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
 
         String sourceId = metacard.getSourceId();
         if ( sourceId != null ) {
-            ExtensibleElement element = entry.addExtension( AtomResponseConstants.CDRB_NAMESPACE, AtomResponseConstants.RESULT_SOURCE_ELEMENT,
-                    AtomResponseConstants.CDRB_NAMESPACE_PREFIX );
+            ExtensibleElement element = entry.addExtension( AtomResponseConstants.CDRB_NAMESPACE, AtomResponseConstants.RESULT_SOURCE_ELEMENT, AtomResponseConstants.CDRB_NAMESPACE_PREFIX );
             element.setAttributeValue( new QName( AtomResponseConstants.CDRB_NAMESPACE, "sourceId", AtomResponseConstants.CDRB_NAMESPACE_PREFIX ), sourceId );
             element.setText( sourceId );
         }
@@ -442,14 +418,14 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
 
         Date createdDate = metacard.getCreatedDate();
         if ( createdDate != null ) {
-            entry.addSimpleExtension( AtomResponseConstants.METACARD_ATOM_NAMESPACE, AtomResponseConstants.METACARD_CREATED_DATE_ELEMENT,
-                    AtomResponseConstants.METACARD_ATOM_NAMESPACE_PREFIX, DATE_FORMATTER.print( createdDate.getTime() ) );
+            entry.addSimpleExtension( AtomResponseConstants.METACARD_ATOM_NAMESPACE, AtomResponseConstants.METACARD_CREATED_DATE_ELEMENT, AtomResponseConstants.METACARD_ATOM_NAMESPACE_PREFIX,
+                    DATE_FORMATTER.print( createdDate.getTime() ) );
         }
 
         Date expirationDate = metacard.getExpirationDate();
         if ( expirationDate != null ) {
-            entry.addSimpleExtension( AtomResponseConstants.METACARD_ATOM_NAMESPACE, AtomResponseConstants.METADATA_EXPIRATION_DATE_ELEMENT,
-                    AtomResponseConstants.METACARD_ATOM_NAMESPACE_PREFIX, DATE_FORMATTER.print( expirationDate.getTime() ) );
+            entry.addSimpleExtension( AtomResponseConstants.METACARD_ATOM_NAMESPACE, AtomResponseConstants.METADATA_EXPIRATION_DATE_ELEMENT, AtomResponseConstants.METACARD_ATOM_NAMESPACE_PREFIX,
+                    DATE_FORMATTER.print( expirationDate.getTime() ) );
         }
 
         addEntryElements( entry, metacard, properties );
@@ -458,16 +434,13 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
     }
 
     /**
-     * This method inspects the properties to determine if there is a property
-     * that specifies the GeoRSS format. If that property exists then it will
-     * use the value of that property to determine whether to use simple or gml
-     * format. Otherwise it will return the default global property for using
-     * GML or Simple
+     * This method inspects the properties to determine if there is a property that specifies the GeoRSS format. If that
+     * property exists then it will use the value of that property to determine whether to use simple or gml format.
+     * Otherwise it will return the default global property for using GML or Simple
      * 
      * @param properties
      *            that were passed into the transformer
-     * @return true if GML encoding for GeoRSS should be used, false would mean
-     *         to use simple encoding
+     * @return true if GML encoding for GeoRSS should be used, false would mean to use simple encoding
      */
     protected boolean useGmlEncoding( Map<String, Serializable> properties ) {
         String format = (String) properties.get( SearchConstants.GEORSS_RESULT_FORMAT_PARAMETER );
@@ -489,8 +462,7 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
             if ( thumbnailActionProvider != null ) {
                 Action action = thumbnailActionProvider.getAction( metacard );
                 if ( action != null && action.getUrl() != null ) {
-                    entry.addLink( action.getUrl().toString(), CDRMetacard.LINK_REL_PREVIEW, thumbnailMimeType.getBaseType(), action.getTitle(), null,
-                            metacard.getThumbnailLength() );
+                    entry.addLink( action.getUrl().toString(), CDRMetacard.LINK_REL_PREVIEW, thumbnailMimeType.getBaseType(), action.getTitle(), null, metacard.getThumbnailLength() );
                 }
             }
         }
@@ -498,8 +470,7 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
         if ( resourceActionProvider != null && metacard.hasResource() ) {
             Action action = resourceActionProvider.getAction( metacard );
             if ( action != null && action.getUrl() != null ) {
-                entry.addLink( action.getUrl().toString(), Link.REL_ALTERNATE, metacard.getResourceMIMETypeString(), action.getTitle(), null,
-                        metacard.getResourceSizeLong() );
+                entry.addLink( action.getUrl().toString(), Link.REL_ALTERNATE, metacard.getResourceMIMETypeString(), action.getTitle(), null, metacard.getResourceSizeLong() );
             }
             // If there is no explicit resource then the metadata serves as
             // the product/resource so include a link to it here
@@ -512,8 +483,8 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
         if ( viewMetacardActionProvider != null ) {
             Action action = viewMetacardActionProvider.getAction( metacard );
             if ( action != null && action.getUrl() != null ) {
-                entry.addLink( action.getUrl().toString() + "?transform=" + (format == null ? CDR_ATOM_TRANSFORMER_ID : format), Link.REL_SELF,
-                        AtomResponseConstants.ATOM_MIME_TYPE, "View Atom Entry", null, -1 );
+                entry.addLink( action.getUrl().toString() + "?transform=" + (format == null ? CDR_ATOM_TRANSFORMER_ID : format), Link.REL_SELF, AtomResponseConstants.ATOM_MIME_TYPE,
+                        "View Atom Entry", null, -1 );
                 entry.addLink( action.getUrl().toString(), Link.REL_RELATED, "text/xml", action.getTitle(), null, -1 );
             }
         }
