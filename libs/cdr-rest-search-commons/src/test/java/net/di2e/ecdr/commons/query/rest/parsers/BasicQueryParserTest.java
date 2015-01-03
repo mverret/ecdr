@@ -12,19 +12,20 @@
  **/
 package net.di2e.ecdr.commons.query.rest.parsers;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Arrays;
 
 import javax.ws.rs.core.MultivaluedMap;
 
 import net.di2e.ecdr.commons.constants.SearchConstants;
 import net.di2e.ecdr.commons.query.GeospatialCriteria;
+import net.di2e.ecdr.commons.query.TextualCriteria;
 
 import org.apache.cxf.jaxrs.impl.MetadataMap;
 import org.junit.Assert;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Unit tests for BasicQueryParser class
@@ -82,6 +83,32 @@ public class BasicQueryParserTest {
         parser.setQueryRequestCacheSize( 2 );
         parser.createTemporalCriteria( "2014-05-05T00:00:00Z", "2014-05-05T00:00:00Z", "created" );
         parser.createTemporalCriteria( "2014-05-05T00:00:00Z", "2014-05-05T00:00:00Z", "" );
+    }
+
+    @Test
+    public void testKeywordFuzzyBasicQueryParser() throws Exception {
+        BasicQueryParser parser = new BasicQueryParser();
+        MultivaluedMap<String, String> props = new MetadataMap<String, String>();
+
+        props.putSingle( SearchConstants.KEYWORD_PARAMETER, "test" );
+        parser.setDefaultFuzzySearch( false );
+        TextualCriteria criteria = parser.getTextualCriteria( props );
+        assertTrue( !criteria.isFuzzy() );
+
+        parser.setDefaultFuzzySearch( true );
+        criteria = parser.getTextualCriteria( props );
+        assertTrue( criteria.isFuzzy() );
+
+        props.putSingle( SearchConstants.FUZZY_PARAMETER, "1" );
+        parser.setDefaultFuzzySearch( false );
+        criteria = parser.getTextualCriteria( props );
+        assertTrue( criteria.isFuzzy() );
+
+        props.remove( SearchConstants.FUZZY_PARAMETER );
+        props.putSingle( SearchConstants.FUZZY_PARAMETER, "0" );
+        criteria = parser.getTextualCriteria( props );
+        assertTrue( !criteria.isFuzzy() );
+
     }
 
 }
