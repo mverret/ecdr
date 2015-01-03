@@ -59,12 +59,6 @@
     
     <bean id="queryParser" class="net.di2e.ecdr.commons.query.rest.parsers.LegacyQueryParser">
         <cm:managed-properties persistent-id="cdr-rest-search-endpoint-1.1" update-strategy="container-managed"/>
-        <property name="defaultResponseFormat" value="atom" />
-        <property name="defaultCount" value="100" />
-        <property name="defaultTimeoutSeconds" value="300" />
-        <property name="defaultRadiusMeters" value="10000" />
-        <property name="defaultDateType" value="effective" />
-        <property name="queryRequestCacheSize" value="1000" />
     </bean>
 
     <bean id="cdrRestSearchService" class="net.di2e.ecdr.search.endpoint.rest.CDRRestSearchServiceImpl">

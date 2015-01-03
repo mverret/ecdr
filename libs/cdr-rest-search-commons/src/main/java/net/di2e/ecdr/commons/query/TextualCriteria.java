@@ -17,13 +17,15 @@ public class TextualCriteria {
 
     private String keywords;
     private boolean isCaseSensitive;
+    private boolean fuzzy;
 
-    public TextualCriteria( String keywords, boolean isCaseSensitive ) {
+    public TextualCriteria( String keywords, boolean isCaseSensitive, boolean fuzzy ) {
         if ( keywords == null || keywords.trim().isEmpty() ) {
             throw new IllegalArgumentException( "Null or empty String is not valid for keywords[" + keywords + "]" );
         }
         this.keywords = keywords;
         this.isCaseSensitive = isCaseSensitive;
+        this.fuzzy = fuzzy;
     }
 
     public String getKeywords() {
@@ -32,6 +34,10 @@ public class TextualCriteria {
 
     public boolean isCaseSensitive() {
         return isCaseSensitive;
+    }
+
+    public boolean isFuzzy() {
+        return fuzzy;
     }
 
     public void setCaseSensitive( boolean caseSensitive ) {

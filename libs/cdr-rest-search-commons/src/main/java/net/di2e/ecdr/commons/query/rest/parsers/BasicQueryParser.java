@@ -52,7 +52,8 @@ import ddf.catalog.source.UnsupportedQueryException;
 public class BasicQueryParser implements QueryParser {
 
     private static final XLogger LOGGER = new XLogger( LoggerFactory.getLogger( BasicQueryParser.class ) );
-    private static final int BBOX_COORDINATE_LENGTH = 3;
+
+    private static final int DEFAULT_QUERYID_CACHE_SZIE = 1000;
 
     private static final Map<String, String> DATETYPE_MAP = new HashMap<String, String>();
     private static final Map<String, String> SORTKEYS_MAP = new HashMap<String, String>();
@@ -108,16 +109,17 @@ public class BasicQueryParser implements QueryParser {
         formatter = new DateTimeFormatterBuilder().append( null, parsers ).toFormatter();
     }
 
-    private int defaultCount;
-    private long defaultTimeoutMillis;
-    private String defaultDateType;
-    private double defaultRadius;
-    private String defaultResponseFormat;
+    private int defaultCount = 100;
+    private long defaultTimeoutMillis = 300000;
+    private String defaultDateType = "effective";
+    private double defaultRadius = 10000;
+    private String defaultResponseFormat = "atom";
+    private boolean defaultFuzzySearch = true;
 
     private QueryRequestCache queryRequestCache = null;
 
     public BasicQueryParser() {
-        queryRequestCache = new QueryRequestCache( 1000 );
+        queryRequestCache = new QueryRequestCache( DEFAULT_QUERYID_CACHE_SZIE );
     }
 
     public void setDefaultResponseFormat( String defaultFormat ) {
@@ -161,6 +163,11 @@ public class BasicQueryParser implements QueryParser {
         LOGGER.debug( "Updating the default response date type to [{}]", defaultDateType );
     }
 
+    public void setDefaultFuzzySearch( boolean fuzzy ) {
+        LOGGER.debug( "ConfigUpdate: Updating the default fuzzy search from [{}] to [{}]", defaultDateType, fuzzy );
+        defaultFuzzySearch = fuzzy;
+    }
+
     public void setQueryRequestCacheSize( int size ) {
         if ( size > -1 ) {
             queryRequestCache.updateCacheSize( size );
@@ -181,6 +188,8 @@ public class BasicQueryParser implements QueryParser {
         } else if ( !isBooleanNullOrBlank( queryParameters.getFirst( SearchConstants.STRICTMODE_PARAMETER ) ) ) {
             isValidQuery = false;
         } else if ( !isBooleanNullOrBlank( queryParameters.getFirst( SearchConstants.STATUS_PARAMETER ) ) ) {
+            isValidQuery = false;
+        } else if ( !isBooleanNullOrBlank( queryParameters.getFirst( SearchConstants.FUZZY_PARAMETER ) ) ) {
             isValidQuery = false;
         } else {
             isValidQuery = isUniqueQuery( queryParameters, sourceId );
@@ -206,19 +215,6 @@ public class BasicQueryParser implements QueryParser {
         // Include status is true unless explicitly set to false
         Boolean boolStatus = getBoolean( queryParameters.getFirst( SearchConstants.STATUS_PARAMETER ) );
         return Boolean.FALSE.equals( boolStatus ) ? false : true;
-    }
-
-    private Boolean getBoolean( String booleanString ) {
-        Boolean bool = null;
-        if ( booleanString != null ) {
-            booleanString = booleanString.trim();
-            if ( "1".equals( booleanString ) || Boolean.TRUE.toString().equalsIgnoreCase( booleanString ) ) {
-                bool = Boolean.TRUE;
-            } else if ( "0".equals( booleanString ) || Boolean.FALSE.toString().equalsIgnoreCase( booleanString ) ) {
-                bool = Boolean.FALSE;
-            }
-        }
-        return bool;
     }
 
     @Override
@@ -340,11 +336,20 @@ public class BasicQueryParser implements QueryParser {
     @Override
     public TextualCriteria getTextualCriteria( MultivaluedMap<String, String> queryParameters ) throws UnsupportedQueryException {
         String words = queryParameters.getFirst( SearchConstants.KEYWORD_PARAMETER );
-        String caseSensitive = queryParameters.getFirst( SearchConstants.CASESENSITIVE_PARAMETER );
+        String caseSensitiveString = queryParameters.getFirst( SearchConstants.CASESENSITIVE_PARAMETER );
+
+        String stringFuzzy = queryParameters.getFirst( SearchConstants.FUZZY_PARAMETER );
+        LOGGER.debug( "Attempting to set 'fuzzy' value from request [" + stringFuzzy + "]" );
+        Boolean fuzzy = getBoolean( stringFuzzy );
+        if ( fuzzy == null ) {
+            LOGGER.debug( "The 'fuzzy' parameter was not specified, defaulting value to [" + defaultFuzzySearch + "]" );
+            fuzzy = defaultFuzzySearch;
+        }
+
         TextualCriteria textualCriteria = null;
         if ( StringUtils.isNotBlank( words ) ) {
-            Boolean bool = getBoolean( caseSensitive );
-            textualCriteria = new TextualCriteria( words, bool == null ? false : bool );
+            Boolean caseSensitive = getBoolean( caseSensitiveString );
+            textualCriteria = new TextualCriteria( words, caseSensitive == null ? false : caseSensitive, fuzzy );
         }
         return textualCriteria;
     }
@@ -389,7 +394,7 @@ public class BasicQueryParser implements QueryParser {
             try {
                 String[] bboxArray = box.split( " |,\\p{Space}?" );
 
-                if ( bboxArray.length != BBOX_COORDINATE_LENGTH ) {
+                if ( bboxArray.length != 3 ) {
                     double minX = Double.parseDouble( bboxArray[0] );
                     double minY = Double.parseDouble( bboxArray[1] );
                     double maxX = Double.parseDouble( bboxArray[2] );
@@ -506,6 +511,19 @@ public class BasicQueryParser implements QueryParser {
             isBoolOrNull = isBoolean( value );
         }
         return isBoolOrNull;
+    }
+
+    protected Boolean getBoolean( String booleanString ) {
+        Boolean bool = null;
+        if ( booleanString != null ) {
+            booleanString = booleanString.trim();
+            if ( "1".equals( booleanString ) || Boolean.TRUE.toString().equalsIgnoreCase( booleanString ) ) {
+                bool = Boolean.TRUE;
+            } else if ( "0".equals( booleanString ) || Boolean.FALSE.toString().equalsIgnoreCase( booleanString ) ) {
+                bool = Boolean.FALSE;
+            }
+        }
+        return bool;
     }
 
 }

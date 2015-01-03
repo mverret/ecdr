@@ -36,6 +36,7 @@ public final class SearchConstants {
     //Parameters
     public static final String KEYWORD_PARAMETER = "q";
     public static final String CASESENSITIVE_PARAMETER = "caseSensitive";
+    public static final String FUZZY_PARAMETER = "fuzzy";
     
     public static final String RADIUS_PARAMETER = "radius";
     public static final String LATITUDE_PARAMETER = "lat";

@@ -175,9 +175,9 @@ public class CDRQueryImpl implements Query {
             // keyword parameters
             textualCriteria = queryParser.getTextualCriteria( queryParameters );
             if ( textualCriteria != null ) {
-                LOGGER.debug( "Attempting to create a Contextual filter with params keywords=[{}], isCaseSensitive=[{}], strictMode=[{}]", textualCriteria.getKeywords(),
+                LOGGER.debug( "Attempting to create a Contextual filter with params keywords=[{}], isCaseSensitive=[{}], strictMode=[{}], fuzzy=[{}]", textualCriteria.getKeywords(),
                         textualCriteria.isCaseSensitive(), isStrictMode );
-                Filter filter = getContextualFilter( filterBuilder, textualCriteria.getKeywords(), textualCriteria.isCaseSensitive(), isStrictMode );
+                Filter filter = getContextualFilter( filterBuilder, textualCriteria.getKeywords(), textualCriteria.isCaseSensitive(), isStrictMode, textualCriteria.isFuzzy() );
                 addFilter( filters, filter );
                 if ( useDefaultSortIfNotSpecified && sortBy == null ) {
                     sortBy = new SortByImpl( Result.RELEVANCE, SortOrder.DESCENDING );
@@ -349,16 +349,16 @@ public class CDRQueryImpl implements Query {
         return filterBuilder.anyOf( filterList );
     }
 
-    protected Filter getContextualFilter( FilterBuilder filterBuilder, String keywords, boolean caseSensitive, boolean strictMode ) throws UnsupportedQueryException {
+    protected Filter getContextualFilter( FilterBuilder filterBuilder, String keywords, boolean caseSensitive, boolean isStrcitMode, boolean fuzzy ) throws UnsupportedQueryException {
         Filter filter = null;
         if ( keywords != null ) {
             KeywordTextParser keywordParser = Parboiled.createParser( KeywordTextParser.class );
-            ParseRunner<ASTNode> runner = strictMode ? new ReportingParseRunner<ASTNode>( keywordParser.inputPhrase() ) : new RecoveringParseRunner<ASTNode>( keywordParser.inputPhrase() );
+            ParseRunner<ASTNode> runner = isStrictMode ? new ReportingParseRunner<ASTNode>( keywordParser.inputPhrase() ) : new RecoveringParseRunner<ASTNode>( keywordParser.inputPhrase() );
             ParsingResult<ASTNode> parsingResult = runner.run( keywords );
 
             if ( !parsingResult.hasErrors() ) {
                 try {
-                    filter = getFilterFromASTNode( filterBuilder, parsingResult.resultValue, caseSensitive, strictMode );
+                    filter = getFilterFromASTNode( filterBuilder, parsingResult.resultValue, caseSensitive, fuzzy );
                 } catch ( IllegalStateException e ) {
                     throw new UnsupportedQueryException( "searchTerms parameter [" + keywords + "] was invalid and resulted in the error: " + e.getMessage() );
                 }

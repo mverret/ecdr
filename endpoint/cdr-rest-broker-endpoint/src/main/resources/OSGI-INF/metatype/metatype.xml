@@ -22,6 +22,9 @@
             <Option label="Atom" value="atom" />
             <Option label="Atom with Metadata Payload (any format)" value="atom-ddms" />
         </AD>
+        
+        <AD name="Default Fuzzy Search" id="defaultFuzzySearch" required="true" type="Boolean" default="true"
+            description="The default value for the 'fuzzy' parameter (for textual searches) if it is not supplied in the query.  Checked means true" />
 
         <AD name="Default Page Size (Count)" id="defaultCount" required="true" type="Integer" default="100"
             description="The default number of results to return per page if the 'count' parameter is not supplied in the query" />
