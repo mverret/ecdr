@@ -175,9 +175,10 @@ public class CDRQueryImpl implements Query {
             // keyword parameters
             textualCriteria = queryParser.getTextualCriteria( queryParameters );
             if ( textualCriteria != null ) {
+                boolean fuzzy = textualCriteria.isFuzzy();
                 LOGGER.debug( "Attempting to create a Contextual filter with params keywords=[{}], isCaseSensitive=[{}], strictMode=[{}], fuzzy=[{}]", textualCriteria.getKeywords(),
-                        textualCriteria.isCaseSensitive(), isStrictMode );
-                Filter filter = getContextualFilter( filterBuilder, textualCriteria.getKeywords(), textualCriteria.isCaseSensitive(), isStrictMode, textualCriteria.isFuzzy() );
+                        textualCriteria.isCaseSensitive(), isStrictMode, fuzzy );
+                Filter filter = getContextualFilter( filterBuilder, textualCriteria.getKeywords(), textualCriteria.isCaseSensitive(), isStrictMode, fuzzy );
                 addFilter( filters, filter );
                 if ( useDefaultSortIfNotSpecified && sortBy == null ) {
                     sortBy = new SortByImpl( Result.RELEVANCE, SortOrder.DESCENDING );

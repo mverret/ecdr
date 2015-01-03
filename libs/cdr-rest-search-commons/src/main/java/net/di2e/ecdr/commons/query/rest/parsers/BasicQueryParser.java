@@ -53,7 +53,7 @@ public class BasicQueryParser implements QueryParser {
 
     private static final XLogger LOGGER = new XLogger( LoggerFactory.getLogger( BasicQueryParser.class ) );
 
-    private static final int DEFAULT_QUERYID_CACHE_SZIE = 1000;
+    private static final int DEFAULT_QUERYID_CACHE_SIZE = 1000;
 
     private static final Map<String, String> DATETYPE_MAP = new HashMap<String, String>();
     private static final Map<String, String> SORTKEYS_MAP = new HashMap<String, String>();
@@ -119,7 +119,7 @@ public class BasicQueryParser implements QueryParser {
     private QueryRequestCache queryRequestCache = null;
 
     public BasicQueryParser() {
-        queryRequestCache = new QueryRequestCache( DEFAULT_QUERYID_CACHE_SZIE );
+        queryRequestCache = new QueryRequestCache( DEFAULT_QUERYID_CACHE_SIZE );
     }
 
     public void setDefaultResponseFormat( String defaultFormat ) {
