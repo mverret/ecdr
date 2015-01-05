@@ -87,8 +87,12 @@ public class StrictFilterDelegate extends AbstractFilterDelegate<Map<String, Str
                 }
 
                 String caseSensitive = andedFilter.get( SearchConstants.CASESENSITIVE_PARAMETER );
-                if ( caseSensitive != null && (caseSensitive.equalsIgnoreCase( "true" ) || caseSensitive.equals( "1" )) ) {
-                    masterFilter.put( SearchConstants.CASESENSITIVE_PARAMETER, "1" );
+                if ( caseSensitive != null && (caseSensitive.equalsIgnoreCase( "true" ) || caseSensitive.equals( SearchConstants.TRUE_STRING )) ) {
+                    masterFilter.put( SearchConstants.CASESENSITIVE_PARAMETER, SearchConstants.TRUE_STRING );
+                }
+                String fuzzyString = andedFilter.get( SearchConstants.FUZZY_PARAMETER );
+                if ( fuzzyString != null && (fuzzyString.equalsIgnoreCase( "true" ) || fuzzyString.equals( SearchConstants.TRUE_STRING )) ) {
+                    masterFilter.put( SearchConstants.FUZZY_PARAMETER, SearchConstants.TRUE_STRING );
                 }
 
                 // Now add in the Content Types if they exist
@@ -132,8 +136,12 @@ public class StrictFilterDelegate extends AbstractFilterDelegate<Map<String, Str
                 }
 
                 String caseSensitive = andedFilter.get( SearchConstants.CASESENSITIVE_PARAMETER );
-                if ( caseSensitive != null && (caseSensitive.equalsIgnoreCase( "true" ) || caseSensitive.equals( "1" )) ) {
-                    masterFilter.put( SearchConstants.CASESENSITIVE_PARAMETER, "1" );
+                if ( caseSensitive != null && (caseSensitive.equalsIgnoreCase( "true" ) || caseSensitive.equals( SearchConstants.TRUE_STRING )) ) {
+                    masterFilter.put( SearchConstants.CASESENSITIVE_PARAMETER, SearchConstants.TRUE_STRING );
+                }
+                String fuzzy = andedFilter.get( SearchConstants.FUZZY_PARAMETER );
+                if ( fuzzy != null && (fuzzy.equalsIgnoreCase( "true" ) || fuzzy.equals( SearchConstants.TRUE_STRING )) ) {
+                    masterFilter.put( SearchConstants.FUZZY_PARAMETER, SearchConstants.TRUE_STRING );
                 }
 
                 // Now add in the Content Types if they exist
@@ -170,23 +178,21 @@ public class StrictFilterDelegate extends AbstractFilterDelegate<Map<String, Str
     @Override
     public Map<String, String> handlePropertyEqualToString( String propertyName, String literal, StringFilterOptions options ) {
         Map<String, String> filterContainer = new HashMap<String, String>();
-        // if ( SingleRecordQueryMethod.ID_ELEMENT_URL.equals( getFilterConfig().getSingleRecordQueryMethod() ) &&
-        // Metacard.ID.equals( propertyName ) ) {
-        // filterContainer.put( SingleRecordQueryMethod.ID_ELEMENT_URL.toString(), literal );
-        // } else {
-            if ( handleKeyword( propertyName, literal, filterContainer ) ) {
-                if ( StringFilterOptions.CASE_SENSITIVE.equals( options ) ) {
-                    filterContainer.put( SearchConstants.CASESENSITIVE_PARAMETER, "1" );
-                }
-            } else {
-                // The geo:uid parameter is used to uniquely find an entry so we must map the Metacard.ID to geo:uid
-                if ( Metacard.ID.equals( propertyName ) ) {
-                    filterContainer.put( SearchConstants.UID_PARAMETER, literal );
-                } else {
-                    filterContainer.put( propertyName, literal );
-                }
+        if ( handleKeyword( propertyName, literal, filterContainer ) ) {
+            if ( StringFilterOptions.CASE_SENSITIVE.equals( options ) ) {
+                filterContainer.put( SearchConstants.CASESENSITIVE_PARAMETER, SearchConstants.TRUE_STRING );
+            } else if ( StringFilterOptions.FUZZY.equals( options ) ) {
+                filterContainer.put( SearchConstants.FUZZY_PARAMETER, SearchConstants.TRUE_STRING );
             }
-        // }
+        } else {
+            // The geo:uid parameter is used to uniquely find an entry so we must map the Metacard.ID to geo:uid
+            if ( Metacard.ID.equals( propertyName ) ) {
+                filterContainer.put( SearchConstants.UID_PARAMETER, literal );
+            } else {
+                filterContainer.put( propertyName, literal );
+            }
+        }
+
         return filterContainer;
     }
 
@@ -345,6 +351,9 @@ public class StrictFilterDelegate extends AbstractFilterDelegate<Map<String, Str
         filterContainer.put( SearchConstants.KEYWORD_PARAMETER, "{" + xpath + "}:" + literal );
         if ( StringFilterOptions.CASE_SENSITIVE.equals( options ) ) {
             filterContainer.put( SearchConstants.CASESENSITIVE_PARAMETER, SearchConstants.TRUE_STRING );
+        }
+        if ( StringFilterOptions.FUZZY.equals( options ) ) {
+            filterContainer.put( SearchConstants.FUZZY_PARAMETER, SearchConstants.TRUE_STRING );
         }
         return filterContainer;
     }

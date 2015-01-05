@@ -164,7 +164,7 @@ public class BasicQueryParser implements QueryParser {
     }
 
     public void setDefaultFuzzySearch( boolean fuzzy ) {
-        LOGGER.debug( "ConfigUpdate: Updating the default fuzzy search from [{}] to [{}]", defaultDateType, fuzzy );
+        LOGGER.debug( "ConfigUpdate: Updating the default fuzzy search from [{}] to [{}]", defaultFuzzySearch, fuzzy );
         defaultFuzzySearch = fuzzy;
     }
 
@@ -336,19 +336,21 @@ public class BasicQueryParser implements QueryParser {
     @Override
     public TextualCriteria getTextualCriteria( MultivaluedMap<String, String> queryParameters ) throws UnsupportedQueryException {
         String words = queryParameters.getFirst( SearchConstants.KEYWORD_PARAMETER );
-        String caseSensitiveString = queryParameters.getFirst( SearchConstants.CASESENSITIVE_PARAMETER );
-
-        String stringFuzzy = queryParameters.getFirst( SearchConstants.FUZZY_PARAMETER );
-        LOGGER.debug( "Attempting to set 'fuzzy' value from request [" + stringFuzzy + "]" );
-        Boolean fuzzy = getBoolean( stringFuzzy );
-        if ( fuzzy == null ) {
-            LOGGER.debug( "The 'fuzzy' parameter was not specified, defaulting value to [" + defaultFuzzySearch + "]" );
-            fuzzy = defaultFuzzySearch;
-        }
 
         TextualCriteria textualCriteria = null;
         if ( StringUtils.isNotBlank( words ) ) {
+            String stringFuzzy = queryParameters.getFirst( SearchConstants.FUZZY_PARAMETER );
+            LOGGER.debug( "Attempting to set 'fuzzy' value from request [" + stringFuzzy + "]" );
+            Boolean fuzzy = getBoolean( stringFuzzy );
+            if ( fuzzy == null ) {
+                LOGGER.debug( "The 'fuzzy' parameter was not specified, defaulting value to [{}]", defaultFuzzySearch );
+                fuzzy = defaultFuzzySearch;
+            }
+
+            String caseSensitiveString = queryParameters.getFirst( SearchConstants.CASESENSITIVE_PARAMETER );
+            LOGGER.debug( "Attempting to set '{}' value from request [{}], will default to false if not boolean", SearchConstants.CASESENSITIVE_PARAMETER, caseSensitiveString );
             Boolean caseSensitive = getBoolean( caseSensitiveString );
+
             textualCriteria = new TextualCriteria( words, caseSensitive == null ? false : caseSensitive, fuzzy );
         }
         return textualCriteria;

@@ -87,6 +87,7 @@ public class CDRQueryImpl implements Query {
 
     public CDRQueryImpl( FilterBuilder filterBuilder, MultivaluedMap<String, String> queryParameters, QueryParser parser, boolean useDefaultSort, String localSourceId )
             throws UnsupportedQueryException {
+        System.out.println( "Query Params: " + queryParameters );
         queryParser = parser;
         this.localSourceId = localSourceId;
         this.useDefaultSortIfNotSpecified = useDefaultSort;
@@ -366,7 +367,8 @@ public class CDRQueryImpl implements Query {
             } else {
                 throw new UnsupportedQueryException( "searchTerms parameter [" + keywords + "] was invalid and resulted in the error: " + parsingResult.parseErrors.get( 0 ).getErrorMessage() );
             }
-            humanReadableQueryBuilder.append( " " + SearchConstants.KEYWORD_PARAMETER + "=[" + keywords + "] " + SearchConstants.CASESENSITIVE_PARAMETER + "=[" + caseSensitive + "]" );
+            humanReadableQueryBuilder.append( " " + SearchConstants.KEYWORD_PARAMETER + "=[" + keywords + "] " + SearchConstants.CASESENSITIVE_PARAMETER + "=[" + caseSensitive + "] "
+                    + SearchConstants.FUZZY_PARAMETER + "=[" + fuzzy + "]" );
         }
         return filter;
     }
@@ -392,10 +394,13 @@ public class CDRQueryImpl implements Query {
                     }
                 }
             } else {
-                // If case sensitive then don't set Fuzzy
-                // If not case sensitive then set fuzzy based on fuzzy boolean
-                return caseSensitive ? filterBuilder.attribute( Metacard.ANY_TEXT ).like().caseSensitiveText( astNode.getKeyword() ) : (fuzzy ? filterBuilder.attribute( Metacard.ANY_TEXT ).like()
-                        .fuzzyText( astNode.getKeyword() ) : filterBuilder.attribute( Metacard.ANY_TEXT ).like().fuzzyText( astNode.getKeyword() ));
+                if ( fuzzy ) {
+                    return filterBuilder.attribute( Metacard.ANY_TEXT ).like().fuzzyText( astNode.getKeyword() );
+                } else if ( caseSensitive ) {
+                    return filterBuilder.attribute( Metacard.ANY_TEXT ).like().caseSensitiveText( astNode.getKeyword() );
+                }else {
+                    return filterBuilder.attribute( Metacard.ANY_TEXT ).like().text( astNode.getKeyword() );
+                }
             }
         } else if ( astNode.isOperator() ) {
             switch ( astNode.getOperator() ) {
