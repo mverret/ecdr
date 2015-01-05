@@ -87,7 +87,6 @@ public class CDRQueryImpl implements Query {
 
     public CDRQueryImpl( FilterBuilder filterBuilder, MultivaluedMap<String, String> queryParameters, QueryParser parser, boolean useDefaultSort, String localSourceId )
             throws UnsupportedQueryException {
-        System.out.println( "Query Params: " + queryParameters );
         queryParser = parser;
         this.localSourceId = localSourceId;
         this.useDefaultSortIfNotSpecified = useDefaultSort;
@@ -398,7 +397,7 @@ public class CDRQueryImpl implements Query {
                     return filterBuilder.attribute( Metacard.ANY_TEXT ).like().fuzzyText( astNode.getKeyword() );
                 } else if ( caseSensitive ) {
                     return filterBuilder.attribute( Metacard.ANY_TEXT ).like().caseSensitiveText( astNode.getKeyword() );
-                }else {
+                } else {
                     return filterBuilder.attribute( Metacard.ANY_TEXT ).like().text( astNode.getKeyword() );
                 }
             }
