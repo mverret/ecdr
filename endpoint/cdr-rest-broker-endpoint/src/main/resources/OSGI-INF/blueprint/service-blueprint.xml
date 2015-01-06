@@ -27,6 +27,25 @@
         <bean id="listConverter" class="ddf.catalog.util.impl.ListConverter" />
     </type-converters>
     
+    <bean id="preFederatedQuerySortedList" class="ddf.catalog.util.impl.SortedServiceList">
+        <argument ref="blueprintBundleContext" />
+    </bean>
+    
+    <bean id="postFederatedQuerySortedList" class="ddf.catalog.util.impl.SortedServiceList">
+        <argument ref="blueprintBundleContext" />
+    </bean>
+
+    <!-- PRE FEDERATED QUERY REFERENCE -->
+    <reference-list id="preFederatedQuery" interface="ddf.catalog.plugin.PreFederatedQueryPlugin" availability="optional">
+        <reference-listener bind-method="bindPlugin" unbind-method="unbindPlugin" ref="preFederatedQuerySortedList" />
+    </reference-list>
+    
+    <!-- POST FEDERATED QUERY REFERENCE -->
+    <reference-list id="postFederatedQuery" interface="ddf.catalog.plugin.PostFederatedQueryPlugin" availability="optional">
+        <reference-listener bind-method="bindPlugin" unbind-method="unbindPlugin" ref="postFederatedQuerySortedList" />
+    </reference-list>
+    
+    <bean id="pool" class="java.util.concurrent.Executors" factory-method="newCachedThreadPool" />
    
     <reference id="transformIdMapper" interface="net.di2e.ecdr.search.transform.mapper.TransformIdMapper" />
     <reference id="catalogFramework" interface="ddf.catalog.CatalogFramework" />
@@ -49,6 +68,7 @@
         <argument ref="queryParser" />
         <argument ref="transformIdMapper" />
         <argument ref="normalizingFedStrategy" />
+        <argument ref="fifoFederationStrategyBean" />
     </bean>
 
     <service ref="cdrRestSearchService" auto-export="interfaces" />
@@ -62,6 +82,12 @@
         <property name="defaultDateType" value="effective" />
         <property name="queryRequestCacheSize" value="1000" />
         <property name="defaultDeduplication" value="true" />
+    </bean>
+    
+    <bean id="fifoFederationStrategyBean" class="net.di2e.ecdr.federation.FifoFederationStrategy">
+        <argument ref="pool" />
+        <argument ref="preFederatedQuerySortedList" />
+        <argument ref="postFederatedQuerySortedList" />
     </bean>
 
 </blueprint>

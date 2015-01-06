@@ -13,6 +13,9 @@
 package net.di2e.ecdr.commons.query.rest.parsers;
 
 import java.io.Serializable;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,6 +37,7 @@ import org.slf4j.ext.XLogger;
 public class BrokerQueryParser extends LegacyQueryParser {
 
     private static final XLogger LOGGER = new XLogger( LoggerFactory.getLogger( BrokerQueryParser.class ) );
+    private static final Charset ASCII_CHARSET = StandardCharsets.US_ASCII;
 
     private boolean defaultDedup = true;
 
@@ -92,8 +96,21 @@ public class BrokerQueryParser extends LegacyQueryParser {
     @Override
     public boolean isValidQuery( MultivaluedMap<String, String> queryParameters, String sourceId ) {
         boolean isValidQuery = super.isValidQuery( queryParameters, sourceId );
-        if ( isValidQuery && !isBooleanNullOrBlank( queryParameters.getFirst( BrokerConstants.DEDUP_PARAMETER ) ) ) {
-            isValidQuery = false;
+        if ( isValidQuery ) {
+            String pathString = queryParameters.getFirst( BrokerConstants.PATH_PARAMETER );
+            String sourceString = queryParameters.getFirst( BrokerConstants.SOURCE_PARAMETER );
+            // System.out.println( " Path = [" + pathString + "]" );
+            // System.out.println( " Source = [" + sourceString + "]" );
+            if ( !isBooleanNullOrBlank( queryParameters.getFirst( BrokerConstants.DEDUP_PARAMETER ) ) ) {
+                isValidQuery = false;
+            } else if ( pathString != null || sourceString != null ) {
+                CharsetEncoder encoder = ASCII_CHARSET.newEncoder();
+                if ( pathString != null && !encoder.canEncode( pathString ) ) {
+                    isValidQuery = false;
+                } else if ( sourceString != null && !encoder.canEncode( sourceString ) ) {
+                    isValidQuery = false;
+                }
+            }
         }
         return isValidQuery;
     }
@@ -109,7 +126,7 @@ public class BrokerQueryParser extends LegacyQueryParser {
             queryParameters.putSingle( SearchConstants.OID_PARAMETER, uuid );
             queryRequestCache.add( uuid );
         }
-        
+
         String path = queryParameters.getFirst( BrokerConstants.PATH_PARAMETER );
         if ( StringUtils.isNotBlank( path ) ) {
             String[] pathValues = path.split( "," );
