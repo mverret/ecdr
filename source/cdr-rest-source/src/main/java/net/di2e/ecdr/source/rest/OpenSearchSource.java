@@ -241,8 +241,11 @@ public class OpenSearchSource extends AbstractCDRSource {
             cacheId = getId() + "-" + UUID.randomUUID();
             LOGGER.debug( "ConfigUpdate: Creating a cache with id [{}] for Metacard id lookups for source [{}] with an cache expiration time of [{}] minutes",
                     cacheId, getId(), minutes );
-            // ECDR-75 populate the cache porperties via config
-            metacardCache = cacheManager.createCacheInstance( cacheId, null );
+
+            Map<String, Object> cacheProps = new HashMap<String, Object>();
+            cacheProps.put( CacheManager.CACHE_EXPIRE_AFTER_MINUTES, minutes );
+
+            metacardCache = cacheManager.createCacheInstance( cacheId, cacheProps );
         }
     }
 
