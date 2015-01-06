@@ -67,8 +67,15 @@
         <argument ref="filterBuilder" />
         <argument ref="queryParser" />
         <argument ref="transformIdMapper" />
+        <argument ref="fifoFederationStrategyBean"/>
     </bean>
 
     <service ref="cdrRestSearchService" auto-export="interfaces" />
+
+    <bean id="fifoFederationStrategyBean" class="net.di2e.ecdr.federation.FifoFederationStrategy">
+        <argument ref="pool" />
+        <argument ref="preFederatedQuerySortedList" />
+        <argument ref="postFederatedQuerySortedList" />
+    </bean>
 
 </blueprint>

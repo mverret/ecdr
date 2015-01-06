@@ -27,6 +27,7 @@ import javax.ws.rs.core.UriInfo;
 import net.di2e.ecdr.commons.endpoint.rest.AbstractRestSearchEndpoint;
 import net.di2e.ecdr.commons.query.rest.CDRQueryImpl;
 import net.di2e.ecdr.commons.query.rest.parsers.QueryParser;
+import net.di2e.ecdr.federation.FifoFederationStrategy;
 import net.di2e.ecdr.search.transform.mapper.TransformIdMapper;
 
 import org.codice.ddf.configuration.impl.ConfigurationWatcherImpl;
@@ -55,6 +56,8 @@ public class CDRRestSearchServiceImpl extends AbstractRestSearchEndpoint {
     private static final String RELATIVE_URL = "/services/cdr/search/rest";
     private static final String SERVICE_TYPE = "CDR REST Search Service";
     
+    private FifoFederationStrategy fifoFederationStratgey = null;
+
     private static final Map<String, String> REGISTRABLE_PROPERTIES = new HashMap<String, String>();
     static {
         REGISTRABLE_PROPERTIES.put( "receiveTimeoutSeconds", "0" );
@@ -80,11 +83,11 @@ public class CDRRestSearchServiceImpl extends AbstractRestSearchEndpoint {
      * @param mapper
      *            The transformation mapper for handling mapping the external CDR transform name to the internal DDF
      *            transform name
-     * @param sortedFedStrategy
-     *            Federation strategy to use
      */
-    public CDRRestSearchServiceImpl( CatalogFramework framework, ConfigurationWatcherImpl config, FilterBuilder builder, QueryParser parser, TransformIdMapper mapper ) {
+    public CDRRestSearchServiceImpl( CatalogFramework framework, ConfigurationWatcherImpl config, FilterBuilder builder, QueryParser parser, TransformIdMapper mapper,
+            FifoFederationStrategy fedStrategy ) {
         super( framework, config, builder, parser, mapper );
+        fifoFederationStratgey = fedStrategy;
     }
 
     @HEAD
@@ -129,7 +132,7 @@ public class CDRRestSearchServiceImpl extends AbstractRestSearchEndpoint {
     public QueryResponse executeQuery( String localSourceId, MultivaluedMap<String, String> queryParameters, CDRQueryImpl query ) throws SourceUnavailableException, UnsupportedQueryException,
             FederationException {
         QueryRequest queryRequest = new QueryRequestImpl( query, false, query.getSiteNames(), getQueryParser().getQueryProperties( queryParameters, localSourceId ) );
-        QueryResponse queryResponse = getCatalogFramework().query( queryRequest );
+        QueryResponse queryResponse = getCatalogFramework().query( queryRequest, fifoFederationStratgey );
         return queryResponse;
     }
 

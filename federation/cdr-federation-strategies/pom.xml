@@ -108,7 +108,8 @@
                             *
                         </Import-Package>
                         <Export-Package>
-                            net.di2e.ecdr.federation.api;version="${project.version}"
+                            net.di2e.ecdr.federation.api;version="${project.version}",
+                            net.di2e.ecdr.federation;version="${project.version}"
                         </Export-Package>
                     </instructions>
                 </configuration>

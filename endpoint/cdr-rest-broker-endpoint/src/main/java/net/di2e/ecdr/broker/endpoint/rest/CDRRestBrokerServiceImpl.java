@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import ddf.catalog.CatalogFramework;
 import ddf.catalog.federation.FederationException;
+import ddf.catalog.federation.FederationStrategy;
 import ddf.catalog.filter.FilterBuilder;
 import ddf.catalog.operation.QueryRequest;
 import ddf.catalog.operation.QueryResponse;
@@ -62,6 +63,8 @@ public class CDRRestBrokerServiceImpl extends AbstractRestSearchEndpoint {
 
     private NormalizingFederationStrategy sortedFedStrategy = null;
 
+    private FederationStrategy defaultFederationStrategy = null;
+
     /**
      * Constructor for JAX RS CDR Search Service. Values should ideally be passed into the constructor using a
      * dependency injection framework like blueprint
@@ -77,9 +80,10 @@ public class CDRRestBrokerServiceImpl extends AbstractRestSearchEndpoint {
      *            String. Query parsers are tied to different versions of a query profile
      */
     public CDRRestBrokerServiceImpl( CatalogFramework framework, ConfigurationWatcherImpl config, FilterBuilder builder, QueryParser parser, TransformIdMapper mapper,
-            NormalizingFederationStrategy sortedFedStrategy ) {
+            NormalizingFederationStrategy sortedFedStrategy, FederationStrategy defaultFedStrategy ) {
         super( framework, config, builder, parser, mapper );
         this.sortedFedStrategy = sortedFedStrategy;
+        this.defaultFederationStrategy = defaultFedStrategy;
     }
 
     @HEAD
@@ -132,7 +136,7 @@ public class CDRRestBrokerServiceImpl extends AbstractRestSearchEndpoint {
 
         QueryRequest queryRequest = new QueryRequestImpl( query, siteNames.isEmpty(), siteNames, getQueryParser().getQueryProperties( queryParameters, localSourceId ) );
         SortBy originalSortBy = getQueryParser().getSortBy( queryParameters );
-        QueryResponse queryResponse = originalSortBy == null ? getCatalogFramework().query( queryRequest ) : getCatalogFramework().query( queryRequest, sortedFedStrategy );
+        QueryResponse queryResponse = originalSortBy == null ? getCatalogFramework().query( queryRequest, defaultFederationStrategy ) : getCatalogFramework().query( queryRequest, sortedFedStrategy );
         return queryResponse;
     }
 
