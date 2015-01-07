@@ -40,7 +40,7 @@
         </AD>
 
         <AD name="Sort Order" id="sortOrder" required="true" type="String" default="DESCENDING"
-            description="The order in which the sorting should organize the results.">
+            description="The order in which the sorting should organize the results if no order is specified in the request.">
             <Option label="DESCENDING" value="DESCENDING" />
             <Option label="ASCENDING" value="ASCENDING" />
         </AD>
