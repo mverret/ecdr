@@ -73,8 +73,11 @@
 
     <service ref="cdrRestSearchService" auto-export="interfaces" />
 
+    <reference-list id="sortTypeConfigurations" interface="net.di2e.ecdr.commons.sort.SortTypeConfiguration" availability="optional" />
+
     <bean id="queryParser" class="net.di2e.ecdr.commons.query.rest.parsers.BrokerQueryParser">
         <cm:managed-properties persistent-id="cdr-rest-broker-endpoint-1.0.1" update-strategy="container-managed" />
+        <argument ref="sortTypeConfigurations" />
         <property name="defaultResponseFormat" value="atom" />
         <property name="defaultCount" value="100" />
         <property name="defaultTimeoutSeconds" value="300" />

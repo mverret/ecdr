@@ -12,11 +12,11 @@
  **/
 package net.di2e.ecdr.libs.result.relevance;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import net.di2e.ecdr.commons.filter.StrictFilterDelegate;
 import net.di2e.ecdr.commons.filter.config.FilterConfig;
@@ -32,7 +32,6 @@ import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
@@ -60,6 +59,7 @@ public class RelevanceNormalizer {
     private static final Logger LOGGER = LoggerFactory.getLogger( RelevanceNormalizer.class );
     private static final String METADATA_FIELD = "metadata";
     private static final String ID_FIELD = "id";
+    private static final String SOURCE_FIELD = "src";
     private static final String PHRASE_KEY = "q";
 
     private FilterAdapter filterAdapter;
@@ -103,11 +103,11 @@ public class RelevanceNormalizer {
                     for ( Result curResult : results ) {
                         Document doc = new Document();
                         String text = TextParser.parseTextFrom( curResult.getMetacard().getMetadata() );
-                        String id = curResult.getMetacard().getId();
+                        String uuid = UUID.randomUUID().toString();
                         doc.add( new Field( METADATA_FIELD, text, TextField.TYPE_STORED ) );
-                        doc.add( new Field( ID_FIELD, id, TextField.TYPE_STORED ) );
+                        doc.add( new Field( ID_FIELD, uuid, TextField.TYPE_STORED ) );
                         iWriter.addDocument( doc );
-                        docMap.put( id, curResult );
+                        docMap.put( uuid, curResult );
                     }
 
                     IOUtils.closeQuietly( iWriter );
@@ -124,9 +124,9 @@ public class RelevanceNormalizer {
                     // loop through the indexed search results and update the scores in the original query results
                     for ( ScoreDoc curHit : hits ) {
                         Document doc = iSearcher.doc( curHit.doc );
-                        String id = doc.getField( ID_FIELD ).stringValue();
-                        Result result = docMap.get( id );
-                        docMap.remove( id );
+                        String uuid = doc.getField( ID_FIELD ).stringValue();
+                        Result result = docMap.get( uuid );
+                        docMap.remove( uuid );
                         updatedResults.add( updateResult( result, curHit.score ) );
                         LOGGER.debug( "Relevance for result {} was changed FROM {} TO {}", result.getMetacard().getId(), result.getRelevanceScore(), curHit.score );
                     }
@@ -138,8 +138,9 @@ public class RelevanceNormalizer {
                     // create new query response
                     return updatedResults;
 
-                } catch ( IOException | ParseException e ) {
+                } catch ( Exception e ) {
                     LOGGER.warn( "Received an exception while trying to perform re-indexing, sending original queryResponse on.", e );
+                    return results;
                 } finally {
                     IOUtils.closeQuietly( iReader );
                     IOUtils.closeQuietly( directory );

@@ -67,7 +67,7 @@ public abstract class AbstractRestSearchEndpoint implements RegistrableService {
      *            FilterBuilder implementation
      * @param parser
      *            The instance of the QueryParser to use which will determine
-     *            how to parse the parameters from the queyr String. Query
+     *            how to parse the parameters from the query String. Query
      *            parsers are tied to different versions of a query profile
      */
     public AbstractRestSearchEndpoint( CatalogFramework framework, ConfigurationWatcherImpl config, FilterBuilder builder, QueryParser parser,
@@ -125,7 +125,7 @@ public abstract class AbstractRestSearchEndpoint implements RegistrableService {
             try ( InputStream is = content.getInputStream() ) {
                 response = Response.ok( is, content.getMimeTypeValue() ).build();
             } catch ( IOException e ) {
-                LOGGER.error( "Error reading resposne [" + e.getMessage() + "]", e );
+                LOGGER.error( "Error reading response [" + e.getMessage() + "]", e );
                 response = Response.status( Response.Status.INTERNAL_SERVER_ERROR ).build();
             }
 

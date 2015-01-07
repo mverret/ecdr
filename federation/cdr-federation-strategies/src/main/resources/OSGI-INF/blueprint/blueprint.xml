@@ -54,5 +54,11 @@
         <argument ref="filterAdapter" />
     </bean>
 
+    <reference id="configurationAdmin" interface="org.osgi.service.cm.ConfigurationAdmin" />
+
+    <bean id="defaultMappings" class="net.di2e.ecdr.federation.DefaultSortTypeConfigurations" init-method="init" destroy-method="destroy" >
+        <argument ref="configurationAdmin" />
+    </bean>
+
 
 </blueprint>

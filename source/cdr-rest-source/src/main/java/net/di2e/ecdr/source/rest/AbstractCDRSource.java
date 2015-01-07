@@ -348,12 +348,12 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
                             // utility method that is
                             IOUtils.skipFully( binaryStream, bytesToSkip );
                         } catch ( EOFException e ) {
-                            LOGGER.warn( "Skipping the requested number of bytes [{}] for URI [{}] resulted in an End of File, so re-retreiving the complete file without skipping bytes: {}",
+                            LOGGER.warn( "Skipping the requested number of bytes [{}] for URI [{}] resulted in an End of File, so re-retrieving the complete file without skipping bytes: {}",
                                     bytesToSkip, uri, e.getMessage() );
                             try {
                                 binaryStream.close();
                             } catch ( IOException e1 ) {
-                                LOGGER.debug( "Error encounterd while closing inputstream" );
+                                LOGGER.debug( "Error encountered while closing inputstream" );
                             }
                             return doRetrieval( retrieveWebClient, null );
                         }
@@ -365,7 +365,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
                 resourceResponse = new ResourceResponseImpl( new ResourceRequestByProductUri( uri, requestProperties ), responseProperties, new ResourceImpl( binaryStream, mimeType, fileName ) );
             }
         } catch ( RuntimeException e ) {
-            LOGGER.warn( "Expected exception encountered when trying to retrieve resource with URI [{}] from sourrce [{}}", uri, getId() );
+            LOGGER.warn( "Expected exception encountered when trying to retrieve resource with URI [{}] from source [{}}", uri, getId() );
         }
         return resourceResponse;
     }
@@ -478,7 +478,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
             conduit.getClient().setConnectionTimeout( connectionTimeout );
             conduit.setTlsClientParameters( getTlsClientParameters() );
         } else {
-            LOGGER.warn( "OpenSearch Source Endpoint URL is not a valid value, so cannot update [{}]", endpointUrl );
+            LOGGER.warn( "OpenSearch Source Endpoint URL is not a valid value (either blank or same as previous value), so cannot update [{}]", endpointUrl );
         }
     }
 

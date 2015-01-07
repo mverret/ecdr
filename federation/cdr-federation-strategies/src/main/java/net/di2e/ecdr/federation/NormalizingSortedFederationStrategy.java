@@ -128,8 +128,8 @@ public class NormalizingSortedFederationStrategy extends AbstractFederationStrat
                 PropertyName sortingProp = sortBy.getPropertyName();
                 String sortType = sortingProp.getPropertyName();
                 SortOrder sortOrder = (sortBy.getSortOrder() == null) ? SortOrder.DESCENDING : sortBy.getSortOrder();
-                LOGGER.debug( "Sorting by type: " + sortType );
-                LOGGER.debug( "Sorting by Order: " + sortBy.getSortOrder() );
+                LOGGER.debug( "Sorting by type: {}", sortType );
+                LOGGER.debug( "Sorting by Order: {}", sortBy.getSortOrder() );
 
                 if ( Result.TEMPORAL.equals( sortType ) ) {
                     coreComparator = new TemporalResultComparator( sortOrder );

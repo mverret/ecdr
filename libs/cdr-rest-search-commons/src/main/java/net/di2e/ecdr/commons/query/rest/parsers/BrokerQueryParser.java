@@ -29,6 +29,7 @@ import net.di2e.ecdr.commons.constants.BrokerConstants;
 import net.di2e.ecdr.commons.constants.SearchConstants;
 import net.di2e.ecdr.commons.query.cache.QueryRequestCache;
 
+import net.di2e.ecdr.commons.sort.SortTypeConfiguration;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.LoggerFactory;
@@ -41,8 +42,8 @@ public class BrokerQueryParser extends LegacyQueryParser {
 
     private boolean defaultDedup = true;
 
-    public BrokerQueryParser() {
-        super();
+    public BrokerQueryParser(List<SortTypeConfiguration> sortTypeConfigurations) {
+        super(sortTypeConfigurations);
     }
 
     public void setDefaultDeduplication( boolean defaultDeduplication ) {

@@ -56,8 +56,11 @@
 
     <service id="cdrRestConfigWatcher" ref="configurationWatcher" interface="org.codice.ddf.configuration.ConfigurationWatcher" />
     <bean id="configurationWatcher" class="org.codice.ddf.configuration.impl.ConfigurationWatcherImpl" />
+
+    <reference-list id="sortTypeConfigurations" interface="net.di2e.ecdr.commons.sort.SortTypeConfiguration" availability="optional" />
     
     <bean id="queryParser" class="net.di2e.ecdr.commons.query.rest.parsers.LegacyQueryParser">
+        <argument ref="sortTypeConfigurations" />
         <cm:managed-properties persistent-id="cdr-rest-search-endpoint-1.1" update-strategy="container-managed"/>
     </bean>
 
