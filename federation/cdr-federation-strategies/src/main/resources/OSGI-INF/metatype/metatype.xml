@@ -22,37 +22,8 @@
             description="Normalizes the relevance score/ranking, on queries that request to be sorted by relevance" />
     </OCD>
 
-    <OCD description="Sort Type configuration. Sets up the mapping between sorting from the cdr services to the internal metacard."
-            name="CDR Sort Mapping" id="ecdr-sort-mapping">
-
-        <AD name="Sort Key" id="sortKey" required="true" type="String" default="" />
-
-        <AD name="Sort Attribute" id="sortAttribute" required="true" type="String" default=""
-            description="The attribute that sorting will take place on in the metacard/result.">
-            <Option label="Metacard.TITLE" value="title" />
-            <Option label="Metacard.MODIFIED" value="modified" />
-            <Option label="Metacard.CREATED" value="created" />
-            <Option label="Metacard.EFFECTIVE" value="effective" />
-            <Option label="Metacard.EXPIRATION" value="expiration" />
-            <Option label="Metacard.GEOGRAPHY" value="location" />
-            <Option label="Result.RELEVANCE" value="RELEVANCE" />
-            <Option label="Result.DISTANCE" value="DISTANCE" />
-        </AD>
-
-        <AD name="Sort Order" id="sortOrder" required="true" type="String" default="DESCENDING"
-            description="The order in which the sorting should organize the results if no order is specified in the request.">
-            <Option label="DESCENDING" value="DESCENDING" />
-            <Option label="ASCENDING" value="ASCENDING" />
-        </AD>
-
-    </OCD>
-
     <Designate pid="cdr-federation-strategies">
         <Object ocdref="cdr-federation-strategies" />
-    </Designate>
-
-    <Designate pid="ecdr-sort-mapping" factoryPid="ecdr-sort-mapping">
-        <Object ocdref="ecdr-sort-mapping" />
     </Designate>
 
 </metatype:MetaData>

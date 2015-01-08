@@ -10,7 +10,7 @@
  * <http://www.gnu.org/licenses/lgpl.html>.
  *
  **/
-package net.di2e.ecdr.federation;
+package net.di2e.ecdr.endpoint.sort;
 
 import net.di2e.ecdr.commons.sort.SortTypeConfiguration;
 import org.slf4j.Logger;

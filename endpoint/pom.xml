@@ -28,6 +28,6 @@
     <modules>
         <module>cdr-rest-search-endpoint</module>
         <module>cdr-rest-broker-endpoint</module>
-<!--<module>cdr-soap-search-endpoint</module>-->
+        <module>cdr-endpoint-sortmapper</module>
     </modules>
 </project>

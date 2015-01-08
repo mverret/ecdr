@@ -12,6 +12,7 @@
  **/
 package net.di2e.ecdr.libs.result.relevance;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +33,7 @@ import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.ScoreDoc;
@@ -138,7 +140,7 @@ public class RelevanceNormalizer {
                     // create new query response
                     return updatedResults;
 
-                } catch ( Exception e ) {
+                } catch ( ParseException | IOException | RuntimeException e ) {
                     LOGGER.warn( "Received an exception while trying to perform re-indexing, sending original queryResponse on.", e );
                     return results;
                 } finally {

@@ -10,10 +10,11 @@
  * <http://www.gnu.org/licenses/lgpl.html>.
  *
  **/
-package net.di2e.ecdr.federation;
+package net.di2e.ecdr.endpoint.sort;
 
 import ddf.catalog.data.Metacard;
 import ddf.catalog.data.Result;
+import org.opengis.filter.sort.SortOrder;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.slf4j.Logger;
@@ -37,10 +38,10 @@ public class DefaultSortTypeConfigurations {
 
     public enum SortMap {
 
-        TITLE( "entry/title", Metacard.TITLE, "ASCENDING" ),
-        DATE( "entry/date", Metacard.MODIFIED, "DESCENDING" ),
-        SCORE( "score", Result.RELEVANCE, "DESCENDING" ),
-        DISTANCE( "distance", Result.DISTANCE, "ASCENDING" );
+        TITLE( "entry/title", Metacard.TITLE, SortOrder.ASCENDING.name() ),
+        DATE( "entry/date", Metacard.MODIFIED, SortOrder.DESCENDING.name() ),
+        SCORE( "score", Result.RELEVANCE, SortOrder.DESCENDING.name() ),
+        DISTANCE( "distance", Result.DISTANCE, SortOrder.ASCENDING.name() );
 
         private final String key;
         private final String attribute;

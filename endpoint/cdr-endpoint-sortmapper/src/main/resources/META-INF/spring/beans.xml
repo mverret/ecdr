@@ -23,6 +23,12 @@
         http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans.xsd">
 
+    <reference id="configurationAdmin" interface="org.osgi.service.cm.ConfigurationAdmin" />
+
+    <beans:bean name="defaultMappings" class="net.di2e.ecdr.endpoint.sort.DefaultSortTypeConfigurations" init-method="init" destroy-method="destroy">
+        <beans:constructor-arg ref="configurationAdmin" />
+    </beans:bean>
+
     <osgix:managed-service-factory id="ecdr-sort-mapping" factory-pid="ecdr-sort-mapping"
                                    update-strategy="container-managed">
 
@@ -30,7 +36,7 @@
             <beans:value>net.di2e.ecdr.commons.sort.SortTypeConfiguration</beans:value>
         </osgix:interfaces>
 
-        <beans:bean id="SortTypeConfiguration" class="net.di2e.ecdr.federation.SortTypeConfigurationImpl" />
+        <beans:bean id="SortTypeConfiguration" class="net.di2e.ecdr.endpoint.sort.SortTypeConfigurationImpl" />
 
     </osgix:managed-service-factory>
 

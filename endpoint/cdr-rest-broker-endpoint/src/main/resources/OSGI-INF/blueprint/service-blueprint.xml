@@ -78,13 +78,6 @@
     <bean id="queryParser" class="net.di2e.ecdr.commons.query.rest.parsers.BrokerQueryParser">
         <cm:managed-properties persistent-id="cdr-rest-broker-endpoint-1.0.1" update-strategy="container-managed" />
         <argument ref="sortTypeConfigurations" />
-        <property name="defaultResponseFormat" value="atom" />
-        <property name="defaultCount" value="100" />
-        <property name="defaultTimeoutSeconds" value="300" />
-        <property name="defaultRadiusMeters" value="10000" />
-        <property name="defaultDateType" value="effective" />
-        <property name="queryRequestCacheSize" value="1000" />
-        <property name="defaultDeduplication" value="true" />
     </bean>
     
     <bean id="fifoFederationStrategyBean" class="net.di2e.ecdr.federation.FifoFederationStrategy">

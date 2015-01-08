@@ -47,7 +47,7 @@
             description="Certain runtime registries may wish to update this source when the source value in the registry changes (or is removed).  If this box is checked, once the source is created
             it cannot be automatically updated or removed by a registry.  If uncertain keep checked.">
         </AD>
-        <AD name="Sort Mapping" id="sortMap" required="false" type="String" default="title:entry/title,modified:entry/date,RELEVANCE:score" cardinality="10"
+        <AD name="Sort Mapping" id="sortMap" required="false" type="String" default="title:entry/title,modified:entry/date,RELEVANCE:score" cardinality="100"
             description="Mapping for this source that converts the metacard attribute to a sort type for the outgoing request. The mapping should be done by using &lt;metacard attribute&gt;:&lt;cdr
             type&gt; format.">
         </AD>
