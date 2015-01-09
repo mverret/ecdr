@@ -17,10 +17,13 @@ import ddf.catalog.source.UnsupportedQueryException;
 import net.di2e.ecdr.commons.constants.SearchConstants;
 import net.di2e.ecdr.commons.query.rest.parsers.BrokerQueryParser;
 
+import net.di2e.ecdr.commons.sort.SortTypeConfiguration;
 import org.apache.cxf.jaxrs.impl.MetadataMap;
 import org.junit.Test;
 
 import javax.ws.rs.core.MultivaluedMap;
+
+import java.util.Collections;
 
 import static org.mockito.Mockito.mock;
 
@@ -84,7 +87,7 @@ public class CDRQueryImplCQLTest {
 
     private void testQuery( String CQL ) throws UnsupportedQueryException {
         FilterBuilder filterBuilder = mock( FilterBuilder.class );
-        BrokerQueryParser parser = new BrokerQueryParser();
+        BrokerQueryParser parser = new BrokerQueryParser( Collections.<SortTypeConfiguration>emptyList() );
         MultivaluedMap<String, String> queryParameters = new MetadataMap<>();
         queryParameters.add( SearchConstants.QUERYLANGUAGE_PARAMETER, SearchConstants.CDR_CQL_QUERY_LANGUAGE );
         queryParameters.add( SearchConstants.KEYWORD_PARAMETER, CQL );

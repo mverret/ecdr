@@ -31,6 +31,7 @@ import net.di2e.ecdr.commons.query.TextualCriteria;
 import net.di2e.ecdr.commons.query.cache.QueryRequestCache;
 import net.di2e.ecdr.commons.query.util.GeospatialHelper;
 
+import net.di2e.ecdr.commons.sort.SortTypeConfiguration;
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.DateTimeFormatterBuilder;
@@ -38,25 +39,25 @@ import org.joda.time.format.DateTimeParser;
 import org.joda.time.format.ISODateTimeFormat;
 import org.opengis.filter.sort.SortBy;
 import org.opengis.filter.sort.SortOrder;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.ext.XLogger;
 
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 
 import ddf.catalog.data.Metacard;
-import ddf.catalog.data.Result;
 import ddf.catalog.filter.impl.SortByImpl;
 import ddf.catalog.source.UnsupportedQueryException;
 
 public class BasicQueryParser implements QueryParser {
 
-    private static final XLogger LOGGER = new XLogger( LoggerFactory.getLogger( BasicQueryParser.class ) );
+    private static final Logger LOGGER = LoggerFactory.getLogger( BasicQueryParser.class );
 
     private static final int DEFAULT_QUERYID_CACHE_SIZE = 1000;
 
     private static final Map<String, String> DATETYPE_MAP = new HashMap<String, String>();
-    private static final Map<String, String> SORTKEYS_MAP = new HashMap<String, String>();
+
+    private List<SortTypeConfiguration> sortTypeConfigurationList;
 
     static {
         DATETYPE_MAP.put( "created", Metacard.CREATED );
@@ -67,27 +68,6 @@ public class BasicQueryParser implements QueryParser {
         DATETYPE_MAP.put( "temporalCoverage", SearchConstants.TEMPORAL_COVERAGE );
         DATETYPE_MAP.put( "effective", Metacard.EFFECTIVE );
 
-        SORTKEYS_MAP.put( "entry/title", Metacard.TITLE );
-        SORTKEYS_MAP.put( "entry/date", Metacard.MODIFIED );
-        SORTKEYS_MAP.put( "score", Result.RELEVANCE );
-        SORTKEYS_MAP.put( "distance", Result.DISTANCE );
-    }
-
-    private static final Map<String, SortOrder> DEFAULT_SORTORDER_MAP = new HashMap<String, SortOrder>();
-
-    static {
-        DEFAULT_SORTORDER_MAP.put( "created", SortOrder.DESCENDING );
-        DEFAULT_SORTORDER_MAP.put( "updated", SortOrder.DESCENDING );
-        DEFAULT_SORTORDER_MAP.put( "posted", SortOrder.DESCENDING );
-        DEFAULT_SORTORDER_MAP.put( "infoCutOff", SortOrder.DESCENDING );
-        DEFAULT_SORTORDER_MAP.put( "validTil", SortOrder.ASCENDING );
-        DEFAULT_SORTORDER_MAP.put( "temporalCoverage", SortOrder.DESCENDING );
-        DEFAULT_SORTORDER_MAP.put( "effective", SortOrder.DESCENDING );
-
-        DEFAULT_SORTORDER_MAP.put( "entry/title", SortOrder.ASCENDING );
-        DEFAULT_SORTORDER_MAP.put( "entry/date", SortOrder.DESCENDING );
-        DEFAULT_SORTORDER_MAP.put( "score", SortOrder.DESCENDING );
-        DEFAULT_SORTORDER_MAP.put( "distance", SortOrder.ASCENDING );
     }
     
     private static final List<String> LANGUAGE_LIST = new ArrayList<String>();
@@ -118,7 +98,8 @@ public class BasicQueryParser implements QueryParser {
 
     private QueryRequestCache queryRequestCache = null;
 
-    public BasicQueryParser() {
+    public BasicQueryParser(List<SortTypeConfiguration> sortTypeConfigurations) {
+        sortTypeConfigurationList = sortTypeConfigurations;
         queryRequestCache = new QueryRequestCache( DEFAULT_QUERYID_CACHE_SIZE );
     }
 
@@ -132,7 +113,7 @@ public class BasicQueryParser implements QueryParser {
             defaultCount = count;
             LOGGER.debug( "Updating the default count to [{}]", defaultCount );
         } else {
-            LOGGER.warn( "Cound not update the default count due to invalid value [{}], the default count will stay at [{}]", count, defaultCount );
+            LOGGER.warn( "Could not update the default count due to invalid value [{}], the default count will stay at [{}]", count, defaultCount );
         }
 
     }
@@ -142,7 +123,7 @@ public class BasicQueryParser implements QueryParser {
             defaultTimeoutMillis = timeout * 1000L;
             LOGGER.debug( "Updating the default timeout to [{}] seconds", timeout );
         } else {
-            LOGGER.warn( "Cound not update the default timeout due to invalid integer [{}], the default timeout will stay at [{}] seconds", timeout,
+            LOGGER.warn( "Could not update the default timeout due to invalid integer [{}], the default timeout will stay at [{}] seconds", timeout,
                     defaultTimeoutMillis / 1000 );
         }
 
@@ -153,7 +134,7 @@ public class BasicQueryParser implements QueryParser {
             defaultRadius = meters;
             LOGGER.debug( "Updating the default radius to [{}]", defaultRadius );
         } else {
-            LOGGER.warn( "Cound not update the default radius due to invalid value [{}], the default radius will stay at [{}]", meters, defaultRadius );
+            LOGGER.warn( "Could not update the default radius due to invalid value [{}], the default radius will stay at [{}]", meters, defaultRadius );
         }
 
     }
@@ -173,7 +154,7 @@ public class BasicQueryParser implements QueryParser {
             queryRequestCache.updateCacheSize( size );
             LOGGER.debug( "Updating the default query request cache size to [{}]", size );
         } else {
-            LOGGER.warn( "Cound not update the default query request cache size due to invalid integer value [{}]", size );
+            LOGGER.warn( "Could not update the default query request cache size due to invalid integer value [{}]", size );
         }
     }
 
@@ -227,7 +208,7 @@ public class BasicQueryParser implements QueryParser {
     public int getStartIndex( MultivaluedMap<String, String> queryParameters ) throws UnsupportedQueryException {
         String startIndex = queryParameters.getFirst( SearchConstants.STARTINDEX_PARAMETER );
         int index = 1;
-        LOGGER.debug( "Attempting to set 'startIndex' value from request [" + startIndex + "] to int" );
+        LOGGER.debug( "Attempting to set 'startIndex' value from request [{}] to int", startIndex );
         if ( StringUtils.isNotBlank( startIndex ) ) {
             try {
                 index = Integer.parseInt( startIndex );
@@ -237,7 +218,7 @@ public class BasicQueryParser implements QueryParser {
                 throw new UnsupportedQueryException( message );
             }
         } else {
-            LOGGER.debug( "'startIndex' parameter was not specified, defaulting value to [" + index + "]" );
+            LOGGER.debug( "'startIndex' parameter was not specified, defaulting value to [{}]", index );
         }
         return index < 1 ? 1 : index;
     }
@@ -246,7 +227,7 @@ public class BasicQueryParser implements QueryParser {
     public int getCount( MultivaluedMap<String, String> queryParameters ) throws UnsupportedQueryException {
         String stringCount = queryParameters.getFirst( SearchConstants.COUNT_PARAMETER );
         int count = this.defaultCount;
-        LOGGER.debug( "Attempting to set 'count' value from request [" + stringCount + "] to int" );
+        LOGGER.debug( "Attempting to set 'count' value from request [{}] to int", stringCount );
         if ( StringUtils.isNotBlank( stringCount ) ) {
             try {
                 count = Integer.parseInt( stringCount );
@@ -256,7 +237,7 @@ public class BasicQueryParser implements QueryParser {
                 throw new UnsupportedQueryException( message );
             }
         } else {
-            LOGGER.debug( "'count' parameter was not specified, defaulting value to [" + count + "]" );
+            LOGGER.debug( "'count' parameter was not specified, defaulting value to [{}]", count );
         }
         return count;
     }
@@ -281,7 +262,7 @@ public class BasicQueryParser implements QueryParser {
                 }
             }
         } else {
-            LOGGER.debug( "'timeout' parameter was not specified, defaulting value to [" + timeout + "]" );
+            LOGGER.debug( "'timeout' parameter was not specified, defaulting value to [{}]", timeout );
         }
         return timeoutMilliseconds;
     }
@@ -293,20 +274,18 @@ public class BasicQueryParser implements QueryParser {
         if ( StringUtils.isNotBlank( sortByString ) ) {
             String[] sortValues = sortByString.split( "," );
             String sortKey = sortValues[0];
-            String sortValue = SORTKEYS_MAP.get( sortKey );
-            if ( sortValue != null ) {
+            SortTypeConfiguration sortType = getSortConfiguration( sortKey );
+            if ( sortType != null ) {
+                String sortAttribute = sortType.getSortAttribute();
                 SortOrder sortOrder = null;
                 if ( sortValues.length >= 3 ) {
-                    if ( "false".equalsIgnoreCase( sortValues[2] ) ) {
+                    if ( Boolean.FALSE.toString().equalsIgnoreCase( sortValues[2] ) ) {
                         sortOrder = SortOrder.DESCENDING;
                     }
                 } else {
-                    sortOrder = DEFAULT_SORTORDER_MAP.get( sortKey );
+                    sortOrder = SortOrder.valueOf( sortType.getSortOrder() );
                 }
-                if ( sortOrder == null ) {
-                    sortOrder = SortOrder.ASCENDING;
-                }
-                sortBy = new SortByImpl( sortValue, sortOrder );
+                sortBy = new SortByImpl( sortAttribute, sortOrder );
             }
         }
         return sortBy;
@@ -340,7 +319,7 @@ public class BasicQueryParser implements QueryParser {
         TextualCriteria textualCriteria = null;
         if ( StringUtils.isNotBlank( words ) ) {
             String stringFuzzy = queryParameters.getFirst( SearchConstants.FUZZY_PARAMETER );
-            LOGGER.debug( "Attempting to set 'fuzzy' value from request [" + stringFuzzy + "]" );
+            LOGGER.debug( "Attempting to set 'fuzzy' value from request [{}]", stringFuzzy );
             Boolean fuzzy = getBoolean( stringFuzzy );
             if ( fuzzy == null ) {
                 LOGGER.debug( "The 'fuzzy' parameter was not specified, defaulting value to [{}]", defaultFuzzySearch );
@@ -407,7 +386,7 @@ public class BasicQueryParser implements QueryParser {
                 }
 
             } catch ( NumberFormatException e ) {
-                LOGGER.warn( "Invalid values found for bbox [" + box + "].  Resulted in exception: " + e.getMessage() );
+                LOGGER.warn( "Invalid values found for bbox [{}].  Resulted in exception: {}", box, e.getMessage() );
                 if ( strictMode ) {
                     throw new UnsupportedQueryException( "Invalid values found for bbox [" + box + "], values must be numeric." );
                 }
@@ -421,8 +400,7 @@ public class BasicQueryParser implements QueryParser {
                 geoCriteria = new GeospatialCriteria( latitude, longitude, radius );
 
             } catch ( NumberFormatException e ) {
-                LOGGER.warn( "Invalid Number found for lat [" + lat + "], lon [" + lon + "], and/or radius [" + rad + "].  Resulted in exception: "
-                        + e.getMessage() );
+                LOGGER.warn( "Invalid Number found for lat [{}], lon [{}], and/or radius [{}].  Resulted in exception: {}", lat, lon, rad, e.getMessage() );
                 if ( strictMode ) {
                     throw new UnsupportedQueryException( "Invalid Number found for lat [" + lat + "], lon [" + lon + "], and/or radius [" + rad + "]." );
                 }
@@ -433,7 +411,7 @@ public class BasicQueryParser implements QueryParser {
                 WKTReader reader = new WKTReader();
                 reader.read( geom );
             } catch ( ParseException e ) {
-                LOGGER.warn( "The following is not a valid WKT String: " + geom );
+                LOGGER.warn( "The following is not a valid WKT String: {}", geom );
                 throw new UnsupportedQueryException( "Invalid WKT, cannot create geospatial query." );
             }
             geoCriteria = new GeospatialCriteria( geom );
@@ -443,7 +421,7 @@ public class BasicQueryParser implements QueryParser {
                 WKTReader reader = new WKTReader();
                 reader.read( wkt );
             } catch ( ParseException e ) {
-                LOGGER.warn( "The following is not a valid WKT String: " + wkt );
+                LOGGER.warn( "The following is not a valid WKT String: {}", wkt );
                 throw new UnsupportedQueryException( "Invalid WKT, cannot create geospatial query." );
             }
             geoCriteria = new GeospatialCriteria( wkt );
@@ -463,12 +441,12 @@ public class BasicQueryParser implements QueryParser {
                 }
             }
             String dateType = null;
-            LOGGER.debug( "Getting date type name for type [" + type + "]" );
+            LOGGER.debug( "Getting date type name for type [{}]", type );
             if ( StringUtils.isNotBlank( type ) ) {
                 if ( DATETYPE_MAP.containsKey( type ) ) {
                     dateType = DATETYPE_MAP.get( type );
 
-                    LOGGER.debug( "Date type value retreived in map for request value [" + type + "], setting internal query value to [" + dateType + "]" );
+                    LOGGER.debug( "Date type value received in map for request value [{}], setting internal query value to [{}]", type, dateType );
                 } else {
                     String message = "Date type value not found in map for type [" + type + "], defaulting internal query value to [" + dateType + "]";
                     LOGGER.warn( message );
@@ -476,7 +454,7 @@ public class BasicQueryParser implements QueryParser {
                 }
             } else {
                 dateType = DATETYPE_MAP.get( this.defaultDateType );
-                LOGGER.debug( "Date type value was not specified in request, defaulting internal query value to [" + dateType + "]" );
+                LOGGER.debug( "Date type value was not specified in request, defaulting internal query value to [{}]", dateType );
             }
             temporalCriteria = new TemporalCriteria( startDate, endDate, dateType );
         }
@@ -526,6 +504,16 @@ public class BasicQueryParser implements QueryParser {
             }
         }
         return bool;
+    }
+
+    private SortTypeConfiguration getSortConfiguration(String sortKey) {
+        for (SortTypeConfiguration sortType : sortTypeConfigurationList ) {
+            LOGGER.debug( "Comparing incoming sort key of {} with configuration of key {}", sortKey, sortType.getSortKey() );
+            if (sortType.getSortKey().equals( sortKey )) {
+                return sortType;
+            }
+        }
+        return null;
     }
 
 }

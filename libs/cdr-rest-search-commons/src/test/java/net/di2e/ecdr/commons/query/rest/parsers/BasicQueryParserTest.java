@@ -16,6 +16,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
+import java.util.Collections;
 
 import javax.ws.rs.core.MultivaluedMap;
 
@@ -23,6 +24,7 @@ import net.di2e.ecdr.commons.constants.SearchConstants;
 import net.di2e.ecdr.commons.query.GeospatialCriteria;
 import net.di2e.ecdr.commons.query.TextualCriteria;
 
+import net.di2e.ecdr.commons.sort.SortTypeConfiguration;
 import org.apache.cxf.jaxrs.impl.MetadataMap;
 import org.junit.Assert;
 import org.junit.Test;
@@ -35,7 +37,7 @@ public class BasicQueryParserTest {
     @Test
     public void testGetGeoRSSFormat() {
         MultivaluedMap<String, String> props = new MetadataMap<String, String>();
-        BasicQueryParser parser = new BasicQueryParser();
+        BasicQueryParser parser = new BasicQueryParser( Collections.<SortTypeConfiguration>emptyList() );
         Assert.assertNull( parser.getGeoRSSFormat( props ) );
         
         props.putSingle( SearchConstants.GEORSS_RESULT_FORMAT_PARAMETER, null );
@@ -55,7 +57,7 @@ public class BasicQueryParserTest {
 
     @Test
     public void testGeospatialBasicQueryParser() throws Exception {
-        BasicQueryParser parser = new BasicQueryParser();
+        BasicQueryParser parser = new BasicQueryParser( Collections.<SortTypeConfiguration>emptyList() );
         parser.setDefaultRadiusMeters( 10.0 );
         parser.setDefaultTimeoutSeconds( 1000 );
         parser.setDefaultResponseFormat( "atom" );
@@ -78,7 +80,7 @@ public class BasicQueryParserTest {
 
     @Test
     public void testTemporalBasicQueryParser() throws Exception {
-        BasicQueryParser parser = new BasicQueryParser();
+        BasicQueryParser parser = new BasicQueryParser( Collections.<SortTypeConfiguration>emptyList() );
         parser.setDefaultDateType( "created" );
         parser.setQueryRequestCacheSize( 2 );
         parser.createTemporalCriteria( "2014-05-05T00:00:00Z", "2014-05-05T00:00:00Z", "created" );
@@ -87,7 +89,7 @@ public class BasicQueryParserTest {
 
     @Test
     public void testKeywordFuzzyBasicQueryParser() throws Exception {
-        BasicQueryParser parser = new BasicQueryParser();
+        BasicQueryParser parser = new BasicQueryParser( Collections.<SortTypeConfiguration>emptyList() );
         MultivaluedMap<String, String> props = new MetadataMap<String, String>();
 
         props.putSingle( SearchConstants.KEYWORD_PARAMETER, "test" );

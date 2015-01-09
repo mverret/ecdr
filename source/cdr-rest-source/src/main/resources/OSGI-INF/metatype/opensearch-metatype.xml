@@ -117,6 +117,10 @@
         <AD name="Result Cache Expires" id="cacheExpirationMinutes" type="Long" default="60"
             description="If the geo:uid parameter is not populated/supported, the results will be cached which will enable lookups by ID.  This specifies the number of minutes before the results are removed from the cache" />
 
+        <AD name="Sort Mapping" id="sortMap" required="false" type="String" default="title:entry/title,modified:entry/date,RELEVANCE:score" cardinality="100"
+            description="Mapping for this source that converts the metacard attribute to a sort type for the outgoing request. The mapping should be done by using &lt;metacard attribute&gt;:&lt;cdr
+            type&gt; format.">
+        </AD>
     </OCD>
 
     <Designate pid="ecdr-opensearch-source" factoryPid="ecdr-opensearch-source">

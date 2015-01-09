@@ -54,5 +54,4 @@
         <argument ref="filterAdapter" />
     </bean>
 
-
 </blueprint>

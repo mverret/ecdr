@@ -106,6 +106,8 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
     private int maxResultsCount = 0;
     private String defaultResponseFormat = null;
 
+    private Map<String, String> sortMap = Collections.emptyMap();
+
     public AbstractCDRSource( FilterAdapter adapter ) {
         this.filterAdapter = adapter;
     }
@@ -348,12 +350,12 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
                             // utility method that is
                             IOUtils.skipFully( binaryStream, bytesToSkip );
                         } catch ( EOFException e ) {
-                            LOGGER.warn( "Skipping the requested number of bytes [{}] for URI [{}] resulted in an End of File, so re-retreiving the complete file without skipping bytes: {}",
+                            LOGGER.warn( "Skipping the requested number of bytes [{}] for URI [{}] resulted in an End of File, so re-retrieving the complete file without skipping bytes: {}",
                                     bytesToSkip, uri, e.getMessage() );
                             try {
                                 binaryStream.close();
                             } catch ( IOException e1 ) {
-                                LOGGER.debug( "Error encounterd while closing inputstream" );
+                                LOGGER.debug( "Error encountered while closing inputstream" );
                             }
                             return doRetrieval( retrieveWebClient, null );
                         }
@@ -365,7 +367,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
                 resourceResponse = new ResourceResponseImpl( new ResourceRequestByProductUri( uri, requestProperties ), responseProperties, new ResourceImpl( binaryStream, mimeType, fileName ) );
             }
         } catch ( RuntimeException e ) {
-            LOGGER.warn( "Expected exception encountered when trying to retrieve resource with URI [{}] from sourrce [{}}", uri, getId() );
+            LOGGER.warn( "Expected exception encountered when trying to retrieve resource with URI [{}] from source [{}}", uri, getId() );
         }
         return resourceResponse;
     }
@@ -444,7 +446,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
         String sortOrderString = null;
         if ( sortBy != null ) {
             SortOrder sortOrder = sortBy.getSortOrder();
-            String sortField = StrictFilterDelegate.SORTKEYS_MAP.get( sortBy.getPropertyName().getPropertyName() );
+            String sortField = sortMap.get( sortBy.getPropertyName().getPropertyName() );
             if ( sortField != null ) {
                 sortOrderString = sortField + (SortOrder.DESCENDING.equals( sortOrder ) ? ",,false" : "");
             }
@@ -478,7 +480,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
             conduit.getClient().setConnectionTimeout( connectionTimeout );
             conduit.setTlsClientParameters( getTlsClientParameters() );
         } else {
-            LOGGER.warn( "OpenSearch Source Endpoint URL is not a valid value, so cannot update [{}]", endpointUrl );
+            LOGGER.warn( "OpenSearch Source Endpoint URL is not a valid value (either blank or same as previous value), so cannot update [{}]", endpointUrl );
         }
     }
 
@@ -593,6 +595,20 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
     public void setDefaultResponseFormat( String defaultFormat ) {
         LOGGER.debug( "ConfigUpdate: Updating the default response format value from [{}] to [{}]", defaultResponseFormat, defaultFormat );
         defaultResponseFormat = defaultFormat;
+    }
+
+    public void setSortMap ( String sortMapStr ) {
+        Map<String, String> inputMap = new HashMap<String, String>();
+        for (String sortPair : sortMapStr.split( "," )) {
+            String[] pairAry = sortPair.split( ":" );
+            if (pairAry.length == 2) {
+                inputMap.put( pairAry[0], pairAry[1] );
+            } else {
+                LOGGER.warn( "Could not parse out sort mappings from {}, skipping this mapping.", sortPair );
+            }
+        }
+        LOGGER.debug( "Updating sortMap with new entries: {}", inputMap.toString() );
+        sortMap = inputMap;
     }
 
     protected void setCdrRestClient( WebClient restClient ) {

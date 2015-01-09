@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright (c) Cohesive Integrations, LLC
+ *
+ * This is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details. A copy of the GNU Lesser General Public License is distributed along with this program and can be found at
+ * <http://www.gnu.org/licenses/lgpl.html>.
+ *
+ **/
+ -->
+<metatype:MetaData xmlns:metatype="http://www.osgi.org/xmlns/metatype/v1.2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.osgi.org/xmlns/metatype/v1.2.0 http://www.osgi.org/xmlns/metatype/v1.2.0">
+    <OCD description="Sort Type configuration. Sets up the mapping between sorting from the cdr services to the internal metacard."
+         name="CDR Sort Mapping" id="ecdr-sort-mapping">
+
+        <AD name="Sort Key" id="sortKey" required="true" type="String" default="" />
+
+        <AD name="Sort Attribute" id="sortAttribute" required="true" type="String" default=""
+            description="The attribute that sorting will take place on in the metacard/result using defined standard attribute types.">
+            <Option label="Metacard.TITLE" value="title" />
+            <Option label="Metacard.MODIFIED" value="modified" />
+            <Option label="Metacard.CREATED" value="created" />
+            <Option label="Metacard.EFFECTIVE" value="effective" />
+            <Option label="Metacard.EXPIRATION" value="expiration" />
+            <Option label="Metacard.GEOGRAPHY" value="location" />
+            <Option label="Result.RELEVANCE" value="RELEVANCE" />
+            <Option label="Result.DISTANCE" value="DISTANCE" />
+        </AD>
+
+        <AD name="Custom Sort Attribute" id="customSortAttribute" required="false" type="String" default=""
+            description="Custom attribute that overrides the pull-down attribute configuration. NOTE: This MUST be blank to use the above 'Sort Attribute' configuration." />
+
+        <AD name="Sort Order" id="sortOrder" required="true" type="String" default="DESCENDING"
+            description="The order in which the sorting should organize the results if no order is specified in the request.">
+            <Option label="DESCENDING" value="DESCENDING" />
+            <Option label="ASCENDING" value="ASCENDING" />
+        </AD>
+
+    </OCD>
+
+    <Designate pid="ecdr-sort-mapping" factoryPid="ecdr-sort-mapping">
+        <Object ocdref="ecdr-sort-mapping" />
+    </Designate>
+
+</metatype:MetaData>

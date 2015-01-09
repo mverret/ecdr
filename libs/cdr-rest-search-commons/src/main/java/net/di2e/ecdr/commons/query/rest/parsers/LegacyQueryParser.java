@@ -27,6 +27,7 @@ import net.di2e.ecdr.commons.query.GeospatialCriteria.SpatialOperator;
 import net.di2e.ecdr.commons.query.PropertyCriteria;
 import net.di2e.ecdr.commons.query.PropertyCriteria.Operator;
 
+import net.di2e.ecdr.commons.sort.SortTypeConfiguration;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.LoggerFactory;
 import org.slf4j.ext.XLogger;
@@ -40,8 +41,8 @@ public class LegacyQueryParser extends BasicQueryParser {
     public static final String DAD_SCHEME = "dad";
     public static final String NOT_APPLICABLE = "N/A";
 
-    public LegacyQueryParser() {
-        super();
+    public LegacyQueryParser(List<SortTypeConfiguration> sortTypeConfigurations) {
+        super(sortTypeConfigurations);
     }
 
     @Override
