@@ -13,6 +13,7 @@
 package net.di2e.ecdr.endpoint.sort;
 
 import net.di2e.ecdr.commons.sort.SortTypeConfiguration;
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +24,8 @@ public class SortTypeConfigurationImpl implements SortTypeConfiguration {
     private String sortKey;
 
     private String sortAttribute;
+
+    private String customAttribute;
 
     private String sortOrder;
 
@@ -38,6 +41,10 @@ public class SortTypeConfigurationImpl implements SortTypeConfiguration {
         this.sortAttribute = attribute;
     }
 
+    public void setCustomSortAttribute ( String attribute ) {
+        this.customAttribute = attribute;
+    }
+
     public void setSortOrder (String order) {
         this.sortOrder = order;
     }
@@ -49,7 +56,11 @@ public class SortTypeConfigurationImpl implements SortTypeConfiguration {
 
     @Override
     public String getSortAttribute() {
-        return sortAttribute;
+        if (StringUtils.isNotBlank( customAttribute )) {
+            return customAttribute;
+        } else {
+            return sortAttribute;
+        }
     }
 
     @Override

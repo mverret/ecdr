@@ -21,7 +21,7 @@
         <AD name="Sort Key" id="sortKey" required="true" type="String" default="" />
 
         <AD name="Sort Attribute" id="sortAttribute" required="true" type="String" default=""
-            description="The attribute that sorting will take place on in the metacard/result.">
+            description="The attribute that sorting will take place on in the metacard/result using defined standard attribute types.">
             <Option label="Metacard.TITLE" value="title" />
             <Option label="Metacard.MODIFIED" value="modified" />
             <Option label="Metacard.CREATED" value="created" />
@@ -31,6 +31,9 @@
             <Option label="Result.RELEVANCE" value="RELEVANCE" />
             <Option label="Result.DISTANCE" value="DISTANCE" />
         </AD>
+
+        <AD name="Custom Sort Attribute" id="customSortAttribute" required="false" type="String" default=""
+            description="Custom attribute that overrides the pull-down attribute configuration. NOTE: This MUST be blank to use the above 'Sort Attribute' configuration." />
 
         <AD name="Sort Order" id="sortOrder" required="true" type="String" default="DESCENDING"
             description="The order in which the sorting should organize the results if no order is specified in the request.">
