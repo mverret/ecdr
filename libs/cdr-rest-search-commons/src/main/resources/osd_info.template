@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Required Params:
+	  opensearch:searchTerms - search terms
+
+	Optional Params:
+
+	  Open Search
+	  ===========
+	  opensearch:count - number of item per page to return (default: count=10)
+
+	  Federated Search
+	  ================
+	  fs:maxResults - maximum # of results to return for all sources (default: mr=1000, mr<=1000)
+	  fs:routeTo - comma delimited list of data sources to query (default: default sources selected)
+	  fs:maxTimeout - maximum timeout (msec) for data source to respond  (default: mt=30000)
+	  fs:sourceFilter - specific bin on which to filter results (i.e. filter=src:<dataSource>, where <dataSource> is a data source friendly name).
+	  fs:sort - specifies sort by field as sort=<sbfield>:<sborder>, where <sbfield> may be 'date', 'title' or 'relevance' (default is 'relevance'). The conditional param <sborder> is optional but has a value of 'asc' or 'desc' (default is 'desc'). When <sbfield> is 'relevance', <sborder> must be 'desc'.
+	  fs:includeDDMS - indicate whether to include DDMS info (1/0) with the result set (default: ddms=0)
+	  fs:format - return results as 'atom', 'json'/'jsonp', 'kml' or 'csv' (default is 'atom'). When requesting 'kml' only results containing georss points are returned.
+	  fs:callback - specify the name of the callback method when using jsonp (default: callback=callback)
+	  fs:classification - provide classification of search terms as a valid CAPCO marking
+
+	  Geospatial
+	  ==========
+	  geo:box - comma delimited list of lat/lon (deg) bounding box coordinates (geo format: geo:bbox ~ west,south,east,north). This is also commonly referred to by minX, minY, maxX, maxY (where longitude is the X-axis, and latitude is the Y-axis).
+	  geo:lat/lon - latititude & longitude, respectively, in deceimal degrees (typical GPS receiver WGS84 coordinates). Should include a 'radius' parameter that specifies the search radius in meters.
+	  geo:radius - the radius (m) parameter, used with the lat and lon paramters, specifies the search distance from this point (default: radius=5000).
+
+	  Temporal
+	  ========
+	  time:start - replaced with a string of the beginning of the time slice of the search (RFC-3339 - Date and Time format, i.e. YYYY-MM-DDTHH:mm:ssZ). Default value of "1970-01-01T00:00:00Z" is used when dtend is indicated but dtstart is not specified.
+	  time:end - replaced with a string of the ending of the time slice of the search (RFC-3339 - Date and Time format, i.e. YYYY-MM-DDTHH:mm:ssZ). Current GMT date/time is used when dtstart is specified but not dtend.
+
+	  Other
+	  =====
+	  idn:userDN - user distinguished name (obtained from PKI) passed to data sources as subject
+	  cat:dateName - a name value for the ddms:TimePeriod/ddms:name to which you would like the dtstart and dtend dates to be applied. This is an optional parameter used in conjunction with dtstart/dtend and if omitted the dtstart and dtend parameter values will be applied to the ddms:posted elements or ddms:dates elements with a populated ddms:posted attribute.
+	  cat:col- name of collection in index from which to perform search (default: collection=all).
+
+	  Note: # results per source equals maximum # of results to return for all sources divided by the # of sources
+	  Note: geospatial and temporal queries are not supported by all sources
+
+	Response:
+	======================================
+
+
+-->
