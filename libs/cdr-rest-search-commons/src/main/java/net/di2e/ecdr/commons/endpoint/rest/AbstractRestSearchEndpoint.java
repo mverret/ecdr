@@ -35,7 +35,6 @@ import net.di2e.ecdr.commons.constants.SearchConstants;
 import net.di2e.ecdr.commons.query.rest.CDRQueryImpl;
 import net.di2e.ecdr.commons.query.rest.parsers.QueryParser;
 import net.di2e.ecdr.commons.query.util.QueryHelper;
-import net.di2e.ecdr.commons.xml.XMLTemplates;
 import net.di2e.ecdr.commons.xml.fs.SourceDescription;
 import net.di2e.ecdr.commons.xml.osd.OpenSearchDescription;
 import net.di2e.ecdr.commons.xml.osd.Query;
@@ -43,6 +42,7 @@ import net.di2e.ecdr.commons.xml.osd.SyndicationRight;
 import net.di2e.ecdr.commons.xml.osd.Url;
 import net.di2e.ecdr.search.transform.mapper.TransformIdMapper;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.codice.ddf.configuration.impl.ConfigurationWatcherImpl;
 import org.slf4j.Logger;
@@ -201,12 +201,19 @@ public abstract class AbstractRestSearchEndpoint implements RegistrableService {
         try {
             JAXBContext context = JAXBContext.newInstance( OpenSearchDescription.class, SourceDescription.class );
             Marshaller marshaller = context.createMarshaller();
-            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-            marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
+            marshaller.setProperty( Marshaller.JAXB_FORMATTED_OUTPUT, true );
+            marshaller.setProperty( Marshaller.JAXB_FRAGMENT, true );
             marshaller.marshal( osd, writer );
-            String responseStr = XMLTemplates.OSD_TEMPLATE + writer.toString();
-            return Response.ok( responseStr, MediaType.APPLICATION_XML_TYPE ).build();
-        } catch ( JAXBException e ) {
+            InputStream is = getClass().getResourceAsStream( "/templates/osd_info.template" );
+            if ( is != null ) {
+                String osdTemplate = IOUtils.toString( is );
+                IOUtils.closeQuietly( is );
+                String responseStr = osdTemplate + writer.toString();
+                return Response.ok( responseStr, MediaType.APPLICATION_XML_TYPE ).build();
+            } else {
+                return Response.serverError().entity( "COULD NOT LOAD OSD TEMPLATE." ).build();
+            }
+        } catch ( JAXBException | IOException e ) {
             LOGGER.warn( "Could not create OSD for client due to exception.", e );
             return Response.serverError().build();
         }
