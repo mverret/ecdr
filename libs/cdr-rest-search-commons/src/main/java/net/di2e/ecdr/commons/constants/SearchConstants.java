@@ -56,16 +56,13 @@ public final class SearchConstants {
     public static final String SORTKEYS_PARAMETER = "sortKeys";
 
     public static final String FORMAT_PARAMETER = "format";
-    public static final String STRICTMODE_PARAMETER = "strictMode";
+    public static final String STRICTMODE_PARAMETER = "strict";
     public static final String QUERYLANGUAGE_PARAMETER = "queryLanguage";
     
     public static final String TIMEOUT_PARAMETER = "timeout";
     public static final String STATUS_PARAMETER = "status";
     public static final String OID_PARAMETER = "oid";
     
-    public static final String CDR_KEYWORD_QUERY_LANGUAGE = "cdr-kw-basic-2.0";
-    public static final String CDR_CQL_QUERY_LANGUAGE = "cql-1.2";
-
     public static final String GEORSS_RESULT_FORMAT_PARAMETER = "georssFormat";
     public static final String GEORSS_SIMPLE_FORMAT = "simple";
     public static final String GEORSS_GML_FORMAT = "gml";
@@ -73,8 +70,11 @@ public final class SearchConstants {
     // Parameter that are part of the Basic Plus query profile
     public static final String GEOSPATIALOPERATOR_PARAMETER = "spatialOp";
     public static final String TEXTPATH_PARAMETER = "textPath";
-    public static final String LOCAL_SOURCE_ID = "local-source-id";
 
+    public static final String CDR_KEYWORD_QUERY_LANGUAGE = "cdr-kw-basic-2.0";
+    public static final String CDR_CQL_QUERY_LANGUAGE = "cql-1.2";
+
+    public static final String LOCAL_SOURCE_ID = "local-source-id";
 
     public static final String TRUE_STRING = "1";
     public static final String FALSE_STRING = "0";
