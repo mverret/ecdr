@@ -28,7 +28,6 @@ public class CDRRestSource extends AbstractCDRSource {
 
     private static final Logger LOGGER = LoggerFactory.getLogger( CDRRestSource.class );
 
-    private Map<String, String> parameterMap = new HashMap<String, String>();
     private Map<String, String> harcodedParamMap = new HashMap<String, String>();
 
     private FilterConfig filterConfig = null;
@@ -38,11 +37,6 @@ public class CDRRestSource extends AbstractCDRSource {
         filterConfig = new FilterConfig();
         LOGGER.info( "Creating a new CDRRestSource." );
         setPingMethod(PingMethod.HEAD);
-    }
-
-    @Override
-    public Map<String, String> getDynamicUrlParameterMap() {
-        return parameterMap;
     }
 
     @Override
@@ -65,11 +59,6 @@ public class CDRRestSource extends AbstractCDRSource {
         return null;
     }
 
-    @Override
-    public boolean canHandleUidQuery() {
-        return true;
-    }
-
     public void setDoSourcePing( boolean doPing ) {
         LOGGER.debug( "ConfigUpdate: Updating the doSourcePing value from to [{}]", doPing );
         setPingMethod( doPing ? PingMethod.HEAD : PingMethod.NONE );
@@ -78,6 +67,11 @@ public class CDRRestSource extends AbstractCDRSource {
     public synchronized void setUrl(String endpointUrl) {
         super.setPingUrl( endpointUrl );
         super.setUrl(endpointUrl);
+    }
+
+    @Override
+    public boolean useDefaultParameters() {
+        return true;
     }
 
 }

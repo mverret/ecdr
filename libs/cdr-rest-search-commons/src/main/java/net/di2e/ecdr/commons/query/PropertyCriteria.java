@@ -30,7 +30,7 @@ public class PropertyCriteria {
 
     public PropertyCriteria( String property, String value, Operator op ) {
         if ( property == null || value == null || op == null ) {
-            throw new IllegalArgumentException( "Property, Value and Operator must all be non null values, recieved property[" + property + "], value[" + value + "], operator[" + op + "]" );
+            throw new IllegalArgumentException( "Property, Value and Operator must all be non null values, received property[" + property + "], value[" + value + "], operator[" + op + "]" );
         }
         this.property = property;
         this.value = value;

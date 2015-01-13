@@ -86,8 +86,29 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
     private static final String BYTES = "bytes";
     private static final String BYTES_EQUAL = "bytes=";
 
+    private static final String MAP_ENTRY_DELIMITER = "=";
+
     public enum PingMethod {
         GET, HEAD, NONE
+    }
+
+    // matches 'user-friendly' OS terms with parameter
+    private static Map<String, String> parameterMatchMap;
+
+    static {
+        parameterMatchMap = new HashMap<>();
+        parameterMatchMap.put( "os:searchTerms", SearchConstants.KEYWORD_PARAMETER );
+        parameterMatchMap.put( "os:count", SearchConstants.COUNT_PARAMETER );
+        parameterMatchMap.put( "os:startIndex", SearchConstants.STARTINDEX_PARAMETER );
+        parameterMatchMap.put( "time:start", SearchConstants.STARTDATE_PARAMETER );
+        parameterMatchMap.put( "time:end", SearchConstants.ENDDATE_PARAMETER );
+        parameterMatchMap.put( "geo:uid", SearchConstants.UID_PARAMETER );
+        parameterMatchMap.put( "geo:box", SearchConstants.BOX_PARAMETER );
+        parameterMatchMap.put( "geo:lat", SearchConstants.LATITUDE_PARAMETER );
+        parameterMatchMap.put( "geo:lon", SearchConstants.LONGITUDE_PARAMETER );
+        parameterMatchMap.put( "geo:radius", SearchConstants.RADIUS_PARAMETER );
+        parameterMatchMap.put( "geo:geometry", SearchConstants.GEOMETRY_PARAMETER );
+        parameterMatchMap.put( "sru:sortKeys", SearchConstants.SORTKEYS_PARAMETER );
     }
 
     private SourceMonitor siteAvailabilityCallback = null;
@@ -106,13 +127,13 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
     private int maxResultsCount = 0;
     private String defaultResponseFormat = null;
 
+    private Map<String, String> parameterMap = new HashMap<>();
+
     private Map<String, String> sortMap = Collections.emptyMap();
 
     public AbstractCDRSource( FilterAdapter adapter ) {
         this.filterAdapter = adapter;
     }
-
-    public abstract Map<String, String> getDynamicUrlParameterMap();
 
     public abstract Map<String, String> getStaticUrlQueryValues();
 
@@ -121,8 +142,6 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
     public abstract SourceResponse enhanceResults( SourceResponse response );
 
     public abstract SourceResponse lookupById( QueryRequest queryRequest, String id ) throws UnsupportedQueryException;
-
-    public abstract boolean canHandleUidQuery();
 
     @Override
     public SourceResponse query( QueryRequest queryRequest ) throws UnsupportedQueryException {
@@ -134,12 +153,12 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
 
             String id = filterParameters.get( SearchConstants.UID_PARAMETER );
             // check if this is an id-only query
-            if ( id == null ) {
+            if ( StringUtils.isBlank( id ) ) {
                 // non-id query, perform normal search
                 sourceResponse = doQuery( filterParameters, queryRequest );
             } else {
                 // id-only query, check if remote source supports it
-                if ( canHandleUidQuery() ) {
+                if ( parameterMap.containsKey( SearchConstants.UID_PARAMETER) || useDefaultParameters() ) {
                     sourceResponse = doQuery( filterParameters, queryRequest );
                 } else {
                     sourceResponse = lookupById( queryRequest, id );
@@ -374,20 +393,12 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
 
     protected void setURLQueryString( Map<String, String> filterParameters ) {
         cdrRestClient.resetQuery();
-        Map<String, String> urlParameterMap = getDynamicUrlParameterMap();
-        // If there is no dynamic mapping then just use the defaults
-        if ( urlParameterMap == null || urlParameterMap.isEmpty() ) {
-            for ( Entry<String, String> entry : filterParameters.entrySet() ) {
+        for ( Entry<String, String> entry : filterParameters.entrySet() ) {
+            String parameterName = parameterMap.get( entry.getKey() );
+            if ( StringUtils.isNotBlank( parameterName ) ) {
+                cdrRestClient.replaceQueryParam( parameterName, entry.getValue() );
+            } else if ( useDefaultParameters() ) {
                 cdrRestClient.replaceQueryParam( entry.getKey(), entry.getValue() );
-            }
-            // Dynamic parameter map exists so use that and do the mapping
-        } else {
-
-            for ( Entry<String, String> entry : filterParameters.entrySet() ) {
-                String parameterName = urlParameterMap.get( entry.getKey() );
-                if ( StringUtils.isNotBlank( parameterName ) ) {
-                    cdrRestClient.replaceQueryParam( parameterName, entry.getValue() );
-                }
             }
         }
 
@@ -598,17 +609,9 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
     }
 
     public void setSortMap ( String sortMapStr ) {
-        Map<String, String> inputMap = new HashMap<String, String>();
-        for (String sortPair : sortMapStr.split( "," )) {
-            String[] pairAry = sortPair.split( ":" );
-            if (pairAry.length == 2) {
-                inputMap.put( pairAry[0], pairAry[1] );
-            } else {
-                LOGGER.warn( "Could not parse out sort mappings from {}, skipping this mapping.", sortPair );
-            }
-        }
-        LOGGER.debug( "Updating sortMap with new entries: {}", inputMap.toString() );
-        sortMap = inputMap;
+        Map<String, String> convertedMap = convertToMap( sortMapStr );
+        LOGGER.debug( "Updating sortMap with new entries: {}", convertedMap.toString() );
+        sortMap = convertedMap;
     }
 
     protected void setCdrRestClient( WebClient restClient ) {
@@ -617,6 +620,37 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
 
     protected void setCdrAvailabilityCheckClient( WebClient availabilityCheckClient ) {
         this.cdrAvailabilityCheckClient = availabilityCheckClient;
+    }
+
+    abstract boolean useDefaultParameters();
+
+    public void setParameterMap( String parameterMapStr ) {
+        Map<String, String> convertedMap = convertToMap( parameterMapStr );
+        Map<String, String> translateMap = new HashMap<>( convertedMap.size() );
+        for ( Entry<String, String> entry : convertedMap.entrySet() ) {
+            if ( parameterMatchMap.containsKey( entry.getKey() ) ) {
+                translateMap.put( parameterMatchMap.get( entry.getKey() ), entry.getValue() );
+            } else {
+                translateMap.put( entry.getKey(), entry.getValue() );
+            }
+        }
+        LOGGER.debug( "Updating parameterMap with new entries: {}", convertedMap.toString() );
+        parameterMap = translateMap;
+    }
+
+    private Map<String, String> convertToMap( String mapStr) {
+        Map<String, String> inputMap = new HashMap<String, String>();
+        if ( StringUtils.isNotBlank( mapStr ) ) {
+            for ( String sortPair : mapStr.split( "," ) ) {
+                String[] pairAry = sortPair.split( MAP_ENTRY_DELIMITER );
+                if ( pairAry.length == 2 ) {
+                    inputMap.put( pairAry[0], pairAry[1] );
+                } else {
+                    LOGGER.warn( "Could not parse out map entry from {}, skipping this item.", sortPair );
+                }
+            }
+        }
+        return inputMap;
     }
 
 }

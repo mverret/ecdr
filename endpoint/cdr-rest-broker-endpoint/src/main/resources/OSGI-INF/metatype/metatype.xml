@@ -52,6 +52,10 @@
         <AD name="Default to deduplicate results" id="defaultDeduplication" type="Boolean" default="true"
             description="Check the box if you want to deduplicate results from multiple sources" />
 
+        <AD name="Parameter Extensions" id="extensionList" required="false" type="String" default="" cardinality="100"
+            description="List of non-standard parameters that should be added to the query if present in the query request.">
+        </AD>
+
     </OCD>
 
     <Designate pid="cdr-rest-broker-endpoint-1.0.1">
