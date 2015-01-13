@@ -35,8 +35,8 @@ import net.di2e.ecdr.libs.result.relevance.RelevanceNormalizer;
 import org.opengis.filter.expression.PropertyName;
 import org.opengis.filter.sort.SortBy;
 import org.opengis.filter.sort.SortOrder;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.ext.XLogger;
 
 import ddf.catalog.data.Result;
 import ddf.catalog.operation.ProcessingDetails;
@@ -69,7 +69,7 @@ public class NormalizingSortedFederationStrategy extends AbstractFederationStrat
      */
     protected static final Comparator<Result> DEFAULT_COMPARATOR = new RelevanceResultComparator( SortOrder.DESCENDING );
 
-    private static final XLogger LOGGER = new XLogger( LoggerFactory.getLogger( NormalizingSortedFederationStrategy.class ) );
+    private static final Logger LOGGER = LoggerFactory.getLogger( NormalizingSortedFederationStrategy.class );
 
     private boolean normalizeResults = true;
 
@@ -118,7 +118,7 @@ public class NormalizingSortedFederationStrategy extends AbstractFederationStrat
         @Override
         public void run() {
             String methodName = "run";
-            LOGGER.entry( methodName );
+            LOGGER.trace("ENTRY:{}", methodName );
 
             SortBy sortBy = query.getSortBy();
             // Prepare the Comparators that we will use

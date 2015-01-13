@@ -67,7 +67,7 @@
                         <Import-Package>
                             META-INF.cxf,
                             META-INF.cxf.osgi,
-
+                            templates,
                             *,
                         </Import-Package>
                         <Export-Package />

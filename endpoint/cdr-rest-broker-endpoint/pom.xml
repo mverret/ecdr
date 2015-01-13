@@ -67,12 +67,12 @@
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                         <Embed-Transitive>true</Embed-Transitive>
                         <Embed-Dependency>
-                            catalog-core-api-impl,
+                            catalog-core-api-impl
                         </Embed-Dependency>
                         <Import-Package>
                             META-INF.cxf,
                             META-INF.cxf.osgi,
-
+                            templates,
                             *,
                         </Import-Package>
                         <Export-Package />

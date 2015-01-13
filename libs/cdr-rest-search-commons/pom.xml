@@ -112,7 +112,8 @@
                         </Import-Package>
                         <Export-Package>
                             net.di2e.ecdr.commons.*,
-                            org.codice.ddf.configuration.impl
+                            org.codice.ddf.configuration.impl,
+                            templates,
                         </Export-Package>
                         <Private-Package>
                             org.objectweb.*,
