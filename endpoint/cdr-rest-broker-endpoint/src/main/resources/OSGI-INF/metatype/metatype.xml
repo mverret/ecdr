@@ -52,6 +52,15 @@
         <AD name="Default to deduplicate results" id="defaultDeduplication" type="Boolean" default="true"
             description="Check the box if you want to deduplicate results from multiple sources" />
 
+        <AD name="Parameter Extensions" id="extensionMap" required="false" type="String" default="uid=id" cardinality="100"
+            description="List of non-standard parameters that should be added to the query if present in the query request. The mapping should be done by using &lt;parameter name&gt;=&lt;criteria
+            field&gt; where the criteria field is what the value of the incoming parameter will be compared to in metacards.">
+        </AD>
+
+        <AD name="Parameter Properties" id="propertyList" required="false" type="String" default="oid,path" cardinality="100"
+            description="List of OpenSearch parameters that should be passed through the system as properties. Properties are not evaluated as criteria and will be propagated to the underlying source.">
+        </AD>
+
     </OCD>
 
     <Designate pid="cdr-rest-broker-endpoint-1.0.1">

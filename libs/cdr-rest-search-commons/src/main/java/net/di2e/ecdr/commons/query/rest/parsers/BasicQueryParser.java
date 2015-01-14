@@ -8,7 +8,7 @@
  * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
  * details. A copy of the GNU Lesser General Public License is distributed along with this program and can be found at
  * <http://www.gnu.org/licenses/lgpl.html>.
- * 
+ *
  **/
 package net.di2e.ecdr.commons.query.rest.parsers;
 
@@ -19,6 +19,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.ws.rs.core.MultivaluedMap;
 
@@ -32,6 +33,7 @@ import net.di2e.ecdr.commons.query.cache.QueryRequestCache;
 import net.di2e.ecdr.commons.query.util.GeospatialHelper;
 
 import net.di2e.ecdr.commons.sort.SortTypeConfiguration;
+import net.di2e.ecdr.commons.util.SearchUtils;
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.DateTimeFormatterBuilder;
@@ -69,14 +71,16 @@ public class BasicQueryParser implements QueryParser {
         DATETYPE_MAP.put( "effective", Metacard.EFFECTIVE );
 
     }
-    
+
     private static final List<String> LANGUAGE_LIST = new ArrayList<String>();
+
     static {
         LANGUAGE_LIST.add( SearchConstants.CDR_KEYWORD_QUERY_LANGUAGE );
         LANGUAGE_LIST.add( SearchConstants.CDR_CQL_QUERY_LANGUAGE );
     }
 
     private static DateTimeFormatter formatter;
+
     /*
      * The OpenSearch specification uses RFC 3339, which is a specific profile
      * of the ISO 8601 standard and corresponds to the second and (as a
@@ -85,7 +89,7 @@ public class BasicQueryParser implements QueryParser {
      */
     static {
         DateTimeParser[] parsers = { ISODateTimeFormat.dateTime().getParser(), ISODateTimeFormat.dateTimeNoMillis().getParser(),
-                ISODateTimeFormat.basicDateTime().getParser(), ISODateTimeFormat.basicDateTimeNoMillis().getParser() };
+            ISODateTimeFormat.basicDateTime().getParser(), ISODateTimeFormat.basicDateTimeNoMillis().getParser() };
         formatter = new DateTimeFormatterBuilder().append( null, parsers ).toFormatter();
     }
 
@@ -95,12 +99,16 @@ public class BasicQueryParser implements QueryParser {
     private double defaultRadius = 10000;
     private String defaultResponseFormat = "atom";
     private boolean defaultFuzzySearch = true;
+    private Map<String, String> parameterExtensionMap = SearchUtils.convertToMap( "uid=id" );
+    private List<String> parameterPropertyList = new ArrayList<>();
 
     private QueryRequestCache queryRequestCache = null;
 
-    public BasicQueryParser(List<SortTypeConfiguration> sortTypeConfigurations) {
+    public BasicQueryParser( List<SortTypeConfiguration> sortTypeConfigurations ) {
         sortTypeConfigurationList = sortTypeConfigurations;
         queryRequestCache = new QueryRequestCache( DEFAULT_QUERYID_CACHE_SIZE );
+        parameterPropertyList.add( "oid" );
+        parameterPropertyList.add( "path" );
     }
 
     public void setDefaultResponseFormat( String defaultFormat ) {
@@ -124,7 +132,7 @@ public class BasicQueryParser implements QueryParser {
             LOGGER.debug( "Updating the default timeout to [{}] seconds", timeout );
         } else {
             LOGGER.warn( "Could not update the default timeout due to invalid integer [{}], the default timeout will stay at [{}] seconds", timeout,
-                    defaultTimeoutMillis / 1000 );
+                defaultTimeoutMillis / 1000 );
         }
 
     }
@@ -156,6 +164,14 @@ public class BasicQueryParser implements QueryParser {
         } else {
             LOGGER.warn( "Could not update the default query request cache size due to invalid integer value [{}]", size );
         }
+    }
+
+    public void setExtensionMap( List<String> extensionMap ) {
+        this.parameterExtensionMap = SearchUtils.convertToMap( extensionMap );
+    }
+
+    public void setPropertyList( List<String> propertyList ) {
+        this.parameterPropertyList = propertyList;
     }
 
     @Override
@@ -252,7 +268,7 @@ public class BasicQueryParser implements QueryParser {
                 timeoutMilliseconds = Long.parseLong( timeout );
                 if ( timeoutMilliseconds <= 0 ) {
                     throw new UnsupportedQueryException( "The [" + SearchConstants.TIMEOUT_PARAMETER + "] parameter cannot nbe less than 0 and was [" + timeout
-                            + "]" );
+                        + "]" );
                 }
             } catch ( NumberFormatException e ) {
                 String message = "Invalid Number found for 'timeout' [" + timeout + "].  Resulted in exception: " + e.getMessage();
@@ -300,16 +316,16 @@ public class BasicQueryParser implements QueryParser {
     @Override
     public GeospatialCriteria getGeospatialCriteria( MultivaluedMap<String, String> queryParameters ) throws UnsupportedQueryException {
         return createGeospatialCriteria( queryParameters.getFirst( SearchConstants.RADIUS_PARAMETER ),
-                queryParameters.getFirst( SearchConstants.LATITUDE_PARAMETER ), queryParameters.getFirst( SearchConstants.LONGITUDE_PARAMETER ),
-                queryParameters.getFirst( SearchConstants.BOX_PARAMETER ), queryParameters.getFirst( SearchConstants.GEOMETRY_PARAMETER ),
-                queryParameters.getFirst( SearchConstants.POLYGON_PARAMETER ), isStrictMode( queryParameters ) );
+            queryParameters.getFirst( SearchConstants.LATITUDE_PARAMETER ), queryParameters.getFirst( SearchConstants.LONGITUDE_PARAMETER ),
+            queryParameters.getFirst( SearchConstants.BOX_PARAMETER ), queryParameters.getFirst( SearchConstants.GEOMETRY_PARAMETER ),
+            queryParameters.getFirst( SearchConstants.POLYGON_PARAMETER ), isStrictMode( queryParameters ) );
 
     }
 
     @Override
     public TemporalCriteria getTemporalCriteria( MultivaluedMap<String, String> queryParameters ) throws UnsupportedQueryException {
         return createTemporalCriteria( queryParameters.getFirst( SearchConstants.STARTDATE_PARAMETER ),
-                queryParameters.getFirst( SearchConstants.ENDDATE_PARAMETER ), queryParameters.getFirst( SearchConstants.DATETYPE_PARAMETER ) );
+            queryParameters.getFirst( SearchConstants.ENDDATE_PARAMETER ), queryParameters.getFirst( SearchConstants.DATETYPE_PARAMETER ) );
     }
 
     @Override
@@ -340,16 +356,23 @@ public class BasicQueryParser implements QueryParser {
         Map<String, Serializable> queryProps = new HashMap<String, Serializable>();
         String format = queryParameters.getFirst( SearchConstants.FORMAT_PARAMETER );
         queryProps.put( SearchConstants.FORMAT_PARAMETER, StringUtils.isNotBlank( format ) ? format : defaultResponseFormat );
+        for (String key : queryParameters.keySet() ) {
+            String value = queryParameters.getFirst( key );
+            if (StringUtils.isNotBlank( value ) && parameterPropertyList.contains( key ) ) {
+                queryProps.put( key, value );
+            }
+        }
         return queryProps;
     }
 
     @Override
     public List<PropertyCriteria> getPropertyCriteria( MultivaluedMap<String, String> queryParameters ) {
         List<PropertyCriteria> criteriaList = new ArrayList<PropertyCriteria>();
-        if ( queryParameters.containsKey( SearchConstants.UID_PARAMETER ) ) {
-            String id = queryParameters.getFirst( SearchConstants.UID_PARAMETER );
-            if ( StringUtils.isNotEmpty( id ) ) {
-                criteriaList.add( new PropertyCriteria( Metacard.ID, id, Operator.EQUALS ) );
+        Set<String> keySet = queryParameters.keySet();
+        for ( String key : keySet ) {
+            String value = queryParameters.getFirst( key );
+            if ( StringUtils.isNotBlank( value ) && parameterExtensionMap.containsKey( key ) ) {
+                criteriaList.add( new PropertyCriteria( parameterExtensionMap.get( key ), value, Operator.LIKE ) );
             }
         }
         return criteriaList;
@@ -369,7 +392,7 @@ public class BasicQueryParser implements QueryParser {
     }
 
     protected GeospatialCriteria createGeospatialCriteria( String rad, String lat, String lon, String box, String geom, String polygon, boolean strictMode )
-            throws UnsupportedQueryException {
+        throws UnsupportedQueryException {
         GeospatialCriteria geoCriteria = null;
         if ( StringUtils.isNotBlank( box ) ) {
             try {
@@ -506,10 +529,10 @@ public class BasicQueryParser implements QueryParser {
         return bool;
     }
 
-    private SortTypeConfiguration getSortConfiguration(String sortKey) {
-        for (SortTypeConfiguration sortType : sortTypeConfigurationList ) {
+    private SortTypeConfiguration getSortConfiguration( String sortKey ) {
+        for ( SortTypeConfiguration sortType : sortTypeConfigurationList ) {
             LOGGER.debug( "Comparing incoming sort key of {} with configuration of key {}", sortKey, sortType.getSortKey() );
-            if (sortType.getSortKey().equals( sortKey )) {
+            if ( sortType.getSortKey().equals( sortKey ) ) {
                 return sortType;
             }
         }
