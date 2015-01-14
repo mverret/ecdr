@@ -52,6 +52,10 @@
         <AD name="Parameter Extensions" id="extensionList" required="false" type="String" default="" cardinality="100"
             description="List of non-standard parameters that should be added to the query if present in the query request.">
         </AD>
+
+        <AD name="Parameter Properties" id="propertyList" required="false" type="String" default="oid,path" cardinality="100"
+            description="List of OpenSearch parameters that should be passed through the system as properties. Properties are not evaluated as criteria and will be propagated to the underlying source.">
+        </AD>
             
     </OCD>
 

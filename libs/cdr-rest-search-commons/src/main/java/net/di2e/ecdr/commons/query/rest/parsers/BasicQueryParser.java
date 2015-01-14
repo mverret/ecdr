@@ -100,12 +100,15 @@ public class BasicQueryParser implements QueryParser {
     private String defaultResponseFormat = "atom";
     private boolean defaultFuzzySearch = true;
     private List<String> parameterExtensionList = Collections.emptyList();
+    private List<String> parameterPropertyList = new ArrayList<>();
 
     private QueryRequestCache queryRequestCache = null;
 
     public BasicQueryParser( List<SortTypeConfiguration> sortTypeConfigurations ) {
         sortTypeConfigurationList = sortTypeConfigurations;
         queryRequestCache = new QueryRequestCache( DEFAULT_QUERYID_CACHE_SIZE );
+        parameterPropertyList.add( "oid" );
+        parameterPropertyList.add( "path" );
     }
 
     public void setDefaultResponseFormat( String defaultFormat ) {
@@ -165,6 +168,10 @@ public class BasicQueryParser implements QueryParser {
 
     public void setExtensionList( List<String> extensionList ) {
         this.parameterExtensionList = extensionList;
+    }
+
+    public void setPropertyList( List<String> propertyList ) {
+        this.parameterPropertyList = propertyList;
     }
 
     @Override
@@ -349,6 +356,12 @@ public class BasicQueryParser implements QueryParser {
         Map<String, Serializable> queryProps = new HashMap<String, Serializable>();
         String format = queryParameters.getFirst( SearchConstants.FORMAT_PARAMETER );
         queryProps.put( SearchConstants.FORMAT_PARAMETER, StringUtils.isNotBlank( format ) ? format : defaultResponseFormat );
+        for (String key : queryParameters.keySet() ) {
+            String value = queryParameters.getFirst( key );
+            if (StringUtils.isNotBlank( value ) && parameterPropertyList.contains( key ) ) {
+                queryProps.put( key, value );
+            }
+        }
         return queryProps;
     }
 
@@ -358,7 +371,7 @@ public class BasicQueryParser implements QueryParser {
         Set<String> keySet = queryParameters.keySet();
         for ( String key : keySet ) {
             String value = queryParameters.getFirst( key );
-            if ( StringUtils.isNotEmpty( value ) ) {
+            if ( StringUtils.isNotBlank( value ) ) {
                 if ( SearchConstants.UID_PARAMETER.equals( key ) ) {
                     criteriaList.add( new PropertyCriteria( Metacard.ID, value, Operator.EQUALS ) );
                 } else if ( parameterExtensionList.contains( key ) ) {

@@ -450,6 +450,13 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
         if ( sortOrderString != null ) {
             filterParameters.put( SearchConstants.SORTKEYS_PARAMETER, sortOrderString );
         }
+
+        for ( Entry<String, Serializable> entry : queryRequestProps.entrySet() ) {
+            if ( parameterMap.containsKey( entry.getKey() ) ) {
+                filterParameters.put( entry.getKey(), String.valueOf( entry.getValue() ) );
+            }
+        }
+
         return filterParameters;
     }
 
