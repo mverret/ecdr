@@ -37,6 +37,7 @@ import javax.ws.rs.core.Response.Status;
 import net.di2e.ecdr.commons.constants.SearchConstants;
 import net.di2e.ecdr.commons.filter.StrictFilterDelegate;
 import net.di2e.ecdr.commons.filter.config.FilterConfig;
+import net.di2e.ecdr.commons.util.SearchUtils;
 import net.di2e.ecdr.search.transform.atom.response.AtomResponseTransformer;
 
 import org.apache.commons.io.IOUtils;
@@ -85,8 +86,6 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
     private static final String BYTES_SKIPPED_RESPONSE = "BytesSkipped";
     private static final String BYTES = "bytes";
     private static final String BYTES_EQUAL = "bytes=";
-
-    private static final String MAP_ENTRY_DELIMITER = "=";
 
     public enum PingMethod {
         GET, HEAD, NONE
@@ -616,7 +615,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
     }
 
     public void setSortMap ( String sortMapStr ) {
-        Map<String, String> convertedMap = convertToMap( sortMapStr );
+        Map<String, String> convertedMap = SearchUtils.convertToMap( sortMapStr );
         LOGGER.debug( "Updating sortMap with new entries: {}", convertedMap.toString() );
         sortMap = convertedMap;
     }
@@ -632,7 +631,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
     abstract boolean useDefaultParameters();
 
     public void setParameterMap( String parameterMapStr ) {
-        Map<String, String> convertedMap = convertToMap( parameterMapStr );
+        Map<String, String> convertedMap = SearchUtils.convertToMap( parameterMapStr );
         Map<String, String> translateMap = new HashMap<>( convertedMap.size() );
         for ( Entry<String, String> entry : convertedMap.entrySet() ) {
             if ( parameterMatchMap.containsKey( entry.getKey() ) ) {
@@ -643,21 +642,6 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
         }
         LOGGER.debug( "Updating parameterMap with new entries: {}", convertedMap.toString() );
         parameterMap = translateMap;
-    }
-
-    private Map<String, String> convertToMap( String mapStr) {
-        Map<String, String> inputMap = new HashMap<String, String>();
-        if ( StringUtils.isNotBlank( mapStr ) ) {
-            for ( String sortPair : mapStr.split( "," ) ) {
-                String[] pairAry = sortPair.split( MAP_ENTRY_DELIMITER );
-                if ( pairAry.length == 2 ) {
-                    inputMap.put( pairAry[0], pairAry[1] );
-                } else {
-                    LOGGER.warn( "Could not parse out map entry from {}, skipping this item.", sortPair );
-                }
-            }
-        }
-        return inputMap;
     }
 
 }

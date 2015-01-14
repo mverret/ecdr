@@ -15,7 +15,6 @@ package net.di2e.ecdr.commons.query.rest.parsers;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -34,6 +33,7 @@ import net.di2e.ecdr.commons.query.cache.QueryRequestCache;
 import net.di2e.ecdr.commons.query.util.GeospatialHelper;
 
 import net.di2e.ecdr.commons.sort.SortTypeConfiguration;
+import net.di2e.ecdr.commons.util.SearchUtils;
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.DateTimeFormatterBuilder;
@@ -99,7 +99,7 @@ public class BasicQueryParser implements QueryParser {
     private double defaultRadius = 10000;
     private String defaultResponseFormat = "atom";
     private boolean defaultFuzzySearch = true;
-    private List<String> parameterExtensionList = Collections.emptyList();
+    private Map<String, String> parameterExtensionMap = SearchUtils.convertToMap( "uid=id" );
     private List<String> parameterPropertyList = new ArrayList<>();
 
     private QueryRequestCache queryRequestCache = null;
@@ -166,8 +166,8 @@ public class BasicQueryParser implements QueryParser {
         }
     }
 
-    public void setExtensionList( List<String> extensionList ) {
-        this.parameterExtensionList = extensionList;
+    public void setExtensionMap( List<String> extensionMap ) {
+        this.parameterExtensionMap = SearchUtils.convertToMap( extensionMap );
     }
 
     public void setPropertyList( List<String> propertyList ) {
@@ -371,12 +371,8 @@ public class BasicQueryParser implements QueryParser {
         Set<String> keySet = queryParameters.keySet();
         for ( String key : keySet ) {
             String value = queryParameters.getFirst( key );
-            if ( StringUtils.isNotBlank( value ) ) {
-                if ( SearchConstants.UID_PARAMETER.equals( key ) ) {
-                    criteriaList.add( new PropertyCriteria( Metacard.ID, value, Operator.EQUALS ) );
-                } else if ( parameterExtensionList.contains( key ) ) {
-                    criteriaList.add( new PropertyCriteria( key, value, Operator.LIKE ) );
-                }
+            if ( StringUtils.isNotBlank( value ) && parameterExtensionMap.containsKey( key ) ) {
+                criteriaList.add( new PropertyCriteria( parameterExtensionMap.get( key ), value, Operator.LIKE ) );
             }
         }
         return criteriaList;

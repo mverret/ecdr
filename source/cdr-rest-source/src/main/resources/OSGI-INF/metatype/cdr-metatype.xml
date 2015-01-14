@@ -54,7 +54,7 @@
         </AD>
 
         <AD name="Sort Mapping" id="sortMap" required="false" type="String" default="title=entry/title,modified=entry/date,RELEVANCE=score" cardinality="100"
-            description="Mapping for this source that converts the metacard attribute to a sort type for the outgoing request. The mapping should be done by using &lt;metacard attribute&gt;:&lt;cdr
+            description="Mapping for this source that converts the metacard attribute to a sort type for the outgoing request. The mapping should be done by using &lt;metacard attribute&gt;=&lt;cdr
             type&gt; format.">
         </AD>
 
