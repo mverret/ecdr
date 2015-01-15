@@ -89,6 +89,11 @@
             description="Mapping for this source that converts the metacard attribute to a sort type for the outgoing request. The mapping should be done by using &lt;metacard attribute&gt;=&lt;cdr
             type&gt; format.">
         </AD>
+
+        <AD name="Disable CN Checking" id="disableCNCheck" required="false" type="Boolean" default="false"
+            description="Check this box if the outgoing request should NOT perform a common name (CN) check of certificates during SSL-based communications.">
+        </AD>
+
     </OCD>
 
     <Designate pid="ecdr-opensearch-source" factoryPid="ecdr-opensearch-source">

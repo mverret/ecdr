@@ -57,6 +57,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.codice.ddf.spatial</groupId>
+            <artifactId>spatial-ogc-common</artifactId>
+            <version>2.6.0</version>
+        </dependency>
+
+        <dependency>
             <groupId>commons-net</groupId>
             <artifactId>commons-net</artifactId>
             <version>3.3</version>
@@ -151,6 +157,7 @@
                         </Import-Package>
                         <Private-Package>
                             net.di2e.ecdr.source.*,
+                            org.codice.ddf.spatial.ogc.catalog.common
                         </Private-Package>
                         <Export-Package />
                     </instructions>

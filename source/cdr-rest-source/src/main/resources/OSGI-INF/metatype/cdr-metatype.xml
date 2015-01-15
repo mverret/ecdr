@@ -58,6 +58,10 @@
             type&gt; format.">
         </AD>
 
+        <AD name="Disable CN Checking" id="disableCNCheck" required="false" type="Boolean" default="false"
+            description="Check this box if the outgoing request should NOT perform a common name (CN) check of certificates during SSL-based communications.">
+        </AD>
+
     </OCD>
 
     <Designate pid="ecdr-rest-source" factoryPid="ecdr-rest-source">

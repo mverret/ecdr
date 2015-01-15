@@ -116,6 +116,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
     private long availableCheckCacheTime = 60000;
     private Date lastAvailableCheckDate = null;
     private boolean isCurrentlyAvailable = false;
+    private boolean disableCNCheck = false;
 
     private WebClient cdrRestClient = null;
     private WebClient cdrAvailabilityCheckClient = null;
@@ -173,9 +174,9 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
 
     protected SourceResponse doQuery( Map<String, String> filterParameters, QueryRequest queryRequest ) throws UnsupportedQueryException {
         SourceResponse sourceResponse;
+        setSecurityCredentials( queryRequest );
         filterParameters.putAll( getInitialFilterParameters( queryRequest ) );
         setURLQueryString( filterParameters );
-
         LOGGER.debug( "Executing http GET query to source [{}] with url [{}]", getId(), cdrRestClient.getCurrentURI().toString() );
         Response response = cdrRestClient.get();
         LOGGER.debug( "Query to source [{}] returned http status code [{}] and media type [{}]", getId(), response.getStatus(), response.getMediaType() );
@@ -518,12 +519,13 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
     }
 
     /*
-     * This method is needed because of a CXF deficiency of not using the keystore values from hte java system
+     * This method is needed because of a CXF deficiency of not using the keystore values from the java system
      * properties. So this specifically pulls the values from the system properties then sets them to a KeyManager being
      * used
      */
     protected TLSClientParameters getTlsClientParameters() {
         TLSClientParameters tlsClientParameters = new TLSClientParameters();
+        tlsClientParameters.setDisableCNCheck( disableCNCheck );
         String keystore = System.getProperty( SSL_KEYSTORE_JAVA_PROPERTY );
         String keystorePassword = System.getProperty( SSL_KEYSTORE_PASSWORD_JAVA_PROPERTY );
 
@@ -620,6 +622,10 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
         sortMap = convertedMap;
     }
 
+    public void setDisableCNCheck ( boolean disableCheck ) {
+        this.disableCNCheck = disableCheck;
+    }
+
     protected void setCdrRestClient( WebClient restClient ) {
         this.cdrRestClient = restClient;
     }
@@ -642,6 +648,11 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
         }
         LOGGER.debug( "Updating parameterMap with new entries: {}", convertedMap.toString() );
         parameterMap = translateMap;
+    }
+
+    private void setSecurityCredentials( QueryRequest queryRequest ) {
+        SecuritySource source = new SecuritySource();
+        source.setSecurityOnClient( cdrRestClient, queryRequest );
     }
 
 }
