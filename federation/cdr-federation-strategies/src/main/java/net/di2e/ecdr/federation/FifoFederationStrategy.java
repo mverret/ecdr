@@ -29,8 +29,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import net.di2e.ecdr.commons.constants.SearchConstants;
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.ext.XLogger;
 
 import ddf.catalog.data.Result;
 import ddf.catalog.federation.FederationStrategy;
@@ -57,7 +57,7 @@ import ddf.catalog.source.Source;
  */
 public class FifoFederationStrategy implements FederationStrategy {
 
-    private static final XLogger LOGGER = new XLogger( LoggerFactory.getLogger( FifoFederationStrategy.class ) );
+    private static final Logger LOGGER = LoggerFactory.getLogger( FifoFederationStrategy.class );
 
     private static final int DEFAULT_MAX_START_INDEX = 50000;
 

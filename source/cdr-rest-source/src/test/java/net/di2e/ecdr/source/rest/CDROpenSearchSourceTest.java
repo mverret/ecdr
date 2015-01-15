@@ -28,19 +28,8 @@ public class CDROpenSearchSourceTest extends CDRAbstractSourceTest {
     AbstractCDRSource createSource() {
         OpenSearchSource source = new OpenSearchSource(FILTER_ADAPTER, cacheManager);
         source.setCacheExpirationMinutes( new Long(1) );
-        source.setUidParameter( "uid" );
-        source.setSearchTermsParameter( "q" );
-        source.setCountParameter( "count" );
-        source.setStartIndexParameter( "startIndex" );
+        source.setParameterMap( "os:searchTerms=q,os:count=count,os:startIndex=startIndex,time:start=dtStart,time:end=dtEnd,geo:uid=uid,geo:box=box,geo:lat=lat,geo:lon=lon,geo:radius=radius,geo:geometry=geometry,sru:sortKeys=sortKeys" );
         source.setStartIndexStartNumber( "1" );
-        source.setStartTimeParameter( "dtStart" );
-        source.setEndTimeParameter( "dtEnd" );
-        source.setBoxParameter( "box" );
-        source.setLatParameter( "lat" );
-        source.setLonParameter( "lon" );
-        source.setRadiusParameter( "radius" );
-        source.setGeometryParameter( "geometry" );
-        source.setSortKeysParameter( "sortKeys" );
         source.setMetadataLinkRelation( "alternate" );
         source.setProductLinkRelation( "enclosure" );
         source.setThumbnailLinkRelation( "preview" );

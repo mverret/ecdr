@@ -49,8 +49,6 @@ import ddf.catalog.source.Source;
 public abstract class AbstractFederationStrategy implements NormalizingFederationStrategy {
     private static final Logger LOGGER = LoggerFactory.getLogger( AbstractFederationStrategy.class );
 
-    // private static XLogger logger = new
-    // XLogger(LoggerFactory.getLogger(AbstractFederationStrategy.class));
     private static final String CLASS_NAME = AbstractFederationStrategy.class.getName();
 
     private static final int DEFAULT_MAX_START_INDEX = 50000;

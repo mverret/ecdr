@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright (c) Cohesive Integrations, LLC
+ *
+ * This is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation, either version 3 of the License, or any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details. A copy of the GNU Lesser General Public License is distributed along with this program and can be found at
+ * <http://www.gnu.org/licenses/lgpl.html>.
+ *
+ **/
+ -->
+<xsd:schema version="1.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:osd="http://a9.com/-/spec/opensearch/1.1/"
+            targetNamespace="http://a9.com/-/spec/opensearch/1.1/">
+    <xsd:element name="OpenSearchDescription" >
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="ShortName" minOccurs="1" maxOccurs="1">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                            <xsd:length value="8" />
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:element>
+                <xsd:element name="Description" minOccurs="1" maxOccurs="1">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                            <xsd:length value="1024" />
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:element>
+                <xsd:element name="Url" type="osd:Url" minOccurs="0" maxOccurs="unbounded" />
+                <xsd:element name="Contact" minOccurs="0" maxOccurs="1">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                            <xsd:pattern value="[^@]+@[^\.]+\..+"/>
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:element>
+                <xsd:element name="Tags" minOccurs="0" maxOccurs="1">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                            <xsd:length value="256" />
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:element>
+                <xsd:element name="LongName" minOccurs="0" maxOccurs="1">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                            <xsd:length value="48" />
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:element>
+                <xsd:element name="Query" minOccurs="0" maxOccurs="unbounded" type="osd:Query" />
+                <xsd:element name="Developer" minOccurs="0" maxOccurs="1">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                            <xsd:length value="64" />
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:element>
+                <xsd:element name="Attribution" minOccurs="0" maxOccurs="1">
+                    <xsd:simpleType>
+                        <xsd:restriction base="xsd:string">
+                            <xsd:length value="256" />
+                        </xsd:restriction>
+                    </xsd:simpleType>
+                </xsd:element>
+                <xsd:element name="SyndicationRight" type="osd:SyndicationRight" minOccurs="0" maxOccurs="1" />
+                <xsd:element name="AdultContent" minOccurs="0" maxOccurs="1" type="xsd:boolean" />
+                <xsd:element name="Language" minOccurs="0" maxOccurs="unbounded" type="xsd:string" />
+                <xsd:element name="InputEncoding" minOccurs="0" maxOccurs="unbounded" type="xsd:string" />
+                <xsd:element name="OutputEncoding" minOccurs="0" maxOccurs="unbounded" type="xsd:string" />
+                <xsd:any namespace="##other" minOccurs="0" maxOccurs="unbounded" />
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:simpleType name="SyndicationRight">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="open" />
+            <xsd:enumeration value="limited" />
+            <xsd:enumeration value="private" />
+            <xsd:enumeration value="closed" />
+        </xsd:restriction>
+    </xsd:simpleType>
+    
+    <xsd:complexType name="Url">
+        <xsd:attribute name="template" type="xsd:string" use="required" />
+        <xsd:attribute name="type" type="xsd:string" use="required" />
+        <xsd:attribute name="rel" type="xsd:string" use="optional" />
+        <xsd:attribute name="indexOffset" type="xsd:int" default="1" use="optional" />
+        <xsd:attribute name="pageOffset" type="xsd:int" default="1" use="optional" />
+    </xsd:complexType>
+
+    <xsd:complexType name="Query">
+        <xsd:attribute name="role" type="xsd:string" use="required" />
+        <xsd:attribute name="title" type="xsd:string" use="optional" />
+        <xsd:attribute name="totalResults" type="xsd:nonNegativeInteger" use="optional" />
+        <xsd:attribute name="searchTerms" type="xsd:string" use="optional" />
+        <xsd:attribute name="count" type="xsd:nonNegativeInteger" use="optional" />
+        <xsd:attribute name="startIndex" type="xsd:int" use="optional" />
+        <xsd:attribute name="startPage" type="xsd:int" use="optional" />
+        <xsd:attribute name="language" type="xsd:string" use="optional" />
+        <xsd:attribute name="inputEncoding" type="xsd:string" use="optional" />
+        <xsd:attribute name="outputEncoding" type="xsd:string" use="optional" />
+    </xsd:complexType>
+
+</xsd:schema>

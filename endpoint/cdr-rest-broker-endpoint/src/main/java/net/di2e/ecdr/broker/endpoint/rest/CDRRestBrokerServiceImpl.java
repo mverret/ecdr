@@ -125,6 +125,14 @@ public class CDRRestBrokerServiceImpl extends AbstractRestSearchEndpoint {
     }
 
     @Override
+    public String getParameterTemplate() {
+        return "?q={os:searchTerms}&src={fs:routeTo?}&caseSensitive={caseSensitive?}&fuzzy={fuzzy?}&timeout={fs:maxTimeout?}&start={os:startIndex?}&uid={uid?}&strictMode={strictMode?}"
+            + "&dtstart={time:start?}&dtend={time:end?}&dtType={time:type?}"
+            + "&filter={fs:sourceFilter?}&sort={fs:sort?}&box={geo:box?}&lat={geo:lat?}&lon={geo:lon?}&radius={geo:radius?}&geometry={geo:geometry?}&polygon={polygon?}"
+            + "&count={os:count?}&sortKeys={sru:sortKeys?}&status={cdrb:includeStatus?}&format={cdrs:responseFormat?}&timeout={cdrb:timeout?}&queryLanguage={queryLanguage?}&oid={oid?}";
+    }
+
+    @Override
     public boolean useDefaultSortIfNotSpecified() {
         return false;
     }

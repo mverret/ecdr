@@ -1,0 +1,3 @@
+xjc -d jaxb -p net.di2e.ecdr.commons.xml.osd osd.xsd
+
+xjc -d jaxb -p net.di2e.ecdr.commons.xml.fs fs.xsd
