@@ -117,6 +117,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
     private Date lastAvailableCheckDate = null;
     private boolean isCurrentlyAvailable = false;
     private boolean disableCNCheck = false;
+    private boolean sendSecurityCookie;
 
     private WebClient cdrRestClient = null;
     private WebClient cdrAvailabilityCheckClient = null;
@@ -158,7 +159,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
                 sourceResponse = doQuery( filterParameters, queryRequest );
             } else {
                 // id-only query, check if remote source supports it
-                if ( parameterMap.containsKey( SearchConstants.UID_PARAMETER) || useDefaultParameters() ) {
+                if ( parameterMap.containsKey( SearchConstants.UID_PARAMETER ) || useDefaultParameters() ) {
                     sourceResponse = doQuery( filterParameters, queryRequest );
                 } else {
                     sourceResponse = lookupById( queryRequest, id );
@@ -218,7 +219,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
                     }
                 } catch ( RuntimeException e ) {
                     LOGGER.warn( "CDR Rest Source named [" + getId() + "] encountered an unexpected error while executing HTTP Head at URL [" + cdrAvailabilityCheckClient.getBaseURI() + "]:"
-                            + e.getMessage() );
+                        + e.getMessage() );
                 }
 
             } else {
@@ -370,7 +371,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
                             IOUtils.skipFully( binaryStream, bytesToSkip );
                         } catch ( EOFException e ) {
                             LOGGER.warn( "Skipping the requested number of bytes [{}] for URI [{}] resulted in an End of File, so re-retrieving the complete file without skipping bytes: {}",
-                                    bytesToSkip, uri, e.getMessage() );
+                                bytesToSkip, uri, e.getMessage() );
                             try {
                                 binaryStream.close();
                             } catch ( IOException e1 ) {
@@ -487,7 +488,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
         return returnUri;
     }
 
-    public synchronized void setUrl(String endpointUrl) {
+    public synchronized void setUrl( String endpointUrl ) {
         String existingUrl = cdrRestClient == null ? null : cdrRestClient.getCurrentURI().toString();
         if ( StringUtils.isNotBlank( endpointUrl ) && !endpointUrl.equals( existingUrl ) ) {
             LOGGER.debug( "ConfigUpdate: Updating the source endpoint url value from [{}] to [{}] for sourceId [{}]", existingUrl, endpointUrl, getId() );
@@ -505,7 +506,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
     public synchronized void setPingUrl( String url ) {
         if ( StringUtils.isNotBlank( url ) ) {
             LOGGER.debug( "ConfigUpdate: Updating the ping (site availability check) endpoint url value from [{}] to [{}]", cdrAvailabilityCheckClient == null ? null : cdrAvailabilityCheckClient
-                    .getCurrentURI().toString(), url );
+                .getCurrentURI().toString(), url );
 
             cdrAvailabilityCheckClient = WebClient.create( url, true );
 
@@ -572,8 +573,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
      * <p/>
      * This settings allow admins to ensure that a site is not overloaded with availability checks
      *
-     * @param newCacheTime
-     *            New time period, in seconds, to check the availability of the federated source.
+     * @param newCacheTime New time period, in seconds, to check the availability of the federated source.
      */
     public void setAvailableCheckCacheTime( long newCacheTime ) {
         if ( newCacheTime < 1 ) {
@@ -616,14 +616,22 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
         defaultResponseFormat = defaultFormat;
     }
 
-    public void setSortMap ( String sortMapStr ) {
+    public void setSortMap( String sortMapStr ) {
         Map<String, String> convertedMap = SearchUtils.convertToMap( sortMapStr );
         LOGGER.debug( "Updating sortMap with new entries: {}", convertedMap.toString() );
         sortMap = convertedMap;
     }
 
-    public void setDisableCNCheck ( boolean disableCheck ) {
+    public void setDisableCNCheck( boolean disableCheck ) {
         this.disableCNCheck = disableCheck;
+    }
+
+    public void setSendSecurityCookie( boolean sendCookie ) {
+        this.sendSecurityCookie = sendCookie;
+    }
+
+    public boolean getSendSecurityCookie() {
+        return sendSecurityCookie;
     }
 
     protected void setCdrRestClient( WebClient restClient ) {
@@ -651,8 +659,10 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
     }
 
     private void setSecurityCredentials( QueryRequest queryRequest ) {
-        SecuritySource source = new SecuritySource();
-        source.setSecurityOnClient( cdrRestClient, queryRequest );
+        if ( sendSecurityCookie ) {
+            SecuritySource source = new SecuritySource();
+            source.setSecurityOnClient( cdrRestClient, queryRequest );
+        }
     }
 
 }
