@@ -57,6 +57,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.codice.ddf.spatial</groupId>
+            <artifactId>spatial-ogc-common</artifactId>
+            <version>${ddf.spatial.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>commons-net</groupId>
             <artifactId>commons-net</artifactId>
             <version>3.3</version>
@@ -89,7 +95,7 @@
         <dependency>
             <groupId>ddf.catalog.core</groupId>
             <artifactId>filter-proxy</artifactId>
-            <version>2.4.0</version>
+            <version>${ddf.catalog.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -151,6 +157,7 @@
                         </Import-Package>
                         <Private-Package>
                             net.di2e.ecdr.source.*,
+                            org.codice.ddf.spatial.ogc.catalog.common
                         </Private-Package>
                         <Export-Package />
                     </instructions>

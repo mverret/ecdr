@@ -59,6 +59,7 @@ public class OpenSearchSource extends AbstractCDRSource {
         super( adapter );
         filterConfig = new FilterConfig();
         cacheManager = manager;
+        setSendSecurityCookie( false );
     }
 
     @Override

@@ -37,6 +37,7 @@ public class CDRRestSource extends AbstractCDRSource {
         filterConfig = new FilterConfig();
         LOGGER.info( "Creating a new CDRRestSource." );
         setPingMethod(PingMethod.HEAD);
+        setSendSecurityCookie( true );
     }
 
     @Override
