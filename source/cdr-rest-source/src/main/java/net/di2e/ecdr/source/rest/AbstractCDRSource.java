@@ -34,6 +34,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
+import ddf.security.SecurityConstants;
+import ddf.security.Subject;
 import net.di2e.ecdr.commons.constants.SearchConstants;
 import net.di2e.ecdr.commons.filter.StrictFilterDelegate;
 import net.di2e.ecdr.commons.filter.config.FilterConfig;
@@ -48,6 +50,7 @@ import org.apache.cxf.configuration.jsse.TLSClientParameters;
 import org.apache.cxf.jaxrs.client.WebClient;
 import org.apache.cxf.jaxrs.ext.multipart.ContentDisposition;
 import org.apache.cxf.transport.http.HTTPConduit;
+import org.codice.ddf.security.common.jaxrs.RestSecurity;
 import org.opengis.filter.sort.SortBy;
 import org.opengis.filter.sort.SortOrder;
 import org.slf4j.Logger;
@@ -660,8 +663,13 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
 
     private void setSecurityCredentials( QueryRequest queryRequest ) {
         if ( sendSecurityCookie ) {
-            SecuritySource source = new SecuritySource();
-            source.setSecurityOnClient( cdrRestClient, queryRequest );
+            if (queryRequest.getProperties().containsKey( SecurityConstants.SECURITY_SUBJECT )) {
+                Serializable property = queryRequest.getPropertyValue( SecurityConstants.SECURITY_SUBJECT );
+                if (property instanceof Subject ) {
+                    Subject subject = (Subject) property;
+                    RestSecurity.setSubjectOnClient( subject, cdrRestClient );
+                }
+            }
         }
     }
 

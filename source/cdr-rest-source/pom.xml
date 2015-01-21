@@ -57,9 +57,9 @@
         </dependency>
 
         <dependency>
-            <groupId>org.codice.ddf.spatial</groupId>
-            <artifactId>spatial-ogc-common</artifactId>
-            <version>${ddf.spatial.version}</version>
+            <groupId>ddf.security</groupId>
+            <artifactId>ddf-security-common</artifactId>
+            <version>2.5.1-SNAPSHOT</version>
         </dependency>
 
         <dependency>
@@ -157,7 +157,7 @@
                         </Import-Package>
                         <Private-Package>
                             net.di2e.ecdr.source.*,
-                            org.codice.ddf.spatial.ogc.catalog.common
+                            org.codice.ddf.security.common.jaxrs
                         </Private-Package>
                         <Export-Package />
                     </instructions>
