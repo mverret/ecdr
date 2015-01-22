@@ -36,6 +36,7 @@
     <feature name="cdr-rest-source" install="manual" version="${project.version}" description="CDR REST Source">
         <feature>cdr-atom-result-xformer</feature>
         <feature>cdr-ddf-registry-core</feature>
+        <feature>cxf-rs-security-sso-saml</feature>
         <bundle>mvn:net.di2e.ecdr.libs/cdr-rest-search-commons/${project.version}</bundle>
         <bundle>mvn:net.di2e.ecdr.source/cdr-rest-source/${project.version}</bundle>
     </feature>
