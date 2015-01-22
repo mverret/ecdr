@@ -89,6 +89,16 @@
             description="Mapping for this source that converts the metacard attribute to a sort type for the outgoing request. The mapping should be done by using &lt;metacard attribute&gt;=&lt;cdr
             type&gt; format.">
         </AD>
+
+        <AD name="Disable CN Checking" id="disableCNCheck" required="false" type="Boolean" default="false"
+            description="Check this box if the outgoing request should NOT perform a common name (CN) check of certificates during SSL-based communications.">
+        </AD>
+
+        <AD name="Security Cookie" id="sendSecurityCookie" required="true" type="Boolean" default="false"
+            description="Check this option to send the user's security credentials in the form of a cookie to the external source. Having this box unchecked will cause no security credentials to be
+            sent. NOTE: To ensure confidentiality, this setting should only be checked when connecting over HTTPS/SSL.">
+        </AD>
+
     </OCD>
 
     <Designate pid="ecdr-opensearch-source" factoryPid="ecdr-opensearch-source">
