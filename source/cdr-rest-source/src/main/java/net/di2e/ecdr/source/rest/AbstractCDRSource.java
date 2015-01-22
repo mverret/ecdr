@@ -178,7 +178,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
 
     protected SourceResponse doQuery( Map<String, String> filterParameters, QueryRequest queryRequest ) throws UnsupportedQueryException {
         SourceResponse sourceResponse;
-        setSecurityCredentials( queryRequest );
+        setSecurityCredentials( cdrRestClient, queryRequest.getProperties() );
         filterParameters.putAll( getInitialFilterParameters( queryRequest ) );
         setURLQueryString( filterParameters );
         LOGGER.debug( "Executing http GET query to source [{}] with url [{}]", getId(), cdrRestClient.getCurrentURI().toString() );
@@ -292,6 +292,8 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
         if ( uri != null ) {
             LOGGER.debug( "Retrieving the remote resource using the uri [{}]", uri );
             WebClient retrieveWebClient = WebClient.create( uri );
+            HTTPConduit conduit = WebClient.getConfig( retrieveWebClient ).getHttpConduit();
+            conduit.setTlsClientParameters( getTlsClientParameters() );
             resourceResponse = doRetrieval( retrieveWebClient, requestProperties );
         }
 
@@ -304,6 +306,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
 
     protected ResourceResponse doRetrieval( WebClient retrieveWebClient, Map<String, Serializable> requestProperties ) throws ResourceNotFoundException, IOException {
         ResourceResponse resourceResponse = null;
+        setSecurityCredentials( retrieveWebClient, requestProperties );
         URI uri = retrieveWebClient.getCurrentURI();
         try {
 
@@ -661,13 +664,13 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
         parameterMap = translateMap;
     }
 
-    private void setSecurityCredentials( QueryRequest queryRequest ) {
+    private void setSecurityCredentials( WebClient client, Map<String, Serializable> requestProperties ) {
         if ( sendSecurityCookie ) {
-            if (queryRequest.getProperties().containsKey( SecurityConstants.SECURITY_SUBJECT )) {
-                Serializable property = queryRequest.getPropertyValue( SecurityConstants.SECURITY_SUBJECT );
+            if (requestProperties.containsKey( SecurityConstants.SECURITY_SUBJECT )) {
+                Serializable property = requestProperties.get( SecurityConstants.SECURITY_SUBJECT );
                 if (property instanceof Subject ) {
                     Subject subject = (Subject) property;
-                    RestSecurity.setSubjectOnClient( subject, cdrRestClient );
+                    RestSecurity.setSubjectOnClient( subject, client );
                 }
             }
         }
