@@ -31,9 +31,14 @@ import javax.xml.namespace.QName;
 import net.di2e.ecdr.commons.CDRMetacard;
 import net.di2e.ecdr.commons.constants.BrokerConstants;
 import net.di2e.ecdr.commons.constants.SearchConstants;
+import net.di2e.ecdr.commons.constants.SecurityConstants;
 import net.di2e.ecdr.search.transform.atom.constants.AtomResponseConstants;
-import net.di2e.ecdr.search.transform.atom.constants.SecurityConstants;
 import net.di2e.ecdr.search.transform.atom.geo.GeoHelper;
+import net.di2e.ecdr.search.transform.atom.security.SecurityConfiguration;
+import net.di2e.ecdr.search.transform.atom.security.SecurityData;
+import net.di2e.ecdr.search.transform.atom.security.SecurityMarkingHandler;
+import net.di2e.ecdr.search.transform.atom.security.impl.MetacardSecurityMarkingHandler;
+import net.di2e.ecdr.search.transform.atom.security.impl.XmlMetadataSecurityMarkingHandler;
 import net.di2e.ecdr.search.transform.geo.formatter.CompositeGeometry;
 
 import org.apache.abdera.Abdera;
@@ -81,6 +86,7 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
     private ActionProvider thumbnailActionProvider = null;
     private ActionProvider metadataActionProvider = null;
     private ConfigurationWatcherImpl configWatcher = null;
+    private SecurityConfiguration securityConfiguration = null;
     private MimeType thumbnailMimeType = null;
     private MimeType viewMimeType = null;
 
@@ -88,6 +94,8 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
     private boolean isTransform50 = false;
 
     private boolean defaultToUseGMLEncoding = true;
+
+    List<SecurityMarkingHandler> securityHandlers = null;
 
     public AbstractAtomTransformer( ConfigurationWatcherImpl config, ActionProvider viewMetacard, ActionProvider metadataProvider, ActionProvider resourceProvider, ActionProvider thumbnailProvider,
             MimeType thumbnailMime, MimeType viewMime ) {
@@ -101,6 +109,10 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
         this.thumbnailActionProvider = thumbnailProvider;
         this.thumbnailMimeType = thumbnailMime;
         this.viewMimeType = viewMime;
+
+        securityHandlers = new ArrayList<SecurityMarkingHandler>();
+        securityHandlers.add( new MetacardSecurityMarkingHandler() );
+        securityHandlers.add( new XmlMetadataSecurityMarkingHandler() );
     }
 
     public abstract void addFeedElements( Feed feed, SourceResponse response, Map<String, Serializable> properties );
@@ -115,6 +127,10 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
      */
     public void setUseGMLEncoding( boolean shouldUseGMLEncoding ) {
         defaultToUseGMLEncoding = shouldUseGMLEncoding;
+    }
+
+    public void setSecurityConfiguration( SecurityConfiguration config ) {
+        this.securityConfiguration = config;
     }
 
     @Override
@@ -133,12 +149,12 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
             Thread.currentThread().setContextClassLoader( currentClassLoader );
         }
 
-        feed.declareNS( SecurityConstants.ICISM_NAMESPACE, SecurityConstants.ICISM_NAMESPACE_PREFIX );
+
         feed.declareNS( AtomResponseConstants.CDRB_NAMESPACE, AtomResponseConstants.CDRB_NAMESPACE_PREFIX );
         feed.declareNS( AtomResponseConstants.CDRS_EXT_NAMESPACE, AtomResponseConstants.CDRS_EXT_NAMESPACE_PREFIX );
 
-        feed.setAttributeValue( new QName( SecurityConstants.ICISM_NAMESPACE, SecurityConstants.CLASSIFICATION_ELEMENT ), "U" );
-        feed.setAttributeValue( new QName( SecurityConstants.ICISM_NAMESPACE, SecurityConstants.OWNER_PRODUCER_ELEMENT ), "USA" );
+        setFeedSecurity( feed );
+
 
         feed.newId();
         setFeedTitle( feed, properties );
@@ -385,12 +401,11 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
         String format = (String) properties.get( SearchConstants.FORMAT_PARAMETER );
 
         Entry entry = Abdera.getInstance().newEntry();
-        entry.declareNS( SecurityConstants.ICISM_NAMESPACE, SecurityConstants.ICISM_NAMESPACE_PREFIX );
+
         entry.declareNS( AtomResponseConstants.GEORSS_NAMESPACE, AtomResponseConstants.GEORSS_NAMESPACE_PREFIX );
         entry.declareNS( AtomResponseConstants.RELEVANCE_NAMESPACE, AtomResponseConstants.RELEVANCE_NAMESPACE_PREFIX );
 
-        entry.setAttributeValue( new QName( SecurityConstants.ICISM_NAMESPACE, "classification" ), "U" );
-        entry.setAttributeValue( new QName( SecurityConstants.ICISM_NAMESPACE, "ownerProducer" ), "USA" );
+        setEntrySecurity( entry, metacard );
 
         entry.setId( metacard.getAtomId() );
         entry.setTitle( metacard.getTitle() );
@@ -543,6 +558,43 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
             feed.setTitle( "Atom Search Results Feed from source:" + configWatcher.getSiteName() );
         }
 
+    }
+
+    protected void setFeedSecurity( Feed feed ) {
+        if ( securityConfiguration != null ) {
+            String namespace = securityConfiguration.getResultSecurityNamespace();
+            if ( StringUtils.isNotBlank( namespace ) ) {
+                @SuppressWarnings( "unchecked" )
+                Map<String, String> securityAttributes = securityConfiguration.getResultSecurityMarkings();
+                if ( securityAttributes != null && !securityAttributes.isEmpty() ) {
+                    feed.declareNS( namespace, SecurityConstants.ISM_NAMESPACE_PREFIX );
+                    for ( java.util.Map.Entry<String, String> securityEntry : securityAttributes.entrySet() ) {
+                        String securityValue = securityEntry.getValue();
+                        if ( StringUtils.isNotBlank( securityValue ) ) {
+                            feed.setAttributeValue( new QName( namespace, securityEntry.getKey() ), securityEntry.getValue() );
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    protected void setEntrySecurity( Entry entry, Metacard metacard ) {
+        for ( SecurityMarkingHandler securityHandler : securityHandlers ) {
+            SecurityData securityData = securityHandler.getSecurityData( metacard );
+            if ( securityData != null ) {
+                String securityNamespace = securityData.getSecurityNamespace();
+                if ( StringUtils.isNotBlank( securityNamespace ) ) {
+                    entry.declareNS( securityNamespace, SecurityConstants.ISM_NAMESPACE_PREFIX );
+                    for ( java.util.Map.Entry<String, List<String>> securityEntry : securityData.getSecurityMarkings().entrySet() ) {
+                        List<String> securityValues = securityEntry.getValue();
+                        if ( securityValues != null && !securityValues.isEmpty() ) {
+                            entry.setAttributeValue( new QName( securityNamespace, securityEntry.getKey() ), StringUtils.join( securityValues, " " ) );
+                        }
+                    }
+                }
+            }
+        }
     }
 
 }

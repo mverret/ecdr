@@ -12,19 +12,23 @@
  **/
 package net.di2e.ecdr.search.transform.atom.security;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class SecurityData {
 
-    private Map<String, String> securityMarkings = null;
+    private HashMap<String, List<String>> securityMarkings = null;
     private String securityNamespace = null;
     
-    public SecurityData( Map<String, String> markings, String namespace ) {
-        this.securityMarkings = markings;
+    public SecurityData( Map<String, List<String>> markings, String namespace ) {
+        if ( markings != null ) {
+            this.securityMarkings = new HashMap<String, List<String>>( markings );
+        }
         this.securityNamespace = namespace;
     }
     
-    public Map<String, String> getSecurityMarkings() {
+    public HashMap<String, List<String>> getSecurityMarkings() {
         return securityMarkings;
     }
     

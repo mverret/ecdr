@@ -10,17 +10,17 @@
  * <http://www.gnu.org/licenses/lgpl.html>.
  * 
  **/
-package net.di2e.ecdr.search.transform.atom.constants;
+package net.di2e.ecdr.commons.constants;
+
+import ddf.catalog.data.Metacard;
 
 public final class SecurityConstants {
 
     private SecurityConstants() {
     }
 
-    public static final String ICISM_NAMESPACE = "urn:us:gov:ic:ism:v2";
-    public static final String ICISM_NAMESPACE_PREFIX = "ICISM";
+    public static final String SECURITY = Metacard.SECURITY;
+    public static final String SECURITY_NAMESPACE = "security-namespace";
 
-    public static final String CLASSIFICATION_ELEMENT = "classification";
-    public static final String OWNER_PRODUCER_ELEMENT = "ownerProducer";
-
+    public static final String ISM_NAMESPACE_PREFIX = "ism";
 }

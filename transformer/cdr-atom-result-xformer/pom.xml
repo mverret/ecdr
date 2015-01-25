@@ -20,7 +20,7 @@
         <artifactId>transformer</artifactId>
         <version>0.9.0-SNAPSHOT</version>
     </parent>
-    <name>Enterprise CDR :: Transformers :: Atom Result Transformer 1.0</name>
+    <name>Enterprise CDR :: Transformers :: Atom Result Transformer</name>
     <groupId>net.di2e.ecdr.transformer</groupId>
     <artifactId>cdr-atom-result-xformer</artifactId>
     <packaging>bundle</packaging>
@@ -81,6 +81,7 @@
                         <Import-Package>
                             !org.apache.commons.codec.*,
                             !org.apache.james.*,
+                            !org.codice.ddf.configuration.impl,
                             *,
                         </Import-Package>
                         <Export-Package>
@@ -88,9 +89,9 @@
                             net.di2e.ecdr.search.transform.geo.formatter,
                         </Export-Package>
                         <Private-Package>
-                            net.di2e.ecdr.search.transform.atom,
-                            net.di2e.ecdr.search.transform.atom.geo,
-                            org.codice.ddf.configuration.impl,
+                            net.di2e.ecdr.search.transform.atom.*,
+                            net.di2e.ecdr.search.transform.atom.security.*,
+                            net.di2e.ecdr.search.transform.atom.response.security,                           
                             org.objectweb.*,
                             org.parboiled.*,
                         </Private-Package>

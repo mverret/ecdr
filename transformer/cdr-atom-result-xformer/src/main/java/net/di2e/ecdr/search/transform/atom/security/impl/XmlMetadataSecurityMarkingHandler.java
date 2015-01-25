@@ -12,17 +12,58 @@
  **/
 package net.di2e.ecdr.search.transform.atom.security.impl;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import net.di2e.ecdr.search.transform.atom.response.security.SecurityMarkingParser;
 import net.di2e.ecdr.search.transform.atom.security.SecurityData;
 import net.di2e.ecdr.search.transform.atom.security.SecurityMarkingHandler;
+
+import org.apache.commons.lang.StringUtils;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.NodeList;
+
 import ddf.catalog.data.Metacard;
 import ddf.util.XPathHelper;
 
 public class XmlMetadataSecurityMarkingHandler implements SecurityMarkingHandler {
 
+    private static final String XMLNS_PREFIX = "xmlns";
+
     @Override
     public SecurityData getSecurityData(Metacard metacard) {
-        XPathHelper helper = new XPathHelper( metacard.getMetadata() );
+        String metadata = metacard.getMetadata();
+        if ( StringUtils.isNotBlank( metadata ) ) {
+            XPathHelper helper = new XPathHelper( metacard.getMetadata() );
+            Document document = helper.getDocument();
+            NodeList nodeList = document.getElementsByTagNameNS( "*", "security" );
+            if ( nodeList != null && nodeList.getLength() > 0 ) {
+                Element element = (Element) nodeList.item( 0 );
+                NamedNodeMap nodeNameMap = element.getAttributes();
+                int length = nodeNameMap.getLength();
 
+                Map<String, List<String>> securityProps = new HashMap<String, List<String>>();
+                String securityNamespace = null;
+                for ( int i = 0; i < length; i++ ) {
+                    Attr attr = (Attr) nodeNameMap.item( i );
+                    String value = attr.getValue();
+                    if ( !attr.getName().startsWith( XMLNS_PREFIX ) && StringUtils.isNotBlank( value ) ) {
+                        securityProps.put( attr.getLocalName(), SecurityMarkingParser.getValues( value ) );
+                        if ( securityNamespace == null ) {
+                            securityNamespace = attr.getNamespaceURI();
+                        }
+                    }
+                }
+                if ( !securityProps.isEmpty() ) {
+                    return new SecurityData( securityProps, securityNamespace );
+                }
+            }
+        }
+        return null;
     }
 
 

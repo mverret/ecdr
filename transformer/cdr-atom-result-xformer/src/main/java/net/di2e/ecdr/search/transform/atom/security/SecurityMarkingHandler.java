@@ -16,9 +16,6 @@ import ddf.catalog.data.Metacard;
 
 public interface SecurityMarkingHandler {
 
-    public static final String SECURITY = Metacard.SECURITY;
-    public static final String SECURITY_NAMESPACE = "security-namespace";
-
     SecurityData getSecurityData( Metacard metacard );
 
 }
