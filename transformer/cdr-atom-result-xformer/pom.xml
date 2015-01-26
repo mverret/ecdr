@@ -18,7 +18,7 @@
     <parent>
         <groupId>net.di2e.ecdr</groupId>
         <artifactId>transformer</artifactId>
-        <version>0.9.0</version>
+        <version>0.9.0-SNAPSHOT</version>
     </parent>
     <name>Enterprise CDR :: Transformers :: Atom Result Transformer</name>
     <groupId>net.di2e.ecdr.transformer</groupId>

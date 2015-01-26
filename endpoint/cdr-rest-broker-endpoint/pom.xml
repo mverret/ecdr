@@ -18,7 +18,7 @@
     <parent>
         <groupId>net.di2e.ecdr</groupId>
         <artifactId>endpoint</artifactId>
-        <version>0.9.0</version>
+        <version>0.9.0-SNAPSHOT</version>
     </parent>
     <name>Enterprise CDR :: Endpoints :: REST Brokered Search Service</name>
     <groupId>net.di2e.ecdr.endpoint</groupId>
