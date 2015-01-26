@@ -23,6 +23,7 @@ import java.util.Set;
 
 import javax.ws.rs.core.MultivaluedMap;
 
+import net.di2e.ecdr.commons.constants.BrokerConstants;
 import net.di2e.ecdr.commons.constants.SearchConstants;
 import net.di2e.ecdr.commons.query.GeospatialCriteria;
 import net.di2e.ecdr.commons.query.PropertyCriteria;
@@ -31,9 +32,10 @@ import net.di2e.ecdr.commons.query.TemporalCriteria;
 import net.di2e.ecdr.commons.query.TextualCriteria;
 import net.di2e.ecdr.commons.query.cache.QueryRequestCache;
 import net.di2e.ecdr.commons.query.util.GeospatialHelper;
-
 import net.di2e.ecdr.commons.sort.SortTypeConfiguration;
 import net.di2e.ecdr.commons.util.SearchUtils;
+
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.DateTimeFormatterBuilder;
@@ -388,7 +390,17 @@ public class BasicQueryParser implements QueryParser {
     }
 
     protected boolean isUniqueQuery( MultivaluedMap<String, String> queryParameters, String sourceId ) {
-        return queryRequestCache.isQueryIdUnique( queryParameters.getFirst( SearchConstants.OID_PARAMETER ) );
+        boolean isUniqueQuery = true;
+        isUniqueQuery = queryRequestCache.isQueryIdUnique( queryParameters.getFirst( SearchConstants.OID_PARAMETER ) );
+
+        String path = queryParameters.getFirst( BrokerConstants.PATH_PARAMETER );
+        if ( StringUtils.isNotBlank( path ) ) {
+            String[] pathValues = path.split( "," );
+            if ( ArrayUtils.contains( pathValues, sourceId ) ) {
+                isUniqueQuery = false;
+            }
+        }
+        return isUniqueQuery;
     }
 
     protected GeospatialCriteria createGeospatialCriteria( String rad, String lat, String lon, String box, String geom, String polygon, boolean strictMode )
