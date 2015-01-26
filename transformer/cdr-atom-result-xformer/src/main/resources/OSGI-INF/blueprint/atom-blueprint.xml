@@ -57,7 +57,7 @@
         <argument ref="thumbnailActionProvider" />
         <argument ref="jpegMimeType" />
         <argument ref="htmlMimeType" />
-        <property name="securityConfiguration" ref="securityConfig"/>
+        <argument ref="securityConfig"/>
     </bean>
 
     <service ref="atomPayloadTransformer" auto-export="interfaces" ranking="5">
@@ -77,7 +77,7 @@
         <argument ref="thumbnailActionProvider" />
         <argument ref="jpegMimeType" />
         <argument ref="htmlMimeType" />
-        <property name="securityConfiguration" ref="securityConfig"/>
+        <argument ref="securityConfig"/>
     </bean>
 
     <service ref="atomTransformer" auto-export="interfaces" ranking="5">

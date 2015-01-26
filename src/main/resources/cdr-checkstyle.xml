@@ -124,7 +124,7 @@
         <module name="MethodName"/>
         <module name="PackageName"/>
         <module name="ParameterName"/>
-        <module name="StaticVariableName"/>
+		<module name="StaticVariableName"/>
         <module name="TypeName"/>
 
 
@@ -142,7 +142,9 @@
         	<property name="max" value="200"/>
         </module>
         <module name="MethodLength"/>
-        <module name="ParameterNumber"/>
+        <module name="ParameterNumber">
+			<property name="max" value="8"/>
+		</module>
 
 
         <!-- Checks for whitespace                               -->

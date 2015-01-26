@@ -23,6 +23,7 @@ import javax.activation.MimeType;
 
 import net.di2e.ecdr.commons.CDRMetacard;
 import net.di2e.ecdr.commons.constants.SearchConstants;
+import net.di2e.ecdr.search.transform.atom.security.SecurityConfiguration;
 
 import org.apache.abdera.Abdera;
 import org.apache.abdera.model.Entry;
@@ -48,8 +49,8 @@ public class AtomTransformerWithPayload extends AbstractAtomTransformer {
     private Map<String, MetacardTransformer> metacardTransformerMap = null;
 
     public AtomTransformerWithPayload( ConfigurationWatcherImpl configWatcher, ActionProvider viewMetacardProvider, ActionProvider metadataProvider, ActionProvider resourceProvider,
-            ActionProvider thumbnailProvider, MimeType thumbnailMime, MimeType viewMime ) {
-        super( configWatcher, viewMetacardProvider, metadataProvider, resourceProvider, thumbnailProvider, thumbnailMime, viewMime );
+            ActionProvider thumbnailProvider, MimeType thumbnailMime, MimeType viewMime, SecurityConfiguration securityConfig ) {
+        super( configWatcher, viewMetacardProvider, metadataProvider, resourceProvider, thumbnailProvider, thumbnailMime, viewMime, securityConfig );
         metacardTransformerMap = new HashMap<String, MetacardTransformer>();
     }
 

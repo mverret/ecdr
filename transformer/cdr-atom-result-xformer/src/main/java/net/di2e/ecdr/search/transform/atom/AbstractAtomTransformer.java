@@ -37,6 +37,7 @@ import net.di2e.ecdr.search.transform.atom.geo.GeoHelper;
 import net.di2e.ecdr.search.transform.atom.security.SecurityConfiguration;
 import net.di2e.ecdr.search.transform.atom.security.SecurityData;
 import net.di2e.ecdr.search.transform.atom.security.SecurityMarkingHandler;
+import net.di2e.ecdr.search.transform.atom.security.impl.ConfigurationSecurityMarkingHandler;
 import net.di2e.ecdr.search.transform.atom.security.impl.MetacardSecurityMarkingHandler;
 import net.di2e.ecdr.search.transform.atom.security.impl.XmlMetadataSecurityMarkingHandler;
 import net.di2e.ecdr.search.transform.geo.formatter.CompositeGeometry;
@@ -98,7 +99,7 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
     List<SecurityMarkingHandler> securityHandlers = null;
 
     public AbstractAtomTransformer( ConfigurationWatcherImpl config, ActionProvider viewMetacard, ActionProvider metadataProvider, ActionProvider resourceProvider, ActionProvider thumbnailProvider,
-            MimeType thumbnailMime, MimeType viewMime ) {
+            MimeType thumbnailMime, MimeType viewMime, SecurityConfiguration securityConfig ) {
         if ( viewMime == null || thumbnailMime == null ) {
             throw new IllegalArgumentException( "MimeType parameters to constructor cannot be null" );
         }
@@ -109,10 +110,12 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
         this.thumbnailActionProvider = thumbnailProvider;
         this.thumbnailMimeType = thumbnailMime;
         this.viewMimeType = viewMime;
+        this.securityConfiguration = securityConfig;
 
         securityHandlers = new ArrayList<SecurityMarkingHandler>();
         securityHandlers.add( new MetacardSecurityMarkingHandler() );
         securityHandlers.add( new XmlMetadataSecurityMarkingHandler() );
+        securityHandlers.add( new ConfigurationSecurityMarkingHandler( securityConfiguration ) );
     }
 
     public abstract void addFeedElements( Feed feed, SourceResponse response, Map<String, Serializable> properties );
@@ -585,12 +588,17 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
             if ( securityData != null ) {
                 String securityNamespace = securityData.getSecurityNamespace();
                 if ( StringUtils.isNotBlank( securityNamespace ) ) {
-                    entry.declareNS( securityNamespace, SecurityConstants.ISM_NAMESPACE_PREFIX );
+                    boolean hasAttribute = false;
                     for ( java.util.Map.Entry<String, List<String>> securityEntry : securityData.getSecurityMarkings().entrySet() ) {
                         List<String> securityValues = securityEntry.getValue();
                         if ( securityValues != null && !securityValues.isEmpty() ) {
                             entry.setAttributeValue( new QName( securityNamespace, securityEntry.getKey() ), StringUtils.join( securityValues, " " ) );
+                            hasAttribute = true;
                         }
+                    }
+                    if ( hasAttribute ) {
+                        entry.declareNS( securityNamespace, SecurityConstants.ISM_NAMESPACE_PREFIX );
+                        break;
                     }
                 }
             }
