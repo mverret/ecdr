@@ -15,11 +15,13 @@ package net.di2e.ecdr.search.transform.atom.response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import javax.activation.MimeType;
 import javax.xml.namespace.QName;
@@ -30,6 +32,7 @@ import net.di2e.ecdr.commons.filter.config.FilterConfig.AtomContentXmlWrapOption
 import net.di2e.ecdr.commons.response.SearchResponseTransformer;
 import net.di2e.ecdr.search.transform.atom.constants.AtomResponseConstants;
 import net.di2e.ecdr.search.transform.atom.geo.AbderaConverter;
+import net.di2e.ecdr.search.transform.atom.response.security.SecurityMarkingParser;
 
 import org.apache.abdera.Abdera;
 import org.apache.abdera.ext.geo.Position;
@@ -113,7 +116,10 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
                 LOGGER.warn( "Received invalid number of results from Atom response [" + totalResultsElement.getText() + "]", e );
             }
         }
-        return new SourceResponseImpl( request, resultList, totalResults );
+
+        Map<String, Serializable> responseProperties = null;
+
+        return new SourceResponseImpl( request, responseProperties, resultList, totalResults );
     }
 
     private Metacard entryToMetacard( Entry entry, String siteName ) {
@@ -259,7 +265,10 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
                 }
             }
         }
-        return new CDRMetacard( metacard );
+
+        Metacard returnMetacard = SecurityMarkingParser.addSecurityToMetacard( metacard, entry );
+
+        return new CDRMetacard( returnMetacard );
     }
 
     protected Result metacardToResult( Entry entry, Metacard metacard ) {

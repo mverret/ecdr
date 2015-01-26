@@ -25,7 +25,7 @@
 
     <osgi:reference id="filterAdapter" interface="ddf.catalog.filter.FilterAdapter" />
     
-    <osgix:managed-service-factory id="net.di2e.ecdr.source.rest.CDRRestSource" factory-pid="ecdr-rest-source"
+    <osgix:managed-service-factory id="ecdr-rest-source" factory-pid="ecdr-rest-source"
         update-strategy="container-managed">
 
         <osgix:interfaces>
@@ -35,6 +35,26 @@
         <beans:bean id="CDRRestSourceBean" class="net.di2e.ecdr.source.rest.CDRRestSource">
             <beans:constructor-arg ref="filterAdapter" />
 
+            <beans:property name="defaultResponseFormat" value="atom-ddms" />
+            <beans:property name="title" value="CDR REST Federated Source" />
+            <beans:property name="description" value="CDR REST Search v3.0 Federated Source " />
+            <beans:property name="organization" value="" />
+            <beans:property name="version" value="3.0" />
+        </beans:bean>
+
+    </osgix:managed-service-factory>
+    
+    <osgix:managed-service-factory id="ecdr-rest-connected-source" factory-pid="ecdr-rest-connected-source"
+        update-strategy="container-managed">
+
+        <osgix:interfaces>
+            <beans:value>ddf.catalog.source.ConnectedSource</beans:value>
+        </osgix:interfaces>
+
+        <beans:bean id="CDRRestSourceConnectedBean" class="net.di2e.ecdr.source.rest.CDRRestSource">
+            <beans:constructor-arg ref="filterAdapter" />
+    
+            <beans:property name="id" value="cdr-connected" />
             <beans:property name="defaultResponseFormat" value="atom-ddms" />
             <beans:property name="title" value="CDR REST Federated Source" />
             <beans:property name="description" value="CDR REST Search v3.0 Federated Source " />

@@ -15,15 +15,31 @@
  -->
 <metatype:MetaData xmlns:metatype="http://www.osgi.org/xmlns/metatype/v1.0.0">
 
-    <OCD name="CDR ATOM Transformer Settings" id="cdr-atom-result-xformer">
+    <OCD name="CDR Atom Transformer Settings" id="cdr-atom-result-xformer">
 
         <AD name="Use GML Encoding" id="useGMLEncoding" required="true" type="Boolean" default="true"
             description="When outputting atom records check to use GeoRSS GML encoding. Unchecked will use GeoRSS simple encoding" />
 
     </OCD>
+    
+    <OCD name="CDR Atom Result Security Settings" id="cdr-atom-security-configuration">
+
+        <AD name="Atom Feed Security Namespace" id="resultSecurityNamespace" required="true" type="String" default="urn:us:gov:ic:ism:v2"
+            description="The XML namespace for the security attributes that are populated in the fields below.  This will be placed in the Atom feed element.  
+            This will also be placed in atom entry elements where security markings in the metadata could not be found" />
+
+        <AD name="Atom Feed Security Namespace" id="resultSecurityMarkings" required="true" type="String" default="classification=U,ownerProducer=USA" cardinality="100"
+            description="Name/Value pairs for the security attributes that should appear in the atom feed to denote the security markings of the Results.  These will also be placed in the 
+            atom entry elements where security markings in the metadata could not be found" />
+    </OCD>
 
     <Designate pid="cdr-atom-result-xformer">
         <Object ocdref="cdr-atom-result-xformer" />
+    </Designate>
+    
+    
+    <Designate pid="cdr-atom-security-configuration">
+        <Object ocdref="cdr-atom-security-configuration" />
     </Designate>
 
 </metatype:MetaData>

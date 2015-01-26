@@ -68,8 +68,63 @@
         </AD>
 
     </OCD>
+    
+    <OCD
+        description="CDR Specification v3.0 compliant REST Connected Source.  Use this when federating to another DDF based CDR Service.  If federating to a non DDF CDR or 
+    OpenSearch source use the OpenSearch Federated/Connected Source configuration"
+        name="CDR REST Connected Source" id="ecdr-rest-connected-source">
+
+        <AD name="CDR Endpoint URL" id="url" required="true" type="String" default="http://localhost:8181/services/cdr/search/rest" />
+
+        <AD name="Response Timeout" id="receiveTimeoutSeconds" required="true" type="Integer" default="0"
+            description="Number of seconds that the client will wait for a response before it times out. The default is 0 (wait indefinitely). 
+            0 specifies that the client will wait indefinitely." />
+
+        <AD name="Connection Timeout" id="connectionTimeoutSeconds" required="true" type="Integer" default="30"
+            description="Number of seconds that the client will attempt to establish a connection before it times out. The default is 30 seconds. 
+            0 specifies that the client will continue to attempt to open a connection indefinitely." />
+
+        <AD name="Max Result Count" id="maxResultCount" required="true" type="Integer" default="0"
+            description="The maximum number of records to return. If a client specifies a larger value that value will be overriden with this value.  0 or empty means no override." />
+
+        <AD name="Check Availability" id="doSourcePing" type="Boolean" default="true"
+            description="Check the box if you want to get site status by using the HTTP HEAD method to the base URL" />
+
+        <AD name="Minimum Source Ping Interval" id="availableCheckCacheTime" required="true" type="Integer" default="60"
+            description="The minimum time interval (in seconds) between source availability checks.  Source status will be pulled from cache if the minimum time has not passed." />
+
+        <AD name="Local Override" id="localOverride" required="false" type="Boolean" default="true"
+            description="Certain runtime registries may wish to update this source when the source value in the registry changes (or is removed).  If this box is checked, once the source is created
+            it cannot be automatically updated or removed by a registry.  If uncertain keep checked.">
+        </AD>
+
+        <AD name="Parameter Mapping" id="parameterMap" required="false" type="String" default="" cardinality="100"
+            description="Mapping for this source that converts the query request into opensearch parameters. The mapping should be done by using &lt;query attribute&gt;=&lt;opensearch parameter&gt; format.
+            This source includes a default parameterMap and items here should only be populated to extend those default mappings.">
+        </AD>
+
+        <AD name="Sort Mapping" id="sortMap" required="false" type="String" default="title=entry/title,modified=entry/date,RELEVANCE=score" cardinality="100"
+            description="Mapping for this source that converts the metacard attribute to a sort type for the outgoing request. The mapping should be done by using &lt;metacard attribute&gt;=&lt;cdr
+            type&gt; format.">
+        </AD>
+
+        <AD name="Disable CN Checking" id="disableCNCheck" required="false" type="Boolean" default="false"
+            description="Check this box if the outgoing request should NOT perform a common name (CN) check of certificates during SSL-based communications.">
+        </AD>
+
+        <AD name="Security Cookie" id="sendSecurityCookie" required="true" type="Boolean" default="true"
+            description="Check this option to send the user's security credentials in the form of a cookie to the external source. Having this box unchecked will cause no security credentials to be
+            sent. NOTE: To ensure confidentiality, this setting should only be checked when connecting over HTTPS/SSL.">
+        </AD>
+
+    </OCD>
 
     <Designate pid="ecdr-rest-source" factoryPid="ecdr-rest-source">
         <Object ocdref="ecdr-rest-source" />
     </Designate>
+    
+    <Designate pid="ecdr-rest-connected-source" factoryPid="ecdr-rest-connected-source">
+        <Object ocdref="ecdr-rest-connected-source" />
+    </Designate>
+    
 </metatype:MetaData>
