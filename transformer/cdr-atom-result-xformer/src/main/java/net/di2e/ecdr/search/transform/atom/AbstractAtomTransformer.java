@@ -592,12 +592,14 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
                     for ( java.util.Map.Entry<String, List<String>> securityEntry : securityData.getSecurityMarkings().entrySet() ) {
                         List<String> securityValues = securityEntry.getValue();
                         if ( securityValues != null && !securityValues.isEmpty() ) {
+                            if ( !hasAttribute ) {
+                                entry.declareNS( securityNamespace, SecurityConstants.ISM_NAMESPACE_PREFIX );
+                            }
                             entry.setAttributeValue( new QName( securityNamespace, securityEntry.getKey() ), StringUtils.join( securityValues, " " ) );
                             hasAttribute = true;
                         }
                     }
                     if ( hasAttribute ) {
-                        entry.declareNS( securityNamespace, SecurityConstants.ISM_NAMESPACE_PREFIX );
                         break;
                     }
                 }
