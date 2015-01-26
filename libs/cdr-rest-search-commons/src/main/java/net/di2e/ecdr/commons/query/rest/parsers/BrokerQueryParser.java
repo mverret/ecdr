@@ -14,7 +14,6 @@ package net.di2e.ecdr.commons.query.rest.parsers;
 
 import java.io.Serializable;
 import java.nio.charset.Charset;
-import java.nio.charset.CharsetEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,8 +27,8 @@ import javax.ws.rs.core.MultivaluedMap;
 import net.di2e.ecdr.commons.constants.BrokerConstants;
 import net.di2e.ecdr.commons.constants.SearchConstants;
 import net.di2e.ecdr.commons.query.cache.QueryRequestCache;
-
 import net.di2e.ecdr.commons.sort.SortTypeConfiguration;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.LoggerFactory;
@@ -98,19 +97,8 @@ public class BrokerQueryParser extends LegacyQueryParser {
     public boolean isValidQuery( MultivaluedMap<String, String> queryParameters, String sourceId ) {
         boolean isValidQuery = super.isValidQuery( queryParameters, sourceId );
         if ( isValidQuery ) {
-            String pathString = queryParameters.getFirst( BrokerConstants.PATH_PARAMETER );
-            String sourceString = queryParameters.getFirst( BrokerConstants.SOURCE_PARAMETER );
-            // System.out.println( " Path = [" + pathString + "]" );
-            // System.out.println( " Source = [" + sourceString + "]" );
             if ( !isBooleanNullOrBlank( queryParameters.getFirst( BrokerConstants.DEDUP_PARAMETER ) ) ) {
                 isValidQuery = false;
-            } else if ( pathString != null || sourceString != null ) {
-                CharsetEncoder encoder = ASCII_CHARSET.newEncoder();
-                if ( pathString != null && !encoder.canEncode( pathString ) ) {
-                    isValidQuery = false;
-                } else if ( sourceString != null && !encoder.canEncode( sourceString ) ) {
-                    isValidQuery = false;
-                }
             }
         }
         return isValidQuery;

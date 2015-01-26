@@ -48,7 +48,7 @@
             it cannot be automatically updated or removed by a registry.  If uncertain keep checked.">
         </AD>
 
-        <AD name="Parameter Mapping" id="parameterMap" required="false" type="String" default="" cardinality="100"
+        <AD name="Parameter Mapping" id="parameterMap" required="false" type="String" default="oid=oid,path=path" cardinality="100"
             description="Mapping for this source that converts the query request into opensearch parameters. The mapping should be done by using &lt;query attribute&gt;=&lt;opensearch parameter&gt; format.
             This source includes a default parameterMap and items here should only be populated to extend those default mappings.">
         </AD>
@@ -62,7 +62,7 @@
             description="Check this box if the outgoing request should NOT perform a common name (CN) check of certificates during SSL-based communications.">
         </AD>
 
-        <AD name="Security Cookie" id="sendSecurityCookie" required="true" type="Boolean" default="true"
+        <AD name="Send SAML Security Cookie" id="sendSecurityCookie" required="true" type="Boolean" default="false"
             description="Check this option to send the user's security credentials in the form of a cookie to the external source. Having this box unchecked will cause no security credentials to be
             sent. NOTE: To ensure confidentiality, this setting should only be checked when connecting over HTTPS/SSL.">
         </AD>
