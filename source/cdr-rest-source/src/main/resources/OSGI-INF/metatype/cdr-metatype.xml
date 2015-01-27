@@ -53,7 +53,7 @@
             This source includes a default parameterMap and items here should only be populated to extend those default mappings.">
         </AD>
 
-        <AD name="Sort Mapping" id="sortMap" required="false" type="String" default="title=entry/title,modified=entry/date,RELEVANCE=score" cardinality="100"
+        <AD name="Sort Mapping" id="sortMap" required="false" type="String" default="title=entry/title,modified=entry/date,RELEVANCE=score,effective=effective" cardinality="100"
             description="Mapping for this source that converts the metacard attribute to a sort type for the outgoing request. The mapping should be done by using &lt;metacard attribute&gt;=&lt;cdr
             type&gt; format.">
         </AD>
@@ -98,7 +98,7 @@
             it cannot be automatically updated or removed by a registry.  If uncertain keep checked.">
         </AD>
 
-        <AD name="Parameter Mapping" id="parameterMap" required="false" type="String" default="" cardinality="100"
+        <AD name="Parameter Mapping" id="parameterMap" required="false" type="String" default="oid=oid,path=path" cardinality="100"
             description="Mapping for this source that converts the query request into opensearch parameters. The mapping should be done by using &lt;query attribute&gt;=&lt;opensearch parameter&gt; format.
             This source includes a default parameterMap and items here should only be populated to extend those default mappings.">
         </AD>

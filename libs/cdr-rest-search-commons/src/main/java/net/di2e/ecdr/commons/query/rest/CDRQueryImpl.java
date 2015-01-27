@@ -238,7 +238,7 @@ public class CDRQueryImpl implements Query {
             sortBy = new SortByImpl( Result.TEMPORAL, SortOrder.DESCENDING );
         }
 
-        if ( sortBy != null ) {
+        if ( sortBy != null && sortBy.getPropertyName() != null && sortBy.getSortOrder() != null ) {
             humanReadableQueryBuilder.append( " " + SearchConstants.SORTKEYS_PARAMETER + "=[" + sortBy.getPropertyName().getPropertyName() + " " + sortBy.getSortOrder().name() + "]" );
         }
 

@@ -34,8 +34,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import ddf.security.SecurityConstants;
-import ddf.security.Subject;
 import net.di2e.ecdr.commons.constants.SearchConstants;
 import net.di2e.ecdr.commons.filter.StrictFilterDelegate;
 import net.di2e.ecdr.commons.filter.config.FilterConfig;
@@ -74,6 +72,8 @@ import ddf.catalog.source.FederatedSource;
 import ddf.catalog.source.SourceMonitor;
 import ddf.catalog.source.UnsupportedQueryException;
 import ddf.catalog.util.impl.MaskableImpl;
+import ddf.security.SecurityConstants;
+import ddf.security.Subject;
 
 public abstract class AbstractCDRSource extends MaskableImpl implements FederatedSource, ConnectedSource {
 
@@ -473,7 +473,7 @@ public abstract class AbstractCDRSource extends MaskableImpl implements Federate
             SortOrder sortOrder = sortBy.getSortOrder();
             String sortField = sortMap.get( sortBy.getPropertyName().getPropertyName() );
             if ( sortField != null ) {
-                sortOrderString = sortField + (SortOrder.DESCENDING.equals( sortOrder ) ? ",,false" : "");
+                sortOrderString = sortField + (SortOrder.DESCENDING.equals( sortOrder ) ? ",,false" : ",,true");
             }
         }
         return sortOrderString;

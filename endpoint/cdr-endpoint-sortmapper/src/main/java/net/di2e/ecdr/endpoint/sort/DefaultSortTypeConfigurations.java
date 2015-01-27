@@ -12,19 +12,20 @@
  **/
 package net.di2e.ecdr.endpoint.sort;
 
-import ddf.catalog.data.Metacard;
-import ddf.catalog.data.Result;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Dictionary;
+import java.util.Hashtable;
+import java.util.List;
+
 import org.opengis.filter.sort.SortOrder;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Dictionary;
-import java.util.Hashtable;
-import java.util.List;
+import ddf.catalog.data.Metacard;
+import ddf.catalog.data.Result;
 
 public class DefaultSortTypeConfigurations {
 
@@ -38,10 +39,8 @@ public class DefaultSortTypeConfigurations {
 
     public enum SortMap {
 
-        TITLE( "entry/title", Metacard.TITLE, SortOrder.ASCENDING.name() ),
-        DATE( "entry/date", Metacard.MODIFIED, SortOrder.DESCENDING.name() ),
-        SCORE( "score", Result.RELEVANCE, SortOrder.DESCENDING.name() ),
-        DISTANCE( "distance", Result.DISTANCE, SortOrder.ASCENDING.name() );
+        TITLE( "entry/title", Metacard.TITLE, SortOrder.ASCENDING.name() ), MODIFIED_DATE( "entry/date", Metacard.MODIFIED, SortOrder.DESCENDING.name() ), EFFECTIVE_DATE( "effective",
+                Metacard.EFFECTIVE, SortOrder.DESCENDING.name() ), SCORE( "score", Result.RELEVANCE, SortOrder.DESCENDING.name() ), DISTANCE( "distance", Result.DISTANCE, SortOrder.ASCENDING.name() );
 
         private final String key;
         private final String attribute;
@@ -85,7 +84,7 @@ public class DefaultSortTypeConfigurations {
     }
 
     public void destroy() throws IOException {
-        for (Configuration curConfig : configurationList) {
+        for ( Configuration curConfig : configurationList ) {
             curConfig.delete();
         }
     }
