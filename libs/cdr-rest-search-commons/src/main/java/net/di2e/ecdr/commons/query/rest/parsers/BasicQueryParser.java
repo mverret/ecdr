@@ -299,6 +299,8 @@ public class BasicQueryParser implements QueryParser {
                 if ( sortValues.length >= 3 ) {
                     if ( Boolean.FALSE.toString().equalsIgnoreCase( sortValues[2] ) ) {
                         sortOrder = SortOrder.DESCENDING;
+                    } else {
+                        sortOrder = SortOrder.ASCENDING;
                     }
                 } else {
                     sortOrder = SortOrder.valueOf( sortType.getSortOrder() );

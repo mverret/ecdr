@@ -101,7 +101,17 @@ public class StrictFilterDelegate extends AbstractFilterDelegate<Map<String, Str
                 String andedVersion = andedFilter.get( Metacard.CONTENT_TYPE_VERSION );
                 if ( andedContentType != null ) {
                     andedFilter.remove( Metacard.CONTENT_TYPE );
-                    masterContentType = masterContentType == null ? andedContentType + ":" : masterContentType + "," + andedContentType + ":";
+                    if ( masterContentType == null ) {
+                        masterContentType = andedContentType;
+                        if ( !andedContentType.endsWith( "," ) ) {
+                            masterContentType += ":";
+                        }
+                    } else {
+                        masterContentType = masterContentType + "," + andedContentType;
+                        if ( !andedContentType.endsWith( "," ) ) {
+                            masterContentType += ":";
+                        }
+                    }
                     masterFilter.put( Metacard.CONTENT_TYPE, masterContentType );
                 }
                 if ( andedVersion != null ) {

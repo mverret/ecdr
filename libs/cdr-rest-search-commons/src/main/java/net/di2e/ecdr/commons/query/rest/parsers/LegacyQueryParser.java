@@ -13,9 +13,6 @@
 package net.di2e.ecdr.commons.query.rest.parsers;
 
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.List;
 
@@ -26,8 +23,8 @@ import net.di2e.ecdr.commons.query.GeospatialCriteria;
 import net.di2e.ecdr.commons.query.GeospatialCriteria.SpatialOperator;
 import net.di2e.ecdr.commons.query.PropertyCriteria;
 import net.di2e.ecdr.commons.query.PropertyCriteria.Operator;
-
 import net.di2e.ecdr.commons.sort.SortTypeConfiguration;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.LoggerFactory;
 import org.slf4j.ext.XLogger;
@@ -38,7 +35,7 @@ import ddf.catalog.source.UnsupportedQueryException;
 public class LegacyQueryParser extends BasicQueryParser {
 
     private static final XLogger LOGGER = new XLogger( LoggerFactory.getLogger( LegacyQueryParser.class ) );
-    public static final String DAD_SCHEME = "dad";
+    public static final String DAD_SCHEME = "dad:///";
     public static final String NOT_APPLICABLE = "N/A";
 
     public LegacyQueryParser(List<SortTypeConfiguration> sortTypeConfigurations) {
@@ -65,23 +62,27 @@ public class LegacyQueryParser extends BasicQueryParser {
             String uriString = queryParameters.getFirst( Metacard.RESOURCE_URI );
 
             if ( StringUtils.isNotEmpty( uriString ) ) {
-                URI uri = URI.create( uriString );
-                if ( DAD_SCHEME.equals( uri.getScheme() ) ) {
-                    String path = uri.getPath();
+                if ( uriString.startsWith( DAD_SCHEME ) ) {
                     try {
-                        path = URLDecoder.decode( path.startsWith( "/" ) ? path.substring( 1 ) : path, "UTF-8" );
+                        String uriSubstring = uriString;
+                        StringBuilder sb = new StringBuilder( DAD_SCHEME );
+                        uriSubstring = uriSubstring.substring( DAD_SCHEME.length() );
+                        int index = uriSubstring.indexOf( '?' );
+                        sb.append( URLEncoder.encode( uriSubstring.substring( 0, index ), "UTF-8" ) );
+                        sb.append( "?" );
+                        uriSubstring = uriSubstring.substring( index + 1 );
+                        index = uriSubstring.indexOf( '#' );
+                        sb.append( URLEncoder.encode( uriSubstring.substring( 0, index ), "UTF-8" ) );
+                        sb.append( "#" );
+                        uriSubstring = uriSubstring.substring( index + 1 );
+                        sb.append( URLEncoder.encode( uriSubstring.substring( 0 ), "UTF-8" ) );
 
-                        uri = new URI( DAD_SCHEME + ":///" + URLEncoder.encode( path, "UTF-8" ) + "?"
-                                + URLEncoder.encode( URLDecoder.decode( uri.getQuery(), "UTF-8" ), "UTF-8" ).replaceAll( "\\+", "%20" ) + "#"
-                                + URLEncoder.encode( URLDecoder.decode( uri.getFragment(), "UTF-8" ), "UTF-8" ) );
-                    } catch ( UnsupportedEncodingException e ) {
-                        LOGGER.error( "Unsupported URL enciding [UTF-8]: " + e.getMessage(), e );
-                    } catch ( URISyntaxException e ) {
-                        LOGGER.warn( "Error converting dad scheme specific URI: " + e.getMessage(), e );
+                        uriString = sb.toString();
+                    } catch ( UnsupportedEncodingException | RuntimeException e ) {
+                        LOGGER.warn( "Could parse the 'resource-uri' due to exception so falling back to not parsing: " + e.getMessage() );
                     }
-
                 }
-                criteriaList.add( new PropertyCriteria( Metacard.RESOURCE_URI, uri.toString(), Operator.EQUALS ) );
+                criteriaList.add( new PropertyCriteria( Metacard.RESOURCE_URI, uriString, Operator.EQUALS ) );
             }
         }
         if ( queryParameters.containsKey( Metacard.CONTENT_TYPE ) ) {

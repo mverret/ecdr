@@ -144,8 +144,18 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
             }
         }
 
-        metacard.setModifiedDate( entry.getUpdated() );
-        metacard.setEffectiveDate( entry.getPublished() );
+        try {
+            metacard.setModifiedDate( entry.getUpdated() );
+        } catch ( IllegalArgumentException e ) {
+            LOGGER.warn( "InvalidDate found in atom reponse, setting Metacard modified time to now " );
+            metacard.setEffectiveDate( new Date() );
+        }
+        try {
+            metacard.setEffectiveDate( entry.getPublished() );
+        } catch ( IllegalArgumentException e ) {
+            LOGGER.warn( "InvalidDate found in atom reponse, setting Metacard Effective time to now " );
+            metacard.setEffectiveDate( new Date() );
+        }
 
         String createdDate = entry.getSimpleExtension( new QName( AtomResponseConstants.METACARD_ATOM_NAMESPACE, AtomResponseConstants.METACARD_CREATED_DATE_ELEMENT ) );
         if ( createdDate != null ) {
@@ -159,27 +169,7 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
 
         AtomContentXmlWrapOption wrap = filterConfig.getAtomContentXmlWrapOption();
         String metadata = entry.getContent();
-        if ( metadata != null ) {
-            if (wrap != null && !wrap.equals( AtomContentXmlWrapOption.NEVER_WRAP ) ) {
-                if ( wrap.equals( AtomContentXmlWrapOption.WRAP_HTML_AND_TEXT ) ) {
-                    Content.Type contentType = entry.getContentType();
-                    // certain content types may not follow XML structure
-                    switch ( contentType ) {
-                    case TEXT:
-                    case HTML:
-                        // add content element to make sure it has single root
-                        metadata = "<xml-fragment>" + metadata + "</xml-fragment>";
-                        break;
-                    default:
-                        // other items are xml-based
-                        break;
-                    }
-                } else {
-                    metadata = "<xml-fragment>" + metadata + "</xml-fragment>";
-                }
-            }
-            metacard.setMetadata( metadata );
-        }
+        populateMetadata( entry, metacard, wrap, metadata );
 
         metacard.setLocation( getWKT( entry ) );
 
@@ -222,13 +212,11 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
                 }
             }
         }
-
         metacard.setTitle( entry.getTitle() );
 
         boolean isMetadataSet = false;
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
         try {
-
             Thread.currentThread().setContextClassLoader( AtomResponseTransformer.class.getClassLoader() );
             List<Element> extensions = entry.getExtensions();
             for ( Element element : extensions ) {
@@ -248,7 +236,6 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
         } finally {
             Thread.currentThread().setContextClassLoader( tccl );
         }
-
         if ( !isMetadataSet ) {
             String metadataLinkRel = filterConfig.getMetadataLinkRelation();
             if ( metadataLinkRel != null ) {
@@ -265,10 +252,32 @@ public class AtomResponseTransformer implements SearchResponseTransformer {
                 }
             }
         }
-
         Metacard returnMetacard = SecurityMarkingParser.addSecurityToMetacard( metacard, entry );
-
         return new CDRMetacard( returnMetacard );
+    }
+
+    protected void populateMetadata( Entry entry, MetacardImpl metacard, AtomContentXmlWrapOption wrap, String metadata ) {
+        if ( metadata != null ) {
+            if (wrap != null && !wrap.equals( AtomContentXmlWrapOption.NEVER_WRAP ) ) {
+                if ( wrap.equals( AtomContentXmlWrapOption.WRAP_HTML_AND_TEXT ) ) {
+                    Content.Type contentType = entry.getContentType();
+                    // certain content types may not follow XML structure
+                    switch ( contentType ) {
+                    case TEXT:
+                    case HTML:
+                        // add content element to make sure it has single root
+                        metadata = "<xml-fragment>" + metadata + "</xml-fragment>";
+                        break;
+                    default:
+                        // other items are xml-based
+                        break;
+                    }
+                } else {
+                    metadata = "<xml-fragment>" + metadata + "</xml-fragment>";
+                }
+            }
+            metacard.setMetadata( metadata );
+        }
     }
 
     protected Result metacardToResult( Entry entry, Metacard metacard ) {
