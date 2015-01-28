@@ -40,6 +40,7 @@ import net.di2e.ecdr.commons.xml.osd.OpenSearchDescription;
 import net.di2e.ecdr.commons.xml.osd.Query;
 import net.di2e.ecdr.commons.xml.osd.SyndicationRight;
 import net.di2e.ecdr.commons.xml.osd.Url;
+import net.di2e.ecdr.search.transform.mapper.TransformIdMapper;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
