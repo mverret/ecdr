@@ -40,7 +40,6 @@ import net.di2e.ecdr.commons.xml.osd.OpenSearchDescription;
 import net.di2e.ecdr.commons.xml.osd.Query;
 import net.di2e.ecdr.commons.xml.osd.SyndicationRight;
 import net.di2e.ecdr.commons.xml.osd.Url;
-import net.di2e.ecdr.search.transform.mapper.TransformIdMapper;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -198,16 +197,17 @@ public abstract class AbstractRestSearchEndpoint implements RegistrableService {
         }
 
         StringWriter writer = new StringWriter();
+        InputStream is = null;
         try {
             JAXBContext context = JAXBContext.newInstance( OpenSearchDescription.class, SourceDescription.class );
             Marshaller marshaller = context.createMarshaller();
             marshaller.setProperty( Marshaller.JAXB_FORMATTED_OUTPUT, true );
             marshaller.setProperty( Marshaller.JAXB_FRAGMENT, true );
             marshaller.marshal( osd, writer );
-            InputStream is = getClass().getResourceAsStream( "/templates/osd_info.template" );
+            is = getClass().getResourceAsStream("/templates/osd_info.template");
             if ( is != null ) {
                 String osdTemplate = IOUtils.toString( is );
-                IOUtils.closeQuietly( is );
+
                 String responseStr = osdTemplate + writer.toString();
                 return Response.ok( responseStr, MediaType.APPLICATION_XML_TYPE ).build();
             } else {
@@ -216,6 +216,8 @@ public abstract class AbstractRestSearchEndpoint implements RegistrableService {
         } catch ( JAXBException | IOException e ) {
             LOGGER.warn( "Could not create OSD for client due to exception.", e );
             return Response.serverError().build();
+        } finally {
+            IOUtils.closeQuietly(is);
         }
     }
 
