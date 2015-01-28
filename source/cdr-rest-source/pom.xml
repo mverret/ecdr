@@ -19,7 +19,7 @@
     <parent>
         <groupId>net.di2e.ecdr</groupId>
         <artifactId>source</artifactId>
-        <version>1.0.1-SNAPSHOT</version>
+        <version>1.0.0</version>
     </parent>
 
     <groupId>net.di2e.ecdr.source</groupId>
