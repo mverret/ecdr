@@ -54,7 +54,7 @@
             <beans:value>ecdr-opensearch-source</beans:value>
         </beans:constructor-arg>
         <beans:constructor-arg>
-            <beans:value>CDR Brokered REST Search</beans:value>
+            <beans:value>CDR REST Brokered Search Service</beans:value>
         </beans:constructor-arg>
     </beans:bean>
 
