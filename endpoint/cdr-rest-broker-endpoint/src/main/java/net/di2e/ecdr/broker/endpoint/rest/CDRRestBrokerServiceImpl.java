@@ -59,7 +59,8 @@ public class CDRRestBrokerServiceImpl extends AbstractRestSearchEndpoint {
     private static final Logger LOGGER = LoggerFactory.getLogger( CDRRestBrokerServiceImpl.class );
 
     private static final String RELATIVE_URL = "/services/cdr/broker/rest";
-    private static final String SERVICE_TYPE = "CDR Brokered REST Search";
+
+    private static final String SERVICE_TYPE = "CDR REST Brokered Search Service";
 
     private NormalizingFederationStrategy sortedFedStrategy = null;
 
