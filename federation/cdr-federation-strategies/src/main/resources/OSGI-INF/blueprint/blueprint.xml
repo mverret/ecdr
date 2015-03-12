@@ -42,7 +42,7 @@
     <service id="normalizingFederationStrategy" ref="normalizingFederationStrategyBean" interface="net.di2e.ecdr.federation.api.NormalizingFederationStrategy" />
     
     <bean id="normalizingFederationStrategyBean" class="net.di2e.ecdr.federation.NormalizingSortedFederationStrategy">
-        <cm:managed-properties persistent-id="cdr-federation-strategies" update-strategy="container-managed"/>
+        <cm:managed-properties persistent-id="cdr-result-normalization" update-strategy="container-managed"/>
         <argument ref="pool" />
         <argument ref="preFederatedQuerySortedList" />
         <argument ref="postFederatedQuerySortedList" />
