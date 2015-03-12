@@ -16,14 +16,14 @@
 <metatype:MetaData xmlns:metatype="http://www.osgi.org/xmlns/metatype/v1.2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.osgi.org/xmlns/metatype/v1.2.0 http://www.osgi.org/xmlns/metatype/v1.2.0">
 
-    <OCD name="CDR Query Result Normalization" id="cdr-federation-strategies">
+    <OCD name="CDR Query Result Normalization" id="cdr-result-normalization">
 
         <AD name="Normalize Relevance Score" id="normalizeResults" required="true" type="Boolean" default="true"
             description="Normalizes the relevance score/ranking, on queries that request to be sorted by relevance" />
     </OCD>
 
-    <Designate pid="cdr-federation-strategies">
-        <Object ocdref="cdr-federation-strategies" />
+    <Designate pid="cdr-result-normalization">
+        <Object ocdref="cdr-result-normalization" />
     </Designate>
 
 </metatype:MetaData>
