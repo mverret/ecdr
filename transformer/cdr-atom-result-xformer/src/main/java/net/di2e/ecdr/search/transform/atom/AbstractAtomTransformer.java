@@ -37,7 +37,7 @@ import net.di2e.ecdr.commons.constants.SearchConstants;
 import net.di2e.ecdr.commons.constants.SecurityConstants;
 import net.di2e.ecdr.search.transform.atom.constants.AtomResponseConstants;
 import net.di2e.ecdr.search.transform.atom.geo.GeoHelper;
-import net.di2e.ecdr.search.transform.atom.security.SecurityConfiguration;
+import net.di2e.ecdr.search.transform.atom.security.FeedSecurityConfiguration;
 import net.di2e.ecdr.search.transform.atom.security.SecurityData;
 import net.di2e.ecdr.search.transform.atom.security.SecurityMarkingHandler;
 import net.di2e.ecdr.search.transform.atom.security.impl.ConfigurationSecurityMarkingHandler;
@@ -90,7 +90,10 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
     private ActionProvider thumbnailActionProvider = null;
     private ActionProvider metadataActionProvider = null;
     private ConfigurationWatcherImpl configWatcher = null;
-    private SecurityConfiguration securityConfiguration = null;
+    private List<FeedSecurityConfiguration> feedSecurityConfigurations = null;
+    private FeedSecurityConfiguration currentFeedSecurityConfiguration = null;
+    private ConfigurationSecurityMarkingHandler currentFeedSecurityMarkingHandler = null;
+    private String secConfigFormat = "atom-ddms-2.0";
     private MimeType thumbnailMimeType = null;
     private MimeType viewMimeType = null;
 
@@ -102,7 +105,7 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
     List<SecurityMarkingHandler> securityHandlers = null;
 
     public AbstractAtomTransformer( ConfigurationWatcherImpl config, ActionProvider viewMetacard, ActionProvider metadataProvider, ActionProvider resourceProvider, ActionProvider thumbnailProvider,
-            MimeType thumbnailMime, MimeType viewMime, SecurityConfiguration securityConfig ) {
+            MimeType thumbnailMime, MimeType viewMime, List<FeedSecurityConfiguration> securityConfigs ) {
         if ( viewMime == null || thumbnailMime == null ) {
             throw new IllegalArgumentException( "MimeType parameters to constructor cannot be null" );
         }
@@ -113,12 +116,11 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
         this.thumbnailActionProvider = thumbnailProvider;
         this.thumbnailMimeType = thumbnailMime;
         this.viewMimeType = viewMime;
-        this.securityConfiguration = securityConfig;
+        this.feedSecurityConfigurations = securityConfigs;
 
         securityHandlers = new ArrayList<SecurityMarkingHandler>();
         securityHandlers.add( new MetacardSecurityMarkingHandler() );
         securityHandlers.add( new XmlMetadataSecurityMarkingHandler() );
-        securityHandlers.add( new ConfigurationSecurityMarkingHandler( securityConfiguration ) );
     }
 
     public abstract void addFeedElements( Feed feed, SourceResponse response, Map<String, Serializable> properties );
@@ -135,8 +137,26 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
         defaultToUseGMLEncoding = shouldUseGMLEncoding;
     }
 
-    public void setSecurityConfiguration( SecurityConfiguration config ) {
-        this.securityConfiguration = config;
+    public void setFeedSecurityFormat( String configFormat) {
+        if (StringUtils.isNotEmpty( configFormat )) {
+            secConfigFormat = configFormat;
+            FeedSecurityConfiguration newConfiguration = null;
+            for (FeedSecurityConfiguration curConfig : feedSecurityConfigurations) {
+                if (StringUtils.equals( secConfigFormat, curConfig.getFormat() )) {
+                    newConfiguration = curConfig;
+                    LOGGER.debug( "Setting feed security to use {} format.", secConfigFormat );
+                    break;
+                }
+            }
+            if (newConfiguration != null) {
+                currentFeedSecurityConfiguration = newConfiguration;
+                if (currentFeedSecurityMarkingHandler != null) {
+                    securityHandlers.remove( currentFeedSecurityMarkingHandler );
+                }
+                currentFeedSecurityMarkingHandler = new ConfigurationSecurityMarkingHandler(currentFeedSecurityConfiguration);
+                securityHandlers.add( currentFeedSecurityMarkingHandler );
+            }
+        }
     }
 
     @Override
@@ -567,11 +587,14 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
     }
 
     protected void setFeedSecurity( Feed feed ) {
-        if ( securityConfiguration != null ) {
-            String namespace = securityConfiguration.getResultSecurityNamespace();
+        if (currentFeedSecurityConfiguration == null) {
+            //try to re-search for configuration
+            setFeedSecurityFormat( secConfigFormat );
+        }
+        if ( currentFeedSecurityConfiguration != null ) {
+            String namespace = currentFeedSecurityConfiguration.getNamespace();
             if ( StringUtils.isNotBlank( namespace ) ) {
-                @SuppressWarnings( "unchecked" )
-                Map<String, String> securityAttributes = securityConfiguration.getResultSecurityMarkings();
+                Map<String, String> securityAttributes = currentFeedSecurityConfiguration.getAttributes();
                 if ( securityAttributes != null && !securityAttributes.isEmpty() ) {
                     feed.declareNS( namespace, SecurityConstants.ISM_NAMESPACE_PREFIX );
                     for ( java.util.Map.Entry<String, String> securityEntry : securityAttributes.entrySet() ) {

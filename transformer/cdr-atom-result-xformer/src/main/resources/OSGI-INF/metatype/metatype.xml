@@ -23,26 +23,31 @@
         <AD name="Use GML Encoding" id="useGMLEncoding" required="true" type="Boolean" default="true"
             description="When outputting atom records check to use GeoRSS GML encoding. Unchecked will use GeoRSS simple encoding" />
 
-    </OCD>
-    
-    <OCD name="CDR Atom Result Security Settings" id="cdr-atom-security-configuration">
+        <AD name="Feed Security Format" id="feedSecurityFormat" required="true" type="String" default="atom-ddms-2.0" description="Name of configuration format that should be used for
+            security markings in the atom feed." />
 
-        <AD name="Atom Feed Security Namespace" id="resultSecurityNamespace" required="true" type="String" default="urn:us:gov:ic:ism:v2"
-            description="The XML namespace for the security attributes that are populated in the fields below.  This will be placed in the Atom feed element.  
+    </OCD>
+
+    <OCD name="CDR Feed Configuration" id="cdr-atom-feed-configuration">
+
+        <AD name="Configuration Format" id="format" required="true" type="String" default="atom-ddms-2.0" description="Name of the configuration format. This name is used in the CDR Atom
+            Transformer Settings to specify which security settings to use." />
+
+        <AD name="Atom Feed Security Namespace" id="namespace" required="true" type="String" default="urn:us:gov:ic:ism:v2"
+            description="The XML namespace for the security attributes that are populated in the fields below.  This will be placed in the Atom feed element.
             This will also be placed in atom entry elements where security markings in the metadata could not be found" />
 
-        <AD name="Atom Feed Security Namespace" id="resultSecurityMarkings" required="true" type="String" default="classification=U,ownerProducer=USA" cardinality="100"
-            description="Name/Value pairs for the security attributes that should appear in the atom feed to denote the security markings of the Results.  These will also be placed in the 
+        <AD name="Atom Feed Security Attributes" id="attributeList" required="true" type="String" default="classification=U,ownerProducer=USA" cardinality="100"
+            description="Name/Value pairs for the security attributes that should appear in the atom feed to denote the security markings of the Results.  These will also be placed in the
             atom entry elements where security markings in the metadata could not be found" />
     </OCD>
 
     <Designate pid="cdr-atom-result-xformer">
         <Object ocdref="cdr-atom-result-xformer" />
     </Designate>
-    
-    
-    <Designate pid="cdr-atom-security-configuration">
-        <Object ocdref="cdr-atom-security-configuration" />
+
+    <Designate pid="cdr-atom-feed-configuration" factoryPid="cdr-atom-feed-configuration">
+        <Object ocdref="cdr-atom-feed-configuration" />
     </Designate>
 
 </metatype:MetaData>

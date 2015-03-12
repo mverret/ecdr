@@ -16,12 +16,13 @@
 package net.di2e.ecdr.search.transform.atom;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
 import javax.activation.MimeType;
 
 import net.di2e.ecdr.commons.CDRMetacard;
-import net.di2e.ecdr.search.transform.atom.security.SecurityConfiguration;
+import net.di2e.ecdr.search.transform.atom.security.FeedSecurityConfiguration;
 
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
@@ -33,7 +34,7 @@ import ddf.catalog.operation.SourceResponse;
 public class AtomTransformer extends AbstractAtomTransformer {
 
     public AtomTransformer( ConfigurationWatcherImpl configWatcher, ActionProvider viewMetacardProvider, ActionProvider metadataProvider, ActionProvider resourceProvider,
-            ActionProvider thumbnailProvider, MimeType thumbnailMime, MimeType viewMime, SecurityConfiguration securityConfig ) {
+            ActionProvider thumbnailProvider, MimeType thumbnailMime, MimeType viewMime, List<FeedSecurityConfiguration> securityConfig ) {
         super( configWatcher, viewMetacardProvider, metadataProvider, resourceProvider, thumbnailProvider, thumbnailMime, viewMime, securityConfig );
     }
 

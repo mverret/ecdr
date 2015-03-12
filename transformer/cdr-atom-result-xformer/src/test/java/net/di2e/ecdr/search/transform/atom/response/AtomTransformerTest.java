@@ -21,8 +21,10 @@ import static org.mockito.Mockito.mock;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,7 +35,7 @@ import net.di2e.ecdr.commons.constants.SearchConstants;
 import net.di2e.ecdr.commons.filter.config.FilterConfig;
 import net.di2e.ecdr.search.transform.atom.AtomTransformer;
 import net.di2e.ecdr.search.transform.atom.geo.GeoHelper;
-import net.di2e.ecdr.search.transform.atom.security.SecurityConfiguration;
+import net.di2e.ecdr.search.transform.atom.security.FeedSecurityConfiguration;
 
 import org.apache.abdera.Abdera;
 import org.apache.abdera.model.Document;
@@ -204,7 +206,7 @@ public class AtomTransformerTest extends net.di2e.ecdr.search.transform.atom.res
         ActionProvider metadataProvider = mock(ActionProvider.class);
         ActionProvider resourceProvider = mock(ActionProvider.class);
         ActionProvider thumbnailProvider = mock(ActionProvider.class);
-        SecurityConfiguration securityConfig = mock( SecurityConfiguration.class );
+        List<FeedSecurityConfiguration> securityConfig = Collections.emptyList();
         MimeType thumbnailMime = new MimeType("image/jpeg");
         MimeType viewMime = new MimeType("text/html");
         return new AtomTransformer( configurationWatcher, viewMetacardProvider, metadataProvider, resourceProvider, thumbnailProvider, thumbnailMime, viewMime, securityConfig );

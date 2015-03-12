@@ -21,28 +21,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import net.di2e.ecdr.search.transform.atom.security.SecurityConfiguration;
+import net.di2e.ecdr.search.transform.atom.security.FeedSecurityConfiguration;
 import net.di2e.ecdr.search.transform.atom.security.SecurityData;
 import net.di2e.ecdr.search.transform.atom.security.SecurityMarkingHandler;
 import ddf.catalog.data.Metacard;
 
 public class ConfigurationSecurityMarkingHandler implements SecurityMarkingHandler {
 
-    private SecurityConfiguration securityConfiguration = null;
+    private FeedSecurityConfiguration securityConfiguration = null;
 
-    public ConfigurationSecurityMarkingHandler( SecurityConfiguration securityConfig ) {
+    public ConfigurationSecurityMarkingHandler( FeedSecurityConfiguration securityConfig ) {
         securityConfiguration = securityConfig;
     }
 
     @Override
     public SecurityData getSecurityData( Metacard metacard ) {
         Map<String, List<String>> securityDataMarkings = new HashMap<>();
-        for ( Entry<String, String> marking : securityConfiguration.getResultSecurityMarkings().entrySet() ) {
+        for ( Entry<String, String> marking : securityConfiguration.getAttributes().entrySet() ) {
             List<String> values = new ArrayList<>();
             values.add( marking.getValue() );
             securityDataMarkings.put( marking.getKey(), values );
         }
-        SecurityData securityData = new SecurityData( securityDataMarkings, securityConfiguration.getResultSecurityNamespace() );
+        SecurityData securityData = new SecurityData( securityDataMarkings, securityConfiguration.getNamespace() );
         return securityData;
     }
 
