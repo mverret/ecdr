@@ -24,25 +24,26 @@
             description="When outputting atom records check to use GeoRSS GML encoding. Unchecked will use GeoRSS simple encoding" />
 
     </OCD>
-    
-    <OCD name="CDR Atom Result Security Settings" id="cdr-atom-security-configuration">
 
-        <AD name="Atom Feed Security Namespace" id="resultSecurityNamespace" required="true" type="String" default="urn:us:gov:ic:ism:v2"
-            description="The XML namespace for the security attributes that are populated in the fields below.  This will be placed in the Atom feed element.  
+    <OCD name="CDR Security Configuration" id="cdr-security-configurations">
+
+        <AD name="Configuration Formats" id="configFormats" required="true" type="String" default="atom-ddms-2.0" description="Names of formats that should be used with this security configuration." />
+
+        <AD name="Atom Feed Security Namespace" id="namespace" required="true" type="String" default="urn:us:gov:ic:ism:v2"
+            description="The XML namespace for the security attributes that are populated in the fields below.  This will be placed in the Atom feed element.
             This will also be placed in atom entry elements where security markings in the metadata could not be found" />
 
-        <AD name="Atom Feed Security Namespace" id="resultSecurityMarkings" required="true" type="String" default="classification=U,ownerProducer=USA" cardinality="100"
-            description="Name/Value pairs for the security attributes that should appear in the atom feed to denote the security markings of the Results.  These will also be placed in the 
+        <AD name="Atom Feed Security Attributes" id="attributeList" required="true" type="String" default="classification=U,ownerProducer=USA" cardinality="100"
+            description="Name/Value pairs for the security attributes that should appear in the atom feed to denote the security markings of the Results.  These will also be placed in the
             atom entry elements where security markings in the metadata could not be found" />
     </OCD>
 
     <Designate pid="cdr-atom-result-xformer">
         <Object ocdref="cdr-atom-result-xformer" />
     </Designate>
-    
-    
-    <Designate pid="cdr-atom-security-configuration">
-        <Object ocdref="cdr-atom-security-configuration" />
+
+    <Designate pid="cdr-security-configurations" factoryPid="cdr-security-configurations">
+        <Object ocdref="cdr-security-configurations" />
     </Designate>
 
 </metatype:MetaData>

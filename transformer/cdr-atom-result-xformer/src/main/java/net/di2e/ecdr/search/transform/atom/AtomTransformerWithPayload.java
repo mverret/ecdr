@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.activation.MimeType;
@@ -52,7 +53,7 @@ public class AtomTransformerWithPayload extends AbstractAtomTransformer {
     private Map<String, MetacardTransformer> metacardTransformerMap = null;
 
     public AtomTransformerWithPayload( ConfigurationWatcherImpl configWatcher, ActionProvider viewMetacardProvider, ActionProvider metadataProvider, ActionProvider resourceProvider,
-            ActionProvider thumbnailProvider, MimeType thumbnailMime, MimeType viewMime, SecurityConfiguration securityConfig ) {
+            ActionProvider thumbnailProvider, MimeType thumbnailMime, MimeType viewMime, List<SecurityConfiguration> securityConfig ) {
         super( configWatcher, viewMetacardProvider, metadataProvider, resourceProvider, thumbnailProvider, thumbnailMime, viewMime, securityConfig );
         metacardTransformerMap = new HashMap<String, MetacardTransformer>();
     }

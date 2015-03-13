@@ -46,10 +46,8 @@
     <bean id="htmlMimeType" class="javax.activation.MimeType">
         <argument value="text/html" />
     </bean>
-    
-    <bean id="securityConfig" class="net.di2e.ecdr.search.transform.atom.security.SecurityConfiguration">
-        <cm:managed-properties persistent-id="cdr-atom-security-configuration" update-strategy="container-managed" />
-    </bean>
+
+    <reference-list id="feedSecurityConfigList" interface="net.di2e.ecdr.search.transform.atom.security.SecurityConfiguration" availability="optional" />
 
     <bean id="atomPayloadTransformer" class="net.di2e.ecdr.search.transform.atom.AtomTransformerWithPayload">
         <cm:managed-properties persistent-id="cdr-atom-result-xformer" update-strategy="container-managed" />
@@ -60,7 +58,7 @@
         <argument ref="thumbnailActionProvider" />
         <argument ref="jpegMimeType" />
         <argument ref="htmlMimeType" />
-        <argument ref="securityConfig"/>
+        <argument ref="feedSecurityConfigList"/>
     </bean>
 
     <service ref="atomPayloadTransformer" auto-export="interfaces" ranking="5">
@@ -80,7 +78,7 @@
         <argument ref="thumbnailActionProvider" />
         <argument ref="jpegMimeType" />
         <argument ref="htmlMimeType" />
-        <argument ref="securityConfig"/>
+        <argument ref="feedSecurityConfigList"/>
     </bean>
 
     <service ref="atomTransformer" auto-export="interfaces" ranking="5">

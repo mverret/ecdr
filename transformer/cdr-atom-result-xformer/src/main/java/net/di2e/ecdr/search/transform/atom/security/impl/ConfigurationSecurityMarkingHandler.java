@@ -37,12 +37,12 @@ public class ConfigurationSecurityMarkingHandler implements SecurityMarkingHandl
     @Override
     public SecurityData getSecurityData( Metacard metacard ) {
         Map<String, List<String>> securityDataMarkings = new HashMap<>();
-        for ( Entry<String, String> marking : securityConfiguration.getResultSecurityMarkings().entrySet() ) {
+        for ( Entry<String, String> marking : securityConfiguration.getAttributes().entrySet() ) {
             List<String> values = new ArrayList<>();
             values.add( marking.getValue() );
             securityDataMarkings.put( marking.getKey(), values );
         }
-        SecurityData securityData = new SecurityData( securityDataMarkings, securityConfiguration.getResultSecurityNamespace() );
+        SecurityData securityData = new SecurityData( securityDataMarkings, securityConfiguration.getNamespace() );
         return securityData;
     }
 

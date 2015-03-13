@@ -15,44 +15,23 @@
  */
 package net.di2e.ecdr.search.transform.atom.security;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-public class SecurityConfiguration {
+/**
+ * Interface that details a simple security configurations. Can be used to populate entries with pre-set information.
+ */
+public interface SecurityConfiguration {
 
-    private String resultSecurityNamespace = null;
-    private Map<String, String> resultSecurityMarkings = null;
+    /**
+     * Used for fallback configurations, only one configuration should use this format
+     */
+    String DEFAULT_FORMAT_CONFIGURATION = "default";
 
-    public SecurityConfiguration() {
-        resultSecurityNamespace = "urn:us:gov:ic:ism:v2";
-        resultSecurityMarkings = new HashMap<String, String>();
-        resultSecurityMarkings.put( "classification", "U" );
-        resultSecurityMarkings.put( "ownerProducer", "USA" );
-    }
+    Set<String> getFormats();
 
-    public void setResultSecurityNamespace( String namespace ) {
-        resultSecurityNamespace = namespace;
-    }
+    String getNamespace();
 
-    public String getResultSecurityNamespace() {
-        return resultSecurityNamespace;
-    }
-
-    public void setResultSecurityMarkings( List<String> markings ) {
-        resultSecurityMarkings.clear();
-        if ( markings != null ) {
-            for ( String marking : markings ) {
-                String[] values = marking.split( "=" );
-                if ( values.length == 2 ) {
-                    resultSecurityMarkings.put( values[0], values[1] );
-                }
-            }
-        }
-    }
-
-    public Map<String, String> getResultSecurityMarkings() {
-        return resultSecurityMarkings;
-    }
+    Map<String, String> getAttributes();
 
 }

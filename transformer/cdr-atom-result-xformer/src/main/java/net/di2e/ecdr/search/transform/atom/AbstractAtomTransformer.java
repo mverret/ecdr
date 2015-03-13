@@ -15,22 +15,22 @@
  */
 package net.di2e.ecdr.search.transform.atom;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.Serializable;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.activation.MimeType;
-import javax.activation.MimeTypeParseException;
-import javax.xml.namespace.QName;
-
+import com.vividsolutions.jts.geom.Geometry;
+import com.vividsolutions.jts.io.ParseException;
+import com.vividsolutions.jts.io.WKTReader;
+import ddf.action.Action;
+import ddf.action.ActionProvider;
+import ddf.catalog.data.BinaryContent;
+import ddf.catalog.data.Metacard;
+import ddf.catalog.data.Result;
+import ddf.catalog.data.impl.BinaryContentImpl;
+import ddf.catalog.operation.ProcessingDetails;
+import ddf.catalog.operation.QueryRequest;
+import ddf.catalog.operation.QueryResponse;
+import ddf.catalog.operation.SourceResponse;
+import ddf.catalog.transform.CatalogTransformerException;
+import ddf.catalog.transform.MetacardTransformer;
+import ddf.catalog.transform.QueryResponseTransformer;
 import net.di2e.ecdr.commons.CDRMetacard;
 import net.di2e.ecdr.commons.constants.BrokerConstants;
 import net.di2e.ecdr.commons.constants.SearchConstants;
@@ -44,7 +44,6 @@ import net.di2e.ecdr.search.transform.atom.security.impl.ConfigurationSecurityMa
 import net.di2e.ecdr.search.transform.atom.security.impl.MetacardSecurityMarkingHandler;
 import net.di2e.ecdr.search.transform.atom.security.impl.XmlMetadataSecurityMarkingHandler;
 import net.di2e.ecdr.search.transform.geo.formatter.CompositeGeometry;
-
 import org.apache.abdera.Abdera;
 import org.apache.abdera.ext.geo.Position;
 import org.apache.abdera.ext.opensearch.OpenSearchConstants;
@@ -60,23 +59,20 @@ import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vividsolutions.jts.geom.Geometry;
-import com.vividsolutions.jts.io.ParseException;
-import com.vividsolutions.jts.io.WKTReader;
-
-import ddf.action.Action;
-import ddf.action.ActionProvider;
-import ddf.catalog.data.BinaryContent;
-import ddf.catalog.data.Metacard;
-import ddf.catalog.data.Result;
-import ddf.catalog.data.impl.BinaryContentImpl;
-import ddf.catalog.operation.ProcessingDetails;
-import ddf.catalog.operation.QueryRequest;
-import ddf.catalog.operation.QueryResponse;
-import ddf.catalog.operation.SourceResponse;
-import ddf.catalog.transform.CatalogTransformerException;
-import ddf.catalog.transform.MetacardTransformer;
-import ddf.catalog.transform.QueryResponseTransformer;
+import javax.activation.MimeType;
+import javax.activation.MimeTypeParseException;
+import javax.xml.namespace.QName;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.Serializable;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public abstract class AbstractAtomTransformer implements MetacardTransformer, QueryResponseTransformer {
 
@@ -85,12 +81,14 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
     private static final Logger LOGGER = LoggerFactory.getLogger( AbstractAtomTransformer.class );
     private static final DateTimeFormatter DATE_FORMATTER = ISODateTimeFormat.dateTime();
 
+    private static final String FORMAT_KEY = "format";
+
     private ActionProvider viewMetacardActionProvider = null;
     private ActionProvider resourceActionProvider = null;
     private ActionProvider thumbnailActionProvider = null;
     private ActionProvider metadataActionProvider = null;
     private ConfigurationWatcherImpl configWatcher = null;
-    private SecurityConfiguration securityConfiguration = null;
+    private List<SecurityConfiguration> securityConfigurations = null;
     private MimeType thumbnailMimeType = null;
     private MimeType viewMimeType = null;
 
@@ -102,7 +100,7 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
     List<SecurityMarkingHandler> securityHandlers = null;
 
     public AbstractAtomTransformer( ConfigurationWatcherImpl config, ActionProvider viewMetacard, ActionProvider metadataProvider, ActionProvider resourceProvider, ActionProvider thumbnailProvider,
-            MimeType thumbnailMime, MimeType viewMime, SecurityConfiguration securityConfig ) {
+        MimeType thumbnailMime, MimeType viewMime, List<SecurityConfiguration> securityConfigs ) {
         if ( viewMime == null || thumbnailMime == null ) {
             throw new IllegalArgumentException( "MimeType parameters to constructor cannot be null" );
         }
@@ -113,12 +111,15 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
         this.thumbnailActionProvider = thumbnailProvider;
         this.thumbnailMimeType = thumbnailMime;
         this.viewMimeType = viewMime;
-        this.securityConfiguration = securityConfig;
+        this.securityConfigurations = securityConfigs;
 
         securityHandlers = new ArrayList<SecurityMarkingHandler>();
         securityHandlers.add( new MetacardSecurityMarkingHandler() );
         securityHandlers.add( new XmlMetadataSecurityMarkingHandler() );
-        securityHandlers.add( new ConfigurationSecurityMarkingHandler( securityConfiguration ) );
+        SecurityConfiguration metacardDefault = getConfigurationFromFormat( "metacard-default" );
+        if ( metacardDefault != null ) {
+            securityHandlers.add( new ConfigurationSecurityMarkingHandler( metacardDefault ) );
+        }
     }
 
     public abstract void addFeedElements( Feed feed, SourceResponse response, Map<String, Serializable> properties );
@@ -128,15 +129,10 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
     /**
      * Specifies if GML encoding should be used for location data.
      *
-     * @param shouldUseGMLEncoding
-     *            true (default) will return locations as GeoRSS-GML; false will return locations as GeoRSS-Simple
+     * @param shouldUseGMLEncoding true (default) will return locations as GeoRSS-GML; false will return locations as GeoRSS-Simple
      */
     public void setUseGMLEncoding( boolean shouldUseGMLEncoding ) {
         defaultToUseGMLEncoding = shouldUseGMLEncoding;
-    }
-
-    public void setSecurityConfiguration( SecurityConfiguration config ) {
-        this.securityConfiguration = config;
     }
 
     @Override
@@ -155,12 +151,15 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
             Thread.currentThread().setContextClassLoader( currentClassLoader );
         }
 
-
         feed.declareNS( AtomResponseConstants.CDRB_NAMESPACE, AtomResponseConstants.CDRB_NAMESPACE_PREFIX );
         feed.declareNS( AtomResponseConstants.CDRS_EXT_NAMESPACE, AtomResponseConstants.CDRS_EXT_NAMESPACE_PREFIX );
 
-        setFeedSecurity( feed );
-
+        if ( properties.get( FORMAT_KEY ) != null ) {
+            setFeedSecurity( feed, properties.get( FORMAT_KEY ).toString() );
+        } else {
+            LOGGER.debug( "No format was found for response, using default security markings." );
+            setFeedSecurity( feed, null );
+        }
 
         feed.newId();
         setFeedTitle( feed, properties );
@@ -191,13 +190,13 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
 
             if ( relevance != null ) {
                 Element relevanceElement = entry.addExtension( new QName( AtomResponseConstants.RELEVANCE_NAMESPACE, AtomResponseConstants.RELEVANCE_ELEMENT,
-                        AtomResponseConstants.RELEVANCE_NAMESPACE_PREFIX ) );
+                    AtomResponseConstants.RELEVANCE_NAMESPACE_PREFIX ) );
                 relevanceElement.setText( String.valueOf( relevance ) );
             }
             Double distance = result.getDistanceInMeters();
             if ( distance != null ) {
                 Element distanceElement = entry.addExtension( new QName( AtomResponseConstants.CDRS_EXT_NAMESPACE, AtomResponseConstants.DISTANCE_ELEMENT,
-                        AtomResponseConstants.CDRS_EXT_NAMESPACE_PREFIX ) );
+                    AtomResponseConstants.CDRS_EXT_NAMESPACE_PREFIX ) );
                 distanceElement.setText( String.valueOf( distance ) );
             }
             feed.addEntry( entry );
@@ -270,7 +269,7 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
                         Integer totalResultsReturned = (Integer) sourceProperties.get( "total-results-returned" );
                         if ( totalResultsReturned != null ) {
                             sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "resultsRetrieved", AtomResponseConstants.CDRB_NAMESPACE_PREFIX,
-                                    String.valueOf( totalResultsReturned ) );
+                                String.valueOf( totalResultsReturned ) );
                         }
                     } else {
                         sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "resultsRetrieved", AtomResponseConstants.CDRB_NAMESPACE_PREFIX, String.valueOf( results.size() ) );
@@ -324,16 +323,16 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
                         Integer totalResultsReturned = (Integer) sourceProperties.get( "total-results-returned" );
                         if ( totalResultsReturned != null ) {
                             sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "resultsRetrieved", AtomResponseConstants.CDRB_NAMESPACE_PREFIX,
-                                    String.valueOf( totalResultsReturned ) );
+                                String.valueOf( totalResultsReturned ) );
                         }
                         sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "status", AtomResponseConstants.CDRB_NAMESPACE_PREFIX, "complete" );
                         sourceStatus
-                                .addSimpleExtension( AtomResponseConstants.CDRS_EXT_NAMESPACE, "statusMessage", AtomResponseConstants.CDRS_EXT_NAMESPACE_PREFIX, "Search complete with no errors" );
+                            .addSimpleExtension( AtomResponseConstants.CDRS_EXT_NAMESPACE, "statusMessage", AtomResponseConstants.CDRS_EXT_NAMESPACE_PREFIX, "Search complete with no errors" );
                     } else {
                         sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "resultsRetrieved", AtomResponseConstants.CDRB_NAMESPACE_PREFIX, "0" );
                         sourceStatus.addSimpleExtension( AtomResponseConstants.CDRB_NAMESPACE, "status", AtomResponseConstants.CDRB_NAMESPACE_PREFIX, "waiting" );
                         sourceStatus.addSimpleExtension( AtomResponseConstants.CDRS_EXT_NAMESPACE, "statusMessage", AtomResponseConstants.CDRS_EXT_NAMESPACE_PREFIX,
-                                "Source is still being searched, and has not returned results yet" );
+                            "Source is still being searched, and has not returned results yet" );
                     }
 
                     if ( StringUtils.isNotBlank( feedPath ) ) {
@@ -439,13 +438,13 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
         Date createdDate = metacard.getCreatedDate();
         if ( createdDate != null ) {
             entry.addSimpleExtension( AtomResponseConstants.METACARD_ATOM_NAMESPACE, AtomResponseConstants.METACARD_CREATED_DATE_ELEMENT, AtomResponseConstants.METACARD_ATOM_NAMESPACE_PREFIX,
-                    DATE_FORMATTER.print( createdDate.getTime() ) );
+                DATE_FORMATTER.print( createdDate.getTime() ) );
         }
 
         Date expirationDate = metacard.getExpirationDate();
         if ( expirationDate != null ) {
             entry.addSimpleExtension( AtomResponseConstants.METACARD_ATOM_NAMESPACE, AtomResponseConstants.METADATA_EXPIRATION_DATE_ELEMENT, AtomResponseConstants.METACARD_ATOM_NAMESPACE_PREFIX,
-                    DATE_FORMATTER.print( expirationDate.getTime() ) );
+                DATE_FORMATTER.print( expirationDate.getTime() ) );
         }
 
         addEntryElements( entry, metacard, properties );
@@ -457,9 +456,8 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
      * This method inspects the properties to determine if there is a property that specifies the GeoRSS format. If that
      * property exists then it will use the value of that property to determine whether to use simple or gml format.
      * Otherwise it will return the default global property for using GML or Simple
-     * 
-     * @param properties
-     *            that were passed into the transformer
+     *
+     * @param properties that were passed into the transformer
      * @return true if GML encoding for GeoRSS should be used, false would mean to use simple encoding
      */
     protected boolean useGmlEncoding( Map<String, Serializable> properties ) {
@@ -504,7 +502,7 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
             Action action = viewMetacardActionProvider.getAction( metacard );
             if ( action != null && action.getUrl() != null ) {
                 entry.addLink( action.getUrl().toString() + "?transform=" + (format == null ? CDR_ATOM_TRANSFORMER_ID : format), Link.REL_SELF, AtomResponseConstants.ATOM_MIME_TYPE,
-                        "View Atom Entry", null, -1 );
+                    "View Atom Entry", null, -1 );
                 entry.addLink( action.getUrl().toString(), Link.REL_RELATED, "text/xml", action.getTitle(), null, -1 );
             }
         }
@@ -566,12 +564,20 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
 
     }
 
-    protected void setFeedSecurity( Feed feed ) {
+    protected void setFeedSecurity( Feed feed, String format ) {
+        SecurityConfiguration securityConfiguration = null;
+        if (StringUtils.isNotBlank( format )) {
+            securityConfiguration = getConfigurationFromFormat( format );
+        }
+
+        if ( securityConfiguration == null ) {
+            LOGGER.debug( "No valid security configuration found for format {}, using default configurations.", format );
+            securityConfiguration = getConfigurationFromFormat( SecurityConfiguration.DEFAULT_FORMAT_CONFIGURATION );
+        }
         if ( securityConfiguration != null ) {
-            String namespace = securityConfiguration.getResultSecurityNamespace();
+            String namespace = securityConfiguration.getNamespace();
             if ( StringUtils.isNotBlank( namespace ) ) {
-                @SuppressWarnings( "unchecked" )
-                Map<String, String> securityAttributes = securityConfiguration.getResultSecurityMarkings();
+                Map<String, String> securityAttributes = securityConfiguration.getAttributes();
                 if ( securityAttributes != null && !securityAttributes.isEmpty() ) {
                     feed.declareNS( namespace, SecurityConstants.ISM_NAMESPACE_PREFIX );
                     for ( java.util.Map.Entry<String, String> securityEntry : securityAttributes.entrySet() ) {
@@ -608,6 +614,17 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
                 }
             }
         }
+    }
+
+    private SecurityConfiguration getConfigurationFromFormat( String format ) {
+        SecurityConfiguration securityConfiguration = null;
+        for ( SecurityConfiguration curConfig : securityConfigurations ) {
+            if ( curConfig.getFormats().contains( format ) ) {
+                securityConfiguration = curConfig;
+                break;
+            }
+        }
+        return securityConfiguration;
     }
 
 }

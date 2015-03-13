@@ -16,6 +16,7 @@
 package net.di2e.ecdr.search.transform.atom;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
 import javax.activation.MimeType;
@@ -33,7 +34,7 @@ import ddf.catalog.operation.SourceResponse;
 public class AtomTransformer extends AbstractAtomTransformer {
 
     public AtomTransformer( ConfigurationWatcherImpl configWatcher, ActionProvider viewMetacardProvider, ActionProvider metadataProvider, ActionProvider resourceProvider,
-            ActionProvider thumbnailProvider, MimeType thumbnailMime, MimeType viewMime, SecurityConfiguration securityConfig ) {
+            ActionProvider thumbnailProvider, MimeType thumbnailMime, MimeType viewMime, List<SecurityConfiguration> securityConfig ) {
         super( configWatcher, viewMetacardProvider, metadataProvider, resourceProvider, thumbnailProvider, thumbnailMime, viewMime, securityConfig );
     }
 
