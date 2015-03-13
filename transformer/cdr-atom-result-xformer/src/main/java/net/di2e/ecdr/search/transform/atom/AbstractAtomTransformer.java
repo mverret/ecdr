@@ -156,6 +156,9 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
 
         if ( properties.get( FORMAT_KEY ) != null ) {
             setFeedSecurity( feed, properties.get( FORMAT_KEY ).toString() );
+        } else {
+            LOGGER.debug( "No format was found for response, using default security markings." );
+            setFeedSecurity( feed, null );
         }
 
         feed.newId();
@@ -562,7 +565,11 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
     }
 
     protected void setFeedSecurity( Feed feed, String format ) {
-        SecurityConfiguration securityConfiguration = getConfigurationFromFormat( format );
+        SecurityConfiguration securityConfiguration = null;
+        if (StringUtils.isNotBlank( format )) {
+            securityConfiguration = getConfigurationFromFormat( format );
+        }
+
         if ( securityConfiguration == null ) {
             LOGGER.debug( "No valid security configuration found for format {}, using default configurations.", format );
             securityConfiguration = getConfigurationFromFormat( SecurityConfiguration.DEFAULT_FORMAT_CONFIGURATION );
@@ -614,7 +621,6 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
         for ( SecurityConfiguration curConfig : securityConfigurations ) {
             if ( curConfig.getFormats().contains( format ) ) {
                 securityConfiguration = curConfig;
-                LOGGER.debug( "Setting feed security to use {} format.", format );
                 break;
             }
         }
