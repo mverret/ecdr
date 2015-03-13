@@ -22,7 +22,7 @@ import java.util.Map;
 import javax.activation.MimeType;
 
 import net.di2e.ecdr.commons.CDRMetacard;
-import net.di2e.ecdr.search.transform.atom.security.FeedSecurityConfiguration;
+import net.di2e.ecdr.search.transform.atom.security.SecurityConfiguration;
 
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
@@ -34,7 +34,7 @@ import ddf.catalog.operation.SourceResponse;
 public class AtomTransformer extends AbstractAtomTransformer {
 
     public AtomTransformer( ConfigurationWatcherImpl configWatcher, ActionProvider viewMetacardProvider, ActionProvider metadataProvider, ActionProvider resourceProvider,
-            ActionProvider thumbnailProvider, MimeType thumbnailMime, MimeType viewMime, List<FeedSecurityConfiguration> securityConfig ) {
+            ActionProvider thumbnailProvider, MimeType thumbnailMime, MimeType viewMime, List<SecurityConfiguration> securityConfig ) {
         super( configWatcher, viewMetacardProvider, metadataProvider, resourceProvider, thumbnailProvider, thumbnailMime, viewMime, securityConfig );
     }
 

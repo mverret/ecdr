@@ -15,20 +15,21 @@
  */
 package net.di2e.ecdr.search.transform.atom.security.impl;
 
-    import java.io.IOException;
-    import java.util.ArrayList;
-    import java.util.Dictionary;
-    import java.util.Hashtable;
-    import java.util.List;
+import net.di2e.ecdr.search.transform.atom.security.SecurityConfiguration;
+import org.osgi.service.cm.Configuration;
+import org.osgi.service.cm.ConfigurationAdmin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-    import org.osgi.service.cm.Configuration;
-    import org.osgi.service.cm.ConfigurationAdmin;
-    import org.slf4j.Logger;
-    import org.slf4j.LoggerFactory;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Dictionary;
+import java.util.Hashtable;
+import java.util.List;
 
 public class DefaultAtomFeedConfig {
 
-    private static final String CONFIG_PID = "cdr-atom-feed-configuration";
+    private static final String CONFIG_PID = "cdr-security-configurations";
 
     private static final Logger LOGGER = LoggerFactory.getLogger( DefaultAtomFeedConfig.class );
 
@@ -38,8 +39,9 @@ public class DefaultAtomFeedConfig {
 
     public enum DefaultConfig {
 
-        ATOM_DDMS_20( "atom-ddms-2.0", "urn:us:gov:ic:ism:v2", "classification=U,ownerProducer=USA" ),
-        ATOM_DDMS_41( "atom-ddms-4.1", "urn:us:gov:ic:ism", "DESVersion=9,classification=U,ownerProducer=USA" );
+        ISM_v9( "atom,atom-ddms,atom-ddms-4.1,query-default,metacard-default," + SecurityConfiguration.DEFAULT_FORMAT_CONFIGURATION,
+            "urn:us:gov:ic:ism", "DESVersion=9,classification=U,ownerProducer=USA" ),
+        ISM_v2( "atom-ddms-2.0", "urn:us:gov:ic:ism:v2", "classification=U,ownerProducer=USA" );
 
         private final String format;
         private final String namespace;
@@ -51,7 +53,7 @@ public class DefaultAtomFeedConfig {
             attributes = entryAttributes;
         }
 
-        public String getFormat() {
+        public String getFormats() {
             return format;
         }
 
@@ -71,10 +73,10 @@ public class DefaultAtomFeedConfig {
 
     public void init() throws IOException {
         for ( DefaultConfig config : DefaultConfig.values() ) {
-            LOGGER.debug( "Adding configuration with format {}", config.getFormat() );
+            LOGGER.debug( "Adding configuration with format {}", config.getFormats() );
             Configuration configuration = configAdmin.createFactoryConfiguration( CONFIG_PID );
             Dictionary<String, String> properties = new Hashtable<>();
-            properties.put( "format", config.getFormat() );
+            properties.put( "configFormats", config.getFormats() );
             properties.put( "namespace", config.getNamespace() );
             properties.put( "attributeList", config.getAttributes() );
             configuration.update( properties );

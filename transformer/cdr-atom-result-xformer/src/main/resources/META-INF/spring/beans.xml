@@ -32,14 +32,14 @@
         <beans:constructor-arg ref="configurationAdmin" />
     </beans:bean>
 
-    <osgix:managed-service-factory id="cdr-atom-feed-configuration" factory-pid="cdr-atom-feed-configuration"
+    <osgix:managed-service-factory id="cdr-security-configurations" factory-pid="cdr-security-configurations"
                                    update-strategy="container-managed">
 
         <osgix:interfaces>
-            <beans:value>net.di2e.ecdr.search.transform.atom.security.FeedSecurityConfiguration</beans:value>
+            <beans:value>net.di2e.ecdr.search.transform.atom.security.SecurityConfiguration</beans:value>
         </osgix:interfaces>
 
-        <beans:bean id="feedSecurityConfiguration" class="net.di2e.ecdr.search.transform.atom.security.impl.FeedSecurityConfigurationImpl" />
+        <beans:bean id="feedSecurityConfiguration" class="net.di2e.ecdr.search.transform.atom.security.impl.SecurityConfigurationImpl" />
 
     </osgix:managed-service-factory>
 

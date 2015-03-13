@@ -21,16 +21,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import net.di2e.ecdr.search.transform.atom.security.FeedSecurityConfiguration;
+import net.di2e.ecdr.search.transform.atom.security.SecurityConfiguration;
 import net.di2e.ecdr.search.transform.atom.security.SecurityData;
 import net.di2e.ecdr.search.transform.atom.security.SecurityMarkingHandler;
 import ddf.catalog.data.Metacard;
 
 public class ConfigurationSecurityMarkingHandler implements SecurityMarkingHandler {
 
-    private FeedSecurityConfiguration securityConfiguration = null;
+    private SecurityConfiguration securityConfiguration = null;
 
-    public ConfigurationSecurityMarkingHandler( FeedSecurityConfiguration securityConfig ) {
+    public ConfigurationSecurityMarkingHandler( SecurityConfiguration securityConfig ) {
         securityConfiguration = securityConfig;
     }
 

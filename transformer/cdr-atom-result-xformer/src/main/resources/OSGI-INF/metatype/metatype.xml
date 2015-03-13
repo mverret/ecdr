@@ -23,15 +23,11 @@
         <AD name="Use GML Encoding" id="useGMLEncoding" required="true" type="Boolean" default="true"
             description="When outputting atom records check to use GeoRSS GML encoding. Unchecked will use GeoRSS simple encoding" />
 
-        <AD name="Feed Security Format" id="feedSecurityFormat" required="true" type="String" default="atom-ddms-2.0" description="Name of configuration format that should be used for
-            security markings in the atom feed." />
-
     </OCD>
 
-    <OCD name="CDR Feed Configuration" id="cdr-atom-feed-configuration">
+    <OCD name="CDR Security Configuration" id="cdr-security-configurations">
 
-        <AD name="Configuration Format" id="format" required="true" type="String" default="atom-ddms-2.0" description="Name of the configuration format. This name is used in the CDR Atom
-            Transformer Settings to specify which security settings to use." />
+        <AD name="Configuration Formats" id="configFormats" required="true" type="String" default="atom-ddms-2.0" description="Names of formats that should be used with this security configuration." />
 
         <AD name="Atom Feed Security Namespace" id="namespace" required="true" type="String" default="urn:us:gov:ic:ism:v2"
             description="The XML namespace for the security attributes that are populated in the fields below.  This will be placed in the Atom feed element.
@@ -46,8 +42,8 @@
         <Object ocdref="cdr-atom-result-xformer" />
     </Designate>
 
-    <Designate pid="cdr-atom-feed-configuration" factoryPid="cdr-atom-feed-configuration">
-        <Object ocdref="cdr-atom-feed-configuration" />
+    <Designate pid="cdr-security-configurations" factoryPid="cdr-security-configurations">
+        <Object ocdref="cdr-security-configurations" />
     </Designate>
 
 </metatype:MetaData>

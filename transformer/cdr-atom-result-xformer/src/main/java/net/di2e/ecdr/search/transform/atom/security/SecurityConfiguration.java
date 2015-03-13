@@ -16,10 +16,19 @@
 package net.di2e.ecdr.search.transform.atom.security;
 
 import java.util.Map;
+import java.util.Set;
 
-public interface FeedSecurityConfiguration {
+/**
+ * Interface that details a simple security configurations. Can be used to populate entries with pre-set information.
+ */
+public interface SecurityConfiguration {
 
-    String getFormat();
+    /**
+     * Used for fallback configurations, only one configuration should use this format
+     */
+    String DEFAULT_FORMAT_CONFIGURATION = "default";
+
+    Set<String> getFormats();
 
     String getNamespace();
 

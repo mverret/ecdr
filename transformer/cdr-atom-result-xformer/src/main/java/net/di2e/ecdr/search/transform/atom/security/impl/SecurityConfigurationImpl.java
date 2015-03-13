@@ -15,30 +15,36 @@
  */
 package net.di2e.ecdr.search.transform.atom.security.impl;
 
-import net.di2e.ecdr.search.transform.atom.security.FeedSecurityConfiguration;
+import net.di2e.ecdr.search.transform.atom.security.SecurityConfiguration;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
-public class FeedSecurityConfigurationImpl implements FeedSecurityConfiguration {
+public class SecurityConfigurationImpl implements SecurityConfiguration {
 
-    private String format = "atom-ddms-2.0";
+    private Set<String> formats = Collections.emptySet();
     private String namespace = "urn:us:gov:ic:ism:v2";
     private Map<String, String> attributes = null;
 
-    public void setFormat( String newFormat ) {
-        format = newFormat;
+    public void setConfigFormats( String newFormats ) {
+        if ( StringUtils.isNotBlank( newFormats ) ) {
+            formats = new HashSet<>( (Arrays.asList( newFormats.split( "," ) )) );
+        }
     }
 
-    public void setNamespace( String newNamespace) {
+    public void setNamespace( String newNamespace ) {
         namespace = newNamespace;
     }
 
     public void setAttributeList( String newAttributes ) {
         if ( newAttributes != null ) {
-            List<String> attrList = Arrays.asList(newAttributes.split( "," ));
+            List<String> attrList = Arrays.asList( newAttributes.split( "," ) );
             setAttributesList( attrList );
         }
     }
@@ -56,8 +62,8 @@ public class FeedSecurityConfigurationImpl implements FeedSecurityConfiguration 
     }
 
     @Override
-    public String getFormat() {
-        return format;
+    public Set<String> getFormats() {
+        return formats;
     }
 
     @Override
