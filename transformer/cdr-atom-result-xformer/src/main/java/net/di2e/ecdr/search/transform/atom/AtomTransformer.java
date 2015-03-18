@@ -27,11 +27,17 @@ import net.di2e.ecdr.search.transform.atom.security.SecurityConfiguration;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
 import org.codice.ddf.configuration.impl.ConfigurationWatcherImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import ddf.action.ActionProvider;
 import ddf.catalog.operation.SourceResponse;
 
 public class AtomTransformer extends AbstractAtomTransformer {
+    
+    private static final String FORMAT_KEY = "format";
+    
+    private static final Logger LOGGER = LoggerFactory.getLogger( AtomTransformer.class );
 
     public AtomTransformer( ConfigurationWatcherImpl configWatcher, ActionProvider viewMetacardProvider, ActionProvider metadataProvider, ActionProvider resourceProvider,
             ActionProvider thumbnailProvider, MimeType thumbnailMime, MimeType viewMime, List<SecurityConfiguration> securityConfig ) {
@@ -40,10 +46,17 @@ public class AtomTransformer extends AbstractAtomTransformer {
 
     @Override
     public void addFeedElements( Feed feed, SourceResponse response, Map<String, Serializable> properties ) {
+        if ( properties.get( FORMAT_KEY ) != null ) {
+            setFeedSecurity( feed, properties.get( FORMAT_KEY ).toString() );
+        } else {
+            LOGGER.debug( "No format was found for response, using default security markings." );
+            setFeedSecurity( feed, null );
+        }
     }
 
     @Override
     public void addEntryElements( Entry entry, CDRMetacard metacard, Map<String, Serializable> properties ) {
+        setEntrySecurity( entry, metacard );
     }
 
 }

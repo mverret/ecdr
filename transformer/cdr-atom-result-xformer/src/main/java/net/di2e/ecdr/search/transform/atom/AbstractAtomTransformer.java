@@ -81,7 +81,7 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
     private static final Logger LOGGER = LoggerFactory.getLogger( AbstractAtomTransformer.class );
     private static final DateTimeFormatter DATE_FORMATTER = ISODateTimeFormat.dateTime();
 
-    private static final String FORMAT_KEY = "format";
+    
 
     private ActionProvider viewMetacardActionProvider = null;
     private ActionProvider resourceActionProvider = null;
@@ -154,12 +154,7 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
         feed.declareNS( AtomResponseConstants.CDRB_NAMESPACE, AtomResponseConstants.CDRB_NAMESPACE_PREFIX );
         feed.declareNS( AtomResponseConstants.CDRS_EXT_NAMESPACE, AtomResponseConstants.CDRS_EXT_NAMESPACE_PREFIX );
 
-        if ( properties.get( FORMAT_KEY ) != null ) {
-            setFeedSecurity( feed, properties.get( FORMAT_KEY ).toString() );
-        } else {
-            LOGGER.debug( "No format was found for response, using default security markings." );
-            setFeedSecurity( feed, null );
-        }
+        
 
         feed.newId();
         setFeedTitle( feed, properties );
@@ -409,8 +404,6 @@ public abstract class AbstractAtomTransformer implements MetacardTransformer, Qu
 
         entry.declareNS( AtomResponseConstants.GEORSS_NAMESPACE, AtomResponseConstants.GEORSS_NAMESPACE_PREFIX );
         entry.declareNS( AtomResponseConstants.RELEVANCE_NAMESPACE, AtomResponseConstants.RELEVANCE_NAMESPACE_PREFIX );
-
-        setEntrySecurity( entry, metacard );
 
         entry.setId( metacard.getAtomId() );
         entry.setTitle( metacard.getTitle() );
