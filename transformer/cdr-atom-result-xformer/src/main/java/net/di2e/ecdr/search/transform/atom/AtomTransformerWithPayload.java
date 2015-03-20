@@ -31,7 +31,6 @@ import net.di2e.ecdr.search.transform.atom.security.SecurityConfiguration;
 
 import org.apache.abdera.Abdera;
 import org.apache.abdera.model.Entry;
-import org.apache.abdera.model.Feed;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.codice.ddf.configuration.impl.ConfigurationWatcherImpl;
@@ -42,24 +41,20 @@ import ddf.action.ActionProvider;
 import ddf.catalog.Constants;
 import ddf.catalog.data.BinaryContent;
 import ddf.catalog.data.Metacard;
-import ddf.catalog.operation.SourceResponse;
 import ddf.catalog.transform.CatalogTransformerException;
 import ddf.catalog.transform.MetacardTransformer;
 
-public class AtomTransformerWithPayload extends AbstractAtomTransformer {
+public class AtomTransformerWithPayload extends AtomTransformer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger( AtomTransformerWithPayload.class );
 
     private Map<String, MetacardTransformer> metacardTransformerMap = null;
 
-    public AtomTransformerWithPayload( ConfigurationWatcherImpl configWatcher, ActionProvider viewMetacardProvider, ActionProvider metadataProvider, ActionProvider resourceProvider,
-            ActionProvider thumbnailProvider, MimeType thumbnailMime, MimeType viewMime, List<SecurityConfiguration> securityConfig ) {
+    public AtomTransformerWithPayload( ConfigurationWatcherImpl configWatcher, ActionProvider viewMetacardProvider, ActionProvider metadataProvider,
+            ActionProvider resourceProvider, ActionProvider thumbnailProvider, MimeType thumbnailMime, MimeType viewMime,
+            List<SecurityConfiguration> securityConfig ) {
         super( configWatcher, viewMetacardProvider, metadataProvider, resourceProvider, thumbnailProvider, thumbnailMime, viewMime, securityConfig );
         metacardTransformerMap = new HashMap<String, MetacardTransformer>();
-    }
-
-    @Override
-    public void addFeedElements( Feed feed, SourceResponse response, Map<String, Serializable> properties ) {
     }
 
     @Override
@@ -68,22 +63,30 @@ public class AtomTransformerWithPayload extends AbstractAtomTransformer {
         ClassLoader currentClassLoader = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader( AtomTransformerWithPayload.class.getClassLoader() );
-            entry.addExtension( Abdera.getNewParser().parse( new StringReader( getMetadataXML( metacard, (String) properties.get( SearchConstants.METACARD_TRANSFORMER_NAME ) ) ) ).getRoot() );
+            String metadata = getMetadataXML( metacard, (String) properties.get( SearchConstants.METACARD_TRANSFORMER_NAME ) );
+            entry.addExtension( Abdera.getNewParser().parse( new StringReader( metadata ) ).getRoot() );
+            CDRMetacard newMetacard = new CDRMetacard( metacard );
+            newMetacard.setMetadata( metadata );
+
+            super.setEntrySecurity( entry, newMetacard );
         } finally {
             Thread.currentThread().setContextClassLoader( currentClassLoader );
         }
     }
 
     /**
-     * Method responsible for getting the metadata XML String that is associated with the Metacard. The metadata is
-     * retrieved by calling the MetadataTransformer that is registered with the id that matches the format String that
-     * is passed into the method. If a MetacardTransformer doesn't exist, or the result of the Transform is not XML, or
-     * if there is an error while transforming, the Metacard.METADATA will be returned
+     * Method responsible for getting the metadata XML String that is associated
+     * with the Metacard. The metadata is retrieved by calling the
+     * MetadataTransformer that is registered with the id that matches the
+     * format String that is passed into the method. If a MetacardTransformer
+     * doesn't exist, or the result of the Transform is not XML, or if there is
+     * an error while transforming, the Metacard.METADATA will be returned
      * 
      * @param metacard
      *            the Metacard to get the Metacard from
      * @param format
-     *            the format of the MetacardTransformer to use (which is looked up by MetacardTransformer id)
+     *            the format of the MetacardTransformer to use (which is looked
+     *            up by MetacardTransformer id)
      * @return the XML String
      */
     protected String getMetadataXML( Metacard metacard, String format ) {
@@ -110,20 +113,23 @@ public class AtomTransformerWithPayload extends AbstractAtomTransformer {
             }
         }
         if ( metadata == null ) {
-            LOGGER.debug( "A MetacardTransform didn't exist for format [{}] or ran into problems when transforming Metacard, so falling back to using the Metadata in the Metacard", format );
+            LOGGER.debug(
+                    "A MetacardTransform didn't exist for format [{}] or ran into problems when transforming Metacard, so falling back to using the Metadata in the Metacard",
+                    format );
             metadata = metacard.getMetadata();
         }
         return metadata;
     }
 
     /**
-     * Method called by the OSGi container, managed by blueprint whenever a new MetacardTransformer service is exposed
-     * to the OSGi Registry
+     * Method called by the OSGi container, managed by blueprint whenever a new
+     * MetacardTransformer service is exposed to the OSGi Registry
      * 
      * @param transformer
      *            the MetacardTransformer that was added
      * @param map
-     *            the service properties for the corresponding MetacardTransformer
+     *            the service properties for the corresponding
+     *            MetacardTransformer
      */
     public void metacardTransformerAdded( MetacardTransformer transformer, Map<String, Object> map ) {
         String id = (String) map.get( Constants.SERVICE_ID );
@@ -132,13 +138,14 @@ public class AtomTransformerWithPayload extends AbstractAtomTransformer {
     }
 
     /**
-     * Method is called when a MetacardTransformer is removed from the OSGi registry (called by OSGi container, managed
-     * by blueprint)
+     * Method is called when a MetacardTransformer is removed from the OSGi
+     * registry (called by OSGi container, managed by blueprint)
      * 
      * @param transformer
      *            the MetacardTransformer service that was removed
      * @param map
-     *            the service properties for the corresponding MetacardTransformer
+     *            the service properties for the corresponding
+     *            MetacardTransformer
      */
     public void metacardTransformerRemoved( MetacardTransformer transformer, Map<String, Object> map ) {
         String id = (String) map.get( Constants.SERVICE_ID );
