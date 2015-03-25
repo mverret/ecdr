@@ -28,7 +28,7 @@
 
     <osgi:reference id="filterAdapter" interface="ddf.catalog.filter.FilterAdapter" />
     
-    <osgix:managed-service-factory id="net.di2e.ecdr.source.rest.OpenSearchSource"
+    <osgix:managed-service-factory id="ecdr-opensearch-source"
         factory-pid="ecdr-opensearch-source" update-strategy="container-managed">
 
         <osgix:interfaces>
@@ -40,10 +40,31 @@
             <beans:constructor-arg ref="metacardCacheManager" />
             
             <!-- properties supported by Maskable Impl that are not set through Metatype -->  
-            <beans:property name="title" value="CDR REST Federation" />
-            <beans:property name="description" value="CDR REST Federated Source v3.0" />
+            <beans:property name="title" value="OpenSearch Federation" />
+            <beans:property name="description" value="OpenSearch Federated Source" />
             <beans:property name="organization" value="DI2E" />
-            <beans:property name="version" value="3.0" />
+            <beans:property name="version" value="1.1" />
+            <!-- don't set the metatype properties in here -->
+        </beans:bean>
+
+    </osgix:managed-service-factory>
+    
+    <osgix:managed-service-factory id="ecdr-opensearch-connected-source"
+        factory-pid="ecdr-opensearch-connected-source" update-strategy="container-managed">
+
+        <osgix:interfaces>
+            <beans:value>ddf.catalog.source.ConnectedSource</beans:value>
+        </osgix:interfaces>
+
+        <beans:bean id="OpenSearchConnectedSourceBean" class="net.di2e.ecdr.source.rest.OpenSearchSource" destroy-method="cleanUp">
+            <beans:constructor-arg ref="filterAdapter" />
+            <beans:constructor-arg ref="metacardCacheManager" />
+            
+            <!-- properties supported by Maskable Impl that are not set through Metatype -->  
+            <beans:property name="title" value="OpenSearch Connected Federation" />
+            <beans:property name="description" value="OpenSearch Connected Source" />
+            <beans:property name="organization" value="DI2E" />
+            <beans:property name="version" value="1.1" />
             <!-- don't set the metatype properties in here -->
         </beans:bean>
 

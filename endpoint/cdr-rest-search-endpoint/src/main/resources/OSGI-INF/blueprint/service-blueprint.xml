@@ -19,11 +19,19 @@
 <blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0" xmlns:jaxrs="http://cxf.apache.org/blueprint/jaxrs"
     xmlns:cxf="http://cxf.apache.org/blueprint/core"
+    xmlns:ext="http://aries.apache.org/blueprint/xmlns/blueprint-ext/v1.0.0"
     xsi:schemaLocation="
         http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
         http://cxf.apache.org/blueprint/jaxrs http://cxf.apache.org/schemas/blueprint/jaxrs.xsd
-        http://cxf.apache.org/blueprint/core http://cxf.apache.org/schemas/blueprint/core.xsd">
-
+        http://cxf.apache.org/blueprint/core http://cxf.apache.org/schemas/blueprint/core.xsd
+        http://aries.apache.org/blueprint/xmlns/blueprint-ext/v1.0.0 http://aries.apache.org/schemas/blueprint-ext/blueprint-ext.xsd">
+    
+    <reference id="corsFilterConfig" availability="mandatory" interface="net.di2e.ecdr.security.cors.config.CORSFilterConfiguration"/> 
+    
+    <bean id="cors-filter" class="net.di2e.ecdr.security.cors.CORSFilter" destroy-method="destroy">
+        <argument ref="corsFilterConfig"/>
+    </bean>
+    
     <jaxrs:server id="cdrRestEndpoint" address="/cdr/search/rest">
         <jaxrs:serviceBeans>
             <ref component-id="cdrRestSearchService" />
@@ -31,6 +39,9 @@
         <jaxrs:features>
             <cxf:logging />
         </jaxrs:features>
+        <jaxrs:providers>
+            <ref component-id="cors-filter" />
+        </jaxrs:providers>
     </jaxrs:server>
     
     <bean id="preFederatedQuerySortedList" class="ddf.catalog.util.impl.SortedServiceList">
