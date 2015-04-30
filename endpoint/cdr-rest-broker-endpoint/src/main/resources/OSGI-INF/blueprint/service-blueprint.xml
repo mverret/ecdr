@@ -57,11 +57,23 @@
 
     <service id="cdrRestConfigWatcher" ref="configurationWatcher" interface="org.codice.ddf.configuration.ConfigurationWatcher" />
     <bean id="configurationWatcher" class="org.codice.ddf.configuration.impl.ConfigurationWatcherImpl" />
+    
+    <reference id="corsFilterConfig" availability="mandatory" interface="net.di2e.ecdr.security.cors.config.CORSFilterConfiguration"/> 
+    
+    <bean id="cors-filter" class="net.di2e.ecdr.security.cors.CORSFilter" destroy-method="destroy">
+        <argument ref="corsFilterConfig"/>
+    </bean>
 
     <jaxrs:server id="cdrRestEndpoint" address="/cdr/broker/rest">
         <jaxrs:serviceBeans>
             <ref component-id="cdrRestSearchService" />
         </jaxrs:serviceBeans>
+        <jaxrs:features>
+            <cxf:logging />
+        </jaxrs:features>
+        <jaxrs:providers>
+            <ref component-id="cors-filter" />
+        </jaxrs:providers>
     </jaxrs:server>
 
     <bean id="cdrRestSearchService" class="net.di2e.ecdr.broker.endpoint.rest.CDRRestBrokerServiceImpl">

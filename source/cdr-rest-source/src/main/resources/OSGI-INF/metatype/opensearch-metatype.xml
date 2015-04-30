@@ -103,8 +103,95 @@
         </AD>
 
     </OCD>
+    
+    <OCD description="CDR OpenSearch Connected Source (will not appear as a federated site, instead will get queried anytime local catalog is queried)" name="CDR OpenSearch Connected Source" id="ecdr-opensearch-connected-source">
+        
+        <AD name="Search Endpoint URL" id="url" required="true" type="String" default=""
+            description="OpenSearch base endpoint URL, should include everything up to (and not including) the '?'" />
+
+        <AD name="Response Timeout" id="receiveTimeoutSeconds" required="true" type="Integer" default="0"
+            description="Number of seconds that the client will wait for a response before it times out. The default is 0 (wait indefinitely). 
+            0 specifies that the client will wait indefinitely." />
+
+        <AD name="Connection Timeout" id="connectionTimeoutSeconds" required="true" type="Integer" default="30"
+            description="Number of seconds that the client will attempt to establish a connection before it times out. The default is 30 seconds. 
+            0 specifies that the client will continue to attempt to open a connection indefinitely." />
+
+        <AD name="Max Result Count" id="maxResultCount" required="true" type="Integer" default="0"
+            description="The maximum number of records to return. If a client specifies a larger value that value will be overriden with this value.  0 or empty means no override." />
+
+        <AD name="Hard Coded Query Parameters" id="hardCodedParameters" required="true" type="String" default=""
+            description="Comma separated query parameter and value pairs (e.g. format=atom,timeout=300000)" />
+
+        <AD name="Ping URL" id="pingUrl" type="String" default=""
+            description="URL to check if the site is up or down.  The Method drop down should also be set to GET or HEAD of this URL is provieded" />
+
+        <AD name="Ping Method" id="pingMethodString" required="true" type="String" default="NONE"
+            description="The HTTP method that should be used when calling the 'Check Availablity URL' to check status">
+            <Option label="Don't Check Availabiility" value="NONE" />
+            <Option label="HEAD" value="HEAD" />
+            <Option label="GET" value="GET" />
+        </AD>
+
+        <AD name="Minimum Source Ping Interval" id="availableCheckCacheTime" required="true" type="Integer" default="60"
+            description="The minimum time interval (in seconds) between source availability checks.  Source status will be pulled from cache if the minimum time has not passed." />
+
+        <AD name="Wrap Atom Content with XML Fragment" id="wrapContentWithXmlOption" type="String" default="NEVER_WRAP"
+            description="Check the box if you want the atom content value to be wrapped with an xml-fragment tag.  This must be done if the metadata value returned is not valid XML, 
+            for instance if it is Html and doesn't have asingle root element">
+            <Option label="Never Wrap the Content Value" value="NEVER_WRAP" />
+            <Option label="Always Wrap the Content Value" value="ALWAYS_WRAP" />
+            <Option label="Only Wrap HTML and Text Content Values" value="WRAP_HTML_AND_TEXT" />
+        </AD>
+
+        <AD name="Metadata Link Relation" id="metadataLinkRelation" type="String" default="alternate"
+            description="The link relation to use to populate the Metacard.METADATA element (leave blank if link relation not used)" />
+
+        <AD name="Product Link Relation" id="productLinkRelation" type="String" default="enclosure"
+            description="The link relation to use to point to the Product" />
+
+        <AD name="Thumbnail Link Relation" id="thumbnailLinkRelation" type="String" default="preview"
+            description="The link relation to use to populate the Metacard.THUMBNAIL element (leave blank if link relation not used)" />
+
+        <AD name="Proxy Product URLs through Local Node" id="proxyProductUrls" type="Boolean" default="false"
+            description="Check the box if you want all product URLs to be returned as local URLs referencing the existing server.  This should be checked if it is expected
+            that the client would not be able to directly access URLs that are pointing to the remote data source (e.g. if there were firewalls inplace that would prohibit the access from 
+            the client machine web browser)" />
+
+        <AD name="Parameter Mapping" id="parameterMap" required="false" type="String" default="os:searchTerms=q,os:count=count,os:startIndex=startIndex,time:start=dtStart,time:end=dtEnd,geo:uid=uid,geo:box=box,geo:lat=lat,geo:lon=lon,geo:radius=radius,geo:geometry=geometry,sru:sortKeys=sortKeys" cardinality="100"
+            description="Mapping for this source that converts the query request into opensearch parameters. The mapping should be done by using &lt;query attribute&gt;=&lt;opensearch parameter&gt; format.">
+        </AD>
+
+        <AD name="Start Index Numbering" id="startIndexStartNumber" required="true" type="String" default="1"
+            description="The method to lookup the single metacard entry for ID searches">
+            <Option label="1-Based (Starts at 1)" value="1" />
+            <Option label="0-Based (Starts at 0)" value="0" />
+        </AD>
+        
+        <AD name="Result Cache Expires" id="cacheExpirationMinutes" type="Long" default="60"
+            description="If the geo:uid parameter is not populated/supported, the results will be cached which will enable lookups by ID.  This specifies the number of minutes before the results are removed from the cache" />
+
+        <AD name="Sort Mapping" id="sortMap" required="false" type="String" default="title=entry/title,modified=entry/date,RELEVANCE=score" cardinality="100"
+            description="Mapping for this source that converts the metacard attribute to a sort type for the outgoing request. The mapping should be done by using &lt;metacard attribute&gt;=&lt;cdr
+            type&gt; format.">
+        </AD>
+
+        <AD name="Disable CN Checking" id="disableCNCheck" required="false" type="Boolean" default="false"
+            description="Check this box if the outgoing request should NOT perform a common name (CN) check of certificates during SSL-based communications.">
+        </AD>
+
+        <AD name="Send SAML Security Cookie" id="sendSecurityCookie" required="true" type="Boolean" default="false"
+            description="Check this option to send the user's security credentials in the form of a cookie to the external source. Having this box unchecked will cause no security credentials to be
+            sent. NOTE: To ensure confidentiality, this setting should only be checked when connecting over HTTPS/SSL.">
+        </AD>
+
+    </OCD>
 
     <Designate pid="ecdr-opensearch-source" factoryPid="ecdr-opensearch-source">
         <Object ocdref="ecdr-opensearch-source" />
+    </Designate>
+    
+    <Designate pid="ecdr-opensearch-connected-source" factoryPid="ecdr-opensearch-connected-source">
+        <Object ocdref="ecdr-opensearch-connected-source" />
     </Designate>
 </metatype:MetaData>

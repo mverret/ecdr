@@ -28,11 +28,13 @@
 
     <feature name="cdr-rest-search-endpoint" install="manual" version="${project.version}" description="CDR REST Search endpoint.">
         <feature>cdr-ddf-registry-core</feature>
+        <feature>cxf-rs-security-cors</feature>
         <bundle>mvn:net.di2e.ecdr.transformer/cdr-transformer-mapper/${project.version}</bundle>
         <bundle>mvn:net.di2e.ecdr.libs/cdr-rest-search-commons/${project.version}</bundle>
         <bundle>mvn:net.di2e.ecdr.endpoint/cdr-endpoint-sortmapper/${project.version}</bundle>
         <bundle>mvn:net.di2e.ecdr.libs/cdr-libs-result-relevance-normalizer/${project.version}</bundle>
         <bundle>mvn:net.di2e.ecdr.federation/cdr-federation-strategies/${project.version}</bundle>
+        <bundle>mvn:net.di2e.ecdr.security/cdr-cors-filter/${project.version}</bundle>
         <bundle>mvn:net.di2e.ecdr.endpoint/cdr-rest-search-endpoint/${project.version}</bundle>
     </feature>
 
@@ -46,10 +48,13 @@
 
     <feature name="cdr-rest-broker-endpoint" install="manual" version="${project.version}" description="CDR REST Search endpoint.">
         <feature>cdr-ddf-registry-core</feature>
+        <feature>cxf-rs-security-cors</feature>
         <bundle>mvn:net.di2e.ecdr.transformer/cdr-transformer-mapper/${project.version}</bundle>
         <bundle>mvn:net.di2e.ecdr.libs/cdr-rest-search-commons/${project.version}</bundle>
+        <bundle>mvn:net.di2e.ecdr.endpoint/cdr-endpoint-sortmapper/${project.version}</bundle>
         <bundle>mvn:net.di2e.ecdr.libs/cdr-libs-result-relevance-normalizer/${project.version}</bundle>
         <bundle>mvn:net.di2e.ecdr.federation/cdr-federation-strategies/${project.version}</bundle>
+        <bundle>mvn:net.di2e.ecdr.security/cdr-cors-filter/${project.version}</bundle>
         <bundle>mvn:net.di2e.ecdr.endpoint/cdr-rest-broker-endpoint/${project.version}</bundle>
     </feature>
 
