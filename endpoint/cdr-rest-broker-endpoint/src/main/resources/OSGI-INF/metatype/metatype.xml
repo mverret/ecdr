@@ -22,8 +22,8 @@
 
         <AD name="Default Response Format" id="defaultResponseFormat" required="true" type="String" default="atom"
             description="The default response format to return results as if no format parameter is supplied in the query">
-            <Option label="Atom" value="atom" />
-            <Option label="Atom with Metadata Payload (any format)" value="atom-ddms" />
+            <Option label="Atom" value="cdr-atom" />
+            <Option label="Atom with Metadata Payload (any format)" value="atom-with-payload" />
         </AD>
         
         <AD name="Default Fuzzy Search" id="defaultFuzzySearch" required="true" type="Boolean" default="true"

@@ -99,7 +99,7 @@ public class BasicQueryParser implements QueryParser {
     private long defaultTimeoutMillis = 300000;
     private String defaultDateType = "effective";
     private double defaultRadius = 10000;
-    private String defaultResponseFormat = "atom";
+    private String defaultResponseFormat = SearchConstants.ATOM_RESPONSE_FORMAT;;
     private boolean defaultFuzzySearch = true;
     private Map<String, String> parameterExtensionMap = SearchUtils.convertToMap( "uid=id" );
     private List<String> parameterPropertyList = new ArrayList<>();
