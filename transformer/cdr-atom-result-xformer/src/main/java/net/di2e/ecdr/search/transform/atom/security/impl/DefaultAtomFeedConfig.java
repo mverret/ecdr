@@ -15,17 +15,20 @@
  */
 package net.di2e.ecdr.search.transform.atom.security.impl;
 
-import net.di2e.ecdr.search.transform.atom.security.SecurityConfiguration;
-import org.osgi.service.cm.Configuration;
-import org.osgi.service.cm.ConfigurationAdmin;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
+
+import net.di2e.ecdr.commons.util.ConfigAdminUtils;
+import net.di2e.ecdr.search.transform.atom.security.SecurityConfiguration;
+
+import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.service.cm.Configuration;
+import org.osgi.service.cm.ConfigurationAdmin;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DefaultAtomFeedConfig {
 
@@ -39,9 +42,8 @@ public class DefaultAtomFeedConfig {
 
     public enum DefaultConfig {
 
-        ISM_v9( "atom,atom-ddms,atom-ddms-4.1,query-default,metacard-default," + SecurityConfiguration.DEFAULT_FORMAT_CONFIGURATION,
-            "urn:us:gov:ic:ism", "DESVersion=9,classification=U,ownerProducer=USA" ),
-        ISM_v2( "atom-ddms-2.0", "urn:us:gov:ic:ism:v2", "classification=U,ownerProducer=USA" );
+        ISM_v9( "atom,atom-ddms,atom-ddms-4.1,query-default,metacard-default," + SecurityConfiguration.DEFAULT_FORMAT_CONFIGURATION, "urn:us:gov:ic:ism",
+                "DESVersion=9,classification=U,ownerProducer=USA" ), ISM_v2( "atom-ddms-2.0", "urn:us:gov:ic:ism:v2", "classification=U,ownerProducer=USA" );
 
         private final String format;
         private final String namespace;
@@ -71,22 +73,18 @@ public class DefaultAtomFeedConfig {
         configAdmin = configurationAdmin;
     }
 
-    public void init() throws IOException {
-        for ( DefaultConfig config : DefaultConfig.values() ) {
-            LOGGER.debug( "Adding configuration with format {}", config.getFormats() );
-            Configuration configuration = configAdmin.createFactoryConfiguration( CONFIG_PID );
-            Dictionary<String, String> properties = new Hashtable<>();
-            properties.put( "configFormats", config.getFormats() );
-            properties.put( "namespace", config.getNamespace() );
-            properties.put( "attributeList", config.getAttributes() );
-            configuration.update( properties );
-            configurationList.add( configuration );
-        }
-    }
-
-    public void destroy() throws IOException {
-        for ( Configuration curConfig : configurationList ) {
-            curConfig.delete();
+    public void init() throws IOException, InvalidSyntaxException {
+        if ( !ConfigAdminUtils.configurationPidExists( configAdmin, CONFIG_PID ) ) {
+            for ( DefaultConfig config : DefaultConfig.values() ) {
+                LOGGER.debug( "Adding configuration with format {}", config.getFormats() );
+                Configuration configuration = configAdmin.createFactoryConfiguration( CONFIG_PID );
+                Dictionary<String, String> properties = new Hashtable<>();
+                properties.put( "configFormats", config.getFormats() );
+                properties.put( "namespace", config.getNamespace() );
+                properties.put( "attributeList", config.getAttributes() );
+                configuration.update( properties );
+                configurationList.add( configuration );
+            }
         }
     }
 

@@ -17,6 +17,8 @@ public final class SearchConstants {
     private SearchConstants() {
     }
 
+    public static final String ATOM_RESPONSE_FORMAT = "cdr-atom";
+
     public static final String NO_QUERY_PARAMETERS_MESSAGE = "The query did not contain any of the required critera, one of the following is required [searchTerms, geospatial, or temporal]";
 
     public static final String POSTED = "posted";

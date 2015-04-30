@@ -21,7 +21,10 @@ import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
 
+import net.di2e.ecdr.commons.util.ConfigAdminUtils;
+
 import org.opengis.filter.sort.SortOrder;
+import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.slf4j.Logger;
@@ -73,22 +76,18 @@ public class DefaultSortTypeConfigurations {
         configAdmin = configurationAdmin;
     }
 
-    public void init() throws IOException {
-        for ( SortMap map : SortMap.values() ) {
-            LOGGER.debug( "Adding configuration with key {}", map.getKey() );
-            Configuration configuration = configAdmin.createFactoryConfiguration( MAPPING_PID );
-            Dictionary<String, String> properties = new Hashtable<>();
-            properties.put( "sortKey", map.getKey() );
-            properties.put( "sortAttribute", map.getAttribute() );
-            properties.put( "sortOrder", map.getOrder() );
-            configuration.update( properties );
-            configurationList.add( configuration );
-        }
-    }
-
-    public void destroy() throws IOException {
-        for ( Configuration curConfig : configurationList ) {
-            curConfig.delete();
+    public void init() throws IOException, InvalidSyntaxException {
+        if ( !ConfigAdminUtils.configurationPidExists( configAdmin, MAPPING_PID ) ) {
+            for ( SortMap map : SortMap.values() ) {
+                LOGGER.debug( "Adding configuration with key {}", map.getKey() );
+                Configuration configuration = configAdmin.createFactoryConfiguration( MAPPING_PID );
+                Dictionary<String, String> properties = new Hashtable<>();
+                properties.put( "sortKey", map.getKey() );
+                properties.put( "sortAttribute", map.getAttribute() );
+                properties.put( "sortOrder", map.getOrder() );
+                configuration.update( properties );
+                configurationList.add( configuration );
+            }
         }
     }
 

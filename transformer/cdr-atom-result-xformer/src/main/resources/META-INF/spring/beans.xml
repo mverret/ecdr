@@ -28,7 +28,7 @@
 
     <reference id="configurationAdmin" interface="org.osgi.service.cm.ConfigurationAdmin" />
 
-    <beans:bean name="defaultSecurityConfigs" class="net.di2e.ecdr.search.transform.atom.security.impl.DefaultAtomFeedConfig" init-method="init" destroy-method="destroy">
+    <beans:bean name="defaultSecurityConfigs" class="net.di2e.ecdr.search.transform.atom.security.impl.DefaultAtomFeedConfig" init-method="init">
         <beans:constructor-arg ref="configurationAdmin" />
     </beans:bean>
 
