@@ -12,6 +12,8 @@
  **/
 package net.di2e.ecdr.commons.constants;
 
+import ddf.catalog.data.Metacard;
+
 public final class SearchConstants {
     
     private SearchConstants() {
@@ -72,6 +74,10 @@ public final class SearchConstants {
     // Parameter that are part of the Basic Plus query profile
     public static final String GEOSPATIALOPERATOR_PARAMETER = "spatialOp";
     public static final String TEXTPATH_PARAMETER = "textPath";
+    public static final String RESOURCE_URI_PARAMETER = Metacard.RESOURCE_URI;
+    public static final String CONTENT_TYPE_PARAMETER = Metacard.CONTENT_TYPE;
+
+    public static final String CONTENT_COLLECTIONS_PARAMETER = "collections";
 
     public static final String CDR_KEYWORD_QUERY_LANGUAGE = "cdr-kw-basic-2.0";
     public static final String CDR_CQL_QUERY_LANGUAGE = "cql-1.2";

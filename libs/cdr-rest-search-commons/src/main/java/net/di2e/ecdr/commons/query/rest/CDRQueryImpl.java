@@ -19,6 +19,7 @@ import java.util.List;
 
 import javax.ws.rs.core.MultivaluedMap;
 
+import net.di2e.ecdr.commons.CDRMetacard;
 import net.di2e.ecdr.commons.constants.BrokerConstants;
 import net.di2e.ecdr.commons.constants.SearchConstants;
 import net.di2e.ecdr.commons.query.GeospatialCriteria;
@@ -309,18 +310,31 @@ public class CDRQueryImpl implements Query {
 
             if ( property.equals( Metacard.CONTENT_TYPE ) ) {
                 filter = getContentTypeFilter( filterBuilder, value );
-                humanReadableQueryBuilder.append( " " + property + "-like[" + value + "] " );
+                humanReadableQueryBuilder.append( " " + property + "=like[" + value + "] " );
+            } else if ( property.equals( CDRMetacard.METACARD_CONTENT_COLLECTION_ATTRIBUTE ) ) {
+                filter = getContentCollectionsFilter( filterBuilder, property, value );
+                humanReadableQueryBuilder.append( " " + property + "=like[" + value + "] " );
             } else {
                 if ( Operator.EQUALS.equals( operator ) ) {
                     filter = filterBuilder.attribute( property ).equalTo().text( value );
                     humanReadableQueryBuilder.append( " " + property + "=[" + value + "] " );
                 } else if ( Operator.LIKE.equals( operator ) ) {
                     filter = filterBuilder.attribute( property ).like().text( value );
-                    humanReadableQueryBuilder.append( " " + property + "-like[" + value + "] " );
+                    humanReadableQueryBuilder.append( " " + property + "=like[" + value + "] " );
                 }
             }
         }
         return filter;
+    }
+
+    private Filter getContentCollectionsFilter( FilterBuilder filterBuilder, String property, String value ) {
+        List<Filter> filterList = new ArrayList<Filter>();
+        String[] collections = value.split( "," );
+        for ( String collection : collections ) {
+            filterList.add( filterBuilder.attribute( property ).like().text( collection ) );
+        }
+
+        return filterBuilder.anyOf( filterList );
     }
 
     private Filter getContentTypeFilter( FilterBuilder filterBuilder, String value ) {

@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.di2e.ecdr.commons.CDRMetacard;
 import net.di2e.ecdr.commons.constants.SearchConstants;
 import net.di2e.ecdr.commons.filter.config.FilterConfig;
 
@@ -45,7 +46,8 @@ public class StrictFilterDelegate extends AbstractFilterDelegate<Map<String, Str
 
     private static final Map<String, String> DATETYPE_MAP = new HashMap<String, String>();
     public static final Map<String, String> SORTKEYS_MAP = new HashMap<String, String>();
-
+    private static final Map<String, String> PROPERTY_NAME_MAP = new HashMap<String, String>();
+    
     private boolean strictMode = false;
 
     static {
@@ -60,7 +62,9 @@ public class StrictFilterDelegate extends AbstractFilterDelegate<Map<String, Str
         SORTKEYS_MAP.put( Metacard.TITLE, "entry/title" );
         SORTKEYS_MAP.put( Metacard.MODIFIED, "entry/date" );
         SORTKEYS_MAP.put( Result.RELEVANCE, "score" );
-
+        
+        PROPERTY_NAME_MAP.put( Metacard.ID, SearchConstants.UID_PARAMETER );
+        PROPERTY_NAME_MAP.put( CDRMetacard.METACARD_CONTENT_COLLECTION_ATTRIBUTE, SearchConstants.CONTENT_COLLECTIONS_PARAMETER );
     }
 
     public StrictFilterDelegate( boolean strictMode, double defaultRadiusforNN, FilterConfig config ) {
@@ -195,9 +199,9 @@ public class StrictFilterDelegate extends AbstractFilterDelegate<Map<String, Str
                 filterContainer.put( SearchConstants.FUZZY_PARAMETER, SearchConstants.TRUE_STRING );
             }
         } else {
-            // The geo:uid parameter is used to uniquely find an entry so we must map the Metacard.ID to geo:uid
-            if ( Metacard.ID.equals( propertyName ) ) {
-                filterContainer.put( SearchConstants.UID_PARAMETER, literal );
+            // Map from the internal filter value to the CDRSource value
+            if ( PROPERTY_NAME_MAP.containsKey( propertyName ) ) {
+                filterContainer.put( PROPERTY_NAME_MAP.get( propertyName ), literal ); 
             } else {
                 filterContainer.put( propertyName, literal );
             }

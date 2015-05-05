@@ -34,6 +34,8 @@ import ddf.catalog.data.impl.MetacardImpl;
 
 public class CDRMetacard extends MetacardImpl {
 
+    public static final String METACARD_CONTENT_COLLECTION_ATTRIBUTE = "content-collections";
+
     public static final String LINK_REL_PREVIEW = "preview";
 
     public static final String RESOURCE_MIME_TYPE = "resource-mime-type";

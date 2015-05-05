@@ -58,8 +58,8 @@ public class LegacyQueryParser extends BasicQueryParser {
 
     public List<PropertyCriteria> getPropertyCriteria( MultivaluedMap<String, String> queryParameters ) {
         List<PropertyCriteria> criteriaList = super.getPropertyCriteria( queryParameters );
-        if ( queryParameters.containsKey( Metacard.RESOURCE_URI ) ) {
-            String uriString = queryParameters.getFirst( Metacard.RESOURCE_URI );
+        if ( queryParameters.containsKey( SearchConstants.RESOURCE_URI_PARAMETER ) ) {
+            String uriString = queryParameters.getFirst( SearchConstants.RESOURCE_URI_PARAMETER );
 
             if ( StringUtils.isNotEmpty( uriString ) ) {
                 if ( uriString.startsWith( DAD_SCHEME ) ) {
@@ -85,8 +85,8 @@ public class LegacyQueryParser extends BasicQueryParser {
                 criteriaList.add( new PropertyCriteria( Metacard.RESOURCE_URI, uriString, Operator.EQUALS ) );
             }
         }
-        if ( queryParameters.containsKey( Metacard.CONTENT_TYPE ) ) {
-            String contentTypesString = queryParameters.getFirst( Metacard.CONTENT_TYPE );
+        if ( queryParameters.containsKey( SearchConstants.CONTENT_TYPE_PARAMETER ) ) {
+            String contentTypesString = queryParameters.getFirst( SearchConstants.CONTENT_TYPE_PARAMETER );
             if ( StringUtils.isNotEmpty( contentTypesString ) ) {
                 criteriaList.add( new PropertyCriteria( Metacard.CONTENT_TYPE, contentTypesString, Operator.EQUALS ) );
             }
