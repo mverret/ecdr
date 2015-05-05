@@ -15,9 +15,15 @@ package net.di2e.ecdr.commons.query.cache;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import net.di2e.ecdr.commons.constants.SearchConstants;
+
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class QueryRequestCache {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger( QueryRequestCache.class );
 
     private LRUCache<String, Boolean> cache = null;
 
@@ -34,6 +40,7 @@ public class QueryRequestCache {
                 cache.put( id, Boolean.TRUE );
             }
         }
+        LOGGER.debug( "Checking uniqueness of query with {}={} and isUnique={}", SearchConstants.OID_PARAMETER, id, unique );
         return unique;
     }
 

@@ -12,17 +12,12 @@
  **/
 package net.di2e.ecdr.commons.query;
 
-import ddf.catalog.data.Metacard;
 
 public class PropertyCriteria {
 
     public enum Operator {
         EQUALS, LIKE
     }
-
-    public static final String ID_PROPERTY = Metacard.ID;
-    public static final String RESOURCE_URI_PROPERTY = Metacard.RESOURCE_URI;
-    public static final String CONTENTTYPE_PROPERTY = Metacard.CONTENT_TYPE;
 
     private String property = null;
     private String value = null;
