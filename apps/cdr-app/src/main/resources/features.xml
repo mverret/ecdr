@@ -37,6 +37,11 @@
         <bundle>mvn:net.di2e.ecdr.security/cdr-cors-filter/${project.version}</bundle>
         <bundle>mvn:net.di2e.ecdr.endpoint/cdr-rest-search-endpoint/${project.version}</bundle>
     </feature>
+    
+    <feature name="cdr-rest-describe-endpoint" install="manual" version="${project.version}" description="CDR REST Describe endpoint.">
+        <feature>cdr-ddf-registry-core</feature>
+        <bundle>mvn:net.di2e.ecdr.endpoint/cdr-rest-describe-endpoint/${project.version}</bundle>
+    </feature>
 
     <feature name="cdr-rest-source" install="manual" version="${project.version}" description="CDR REST Source">
         <feature>cdr-atom-result-xformer</feature>
@@ -77,6 +82,7 @@
         <feature>cdr-rest-search-endpoint</feature>
         <feature>cdr-rest-broker-endpoint</feature>
         <feature>cdr-rest-source</feature>
+        <feature>cdr-rest-describe-endpoint</feature>
     </feature>
 
 </features>
