@@ -20,8 +20,8 @@
 
     <OCD name="CDR Describe Endpoint" id="cdr-rest-describe-endpoint">
 
-        <AD name="Path to Describe File" id="pathToDescribeFile" required="true" type="String" default="etc\ecdr\describe.xml"
-            description="The relative path (from DDF_HOME) to the describe file that will be returned on Describe Service calls">
+        <AD name="Path to Describe File" id="pathToDescribeFile" required="true" type="String" default=""
+            description="The absolute path to the describe XML file that will be returned on Describe Service calls">
         </AD>  
             
     </OCD>
