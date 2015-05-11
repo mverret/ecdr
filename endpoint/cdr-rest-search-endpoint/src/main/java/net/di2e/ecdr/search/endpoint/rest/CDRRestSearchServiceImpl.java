@@ -16,6 +16,7 @@
 package net.di2e.ecdr.search.endpoint.rest;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.GET;
@@ -27,12 +28,14 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import net.di2e.ecdr.api.auditor.SearchAuditor;
 import net.di2e.ecdr.commons.endpoint.rest.AbstractRestSearchEndpoint;
 import net.di2e.ecdr.commons.query.rest.CDRQueryImpl;
 import net.di2e.ecdr.commons.query.rest.parsers.QueryParser;
 import net.di2e.ecdr.federation.FifoFederationStrategy;
 import net.di2e.ecdr.search.transform.mapper.TransformIdMapper;
 
+import org.apache.cxf.jaxrs.ext.MessageContext;
 import org.codice.ddf.configuration.impl.ConfigurationWatcherImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,8 +91,8 @@ public class CDRRestSearchServiceImpl extends AbstractRestSearchEndpoint {
      *            transform name
      */
     public CDRRestSearchServiceImpl( CatalogFramework framework, ConfigurationWatcherImpl config, FilterBuilder builder, QueryParser parser, TransformIdMapper mapper,
-            FifoFederationStrategy fedStrategy ) {
-        super( framework, config, builder, parser, mapper );
+            FifoFederationStrategy fedStrategy, List<SearchAuditor> auditors ) {
+        super( framework, config, builder, parser, mapper, auditors );
         fifoFederationStratgey = fedStrategy;
     }
 
@@ -101,9 +104,10 @@ public class CDRRestSearchServiceImpl extends AbstractRestSearchEndpoint {
     }
 
     @GET
-    public Response search( @Context UriInfo uriInfo, @HeaderParam( "Accept-Encoding" ) String encoding, @HeaderParam( "Authorization" ) String auth ) {
+    public Response search( @Context MessageContext context, @HeaderParam( "Accept-Encoding" ) String encoding, @HeaderParam( "Authorization" ) String auth ) {
+        UriInfo uriInfo = context.getUriInfo();
         LOGGER.debug( "Query received on CDR Search Endpoint: {}", uriInfo.getRequestUri() );
-        return executeSearch( uriInfo, encoding, auth );
+        return executeSearch( context.getHttpServletRequest(), uriInfo, encoding, auth );
     }
 
     @Override

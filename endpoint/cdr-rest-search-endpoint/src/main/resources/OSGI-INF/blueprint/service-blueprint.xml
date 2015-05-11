@@ -77,6 +77,8 @@
         <argument ref="sortTypeConfigurations" />
         <cm:managed-properties persistent-id="cdr-rest-search-endpoint-1.1" update-strategy="container-managed"/>
     </bean>
+    
+    <reference-list id="auditorList" interface="net.di2e.ecdr.api.auditor.SearchAuditor" availability="optional" />
 
     <bean id="cdrRestSearchService" class="net.di2e.ecdr.search.endpoint.rest.CDRRestSearchServiceImpl">
         <argument ref="catalogFramework" />
@@ -85,6 +87,7 @@
         <argument ref="queryParser" />
         <argument ref="transformIdMapper" />
         <argument ref="fifoFederationStrategyBean"/>
+        <argument ref="auditorList"/>
     </bean>
 
     <service ref="cdrRestSearchService" auto-export="interfaces" />

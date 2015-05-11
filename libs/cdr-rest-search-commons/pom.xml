@@ -32,7 +32,13 @@
             <artifactId>cdr-transformer-mapper</artifactId>
             <version>${project.version}</version>
         </dependency>
-         
+        
+         <dependency>
+            <groupId>net.di2e.ecdr.api</groupId>
+            <artifactId>cdr-api-auditor</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        
         <dependency>
             <groupId>org.codice.ddf</groupId>
             <artifactId>platform-configuration-impl</artifactId>

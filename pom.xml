@@ -657,6 +657,7 @@
     </pluginRepositories>
 
     <modules>
+        <module>api</module>
         <module>libs</module>
         <module>security</module>
 		<module>transformer</module>

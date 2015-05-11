@@ -1,15 +1,18 @@
 /**
- * Copyright (c) Cohesive Integrations, LLC
+ * Copyright (C) 2014 Cohesive Integrations, LLC (info@cohesiveintegrations.com)
  *
- * This is free software: you can redistribute it and/or modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation, either version 3 of the License, or any later version. 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
- * details. A copy of the GNU Lesser General Public License is distributed along with this program and can be found at
- * <http://www.gnu.org/licenses/lgpl.html>.
+ *         http://www.apache.org/licenses/LICENSE-2.0
  *
- **/
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package net.di2e.ecdr.commons.endpoint.rest;
 
 import java.io.IOException;
@@ -18,8 +21,10 @@ import java.io.Serializable;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -31,6 +36,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
+import net.di2e.ecdr.api.auditor.SearchAuditor;
 import net.di2e.ecdr.commons.constants.SearchConstants;
 import net.di2e.ecdr.commons.query.rest.CDRQueryImpl;
 import net.di2e.ecdr.commons.query.rest.parsers.QueryParser;
@@ -66,6 +72,7 @@ public abstract class AbstractRestSearchEndpoint implements RegistrableService {
     private ConfigurationWatcherImpl platformConfig = null;
     private FilterBuilder filterBuilder = null;
     private QueryParser queryParser = null;
+    private List<SearchAuditor> auditors = null;
 
     private TransformIdMapper transformMapper = null;
 
@@ -74,21 +81,26 @@ public abstract class AbstractRestSearchEndpoint implements RegistrableService {
      * passed into the constructor using a dependency injection framework like
      * blueprint
      *
-     * @param framework Catalog Framework which will be used for search
-     * @param config    ConfigurationWatcherImpl used to get the platform
-     *                  configuration values
-     * @param builder   FilterBuilder implementation
-     * @param parser    The instance of the QueryParser to use which will determine
-     *                  how to parse the parameters from the query String. Query
-     *                  parsers are tied to different versions of a query profile
+     * @param framework
+     *            Catalog Framework which will be used for search
+     * @param config
+     *            ConfigurationWatcherImpl used to get the platform
+     *            configuration values
+     * @param builder
+     *            FilterBuilder implementation
+     * @param parser
+     *            The instance of the QueryParser to use which will determine
+     *            how to parse the parameters from the query String. Query
+     *            parsers are tied to different versions of a query profile
      */
     public AbstractRestSearchEndpoint( CatalogFramework framework, ConfigurationWatcherImpl config, FilterBuilder builder, QueryParser parser,
-        TransformIdMapper mapper ) {
+            TransformIdMapper mapper, List<SearchAuditor> auditorList ) {
         this.catalogFramework = framework;
         this.platformConfig = config;
         this.filterBuilder = builder;
         this.queryParser = parser;
         this.transformMapper = mapper;
+        this.auditors = auditorList;
     }
 
     public Response executePing( UriInfo uriInfo, String encodingHeader, String authHeader ) {
@@ -101,25 +113,30 @@ public abstract class AbstractRestSearchEndpoint implements RegistrableService {
      * corresponding URL. HTTP GET URL query parameters contain the query
      * criteria values
      *
-     * @param uriInfo  Query parameters obtained by e
-     * @param encoding accept-encoding from the client
-     * @param auth     Authorization header
+     * @param uriInfo
+     *            Query parameters obtained by e
+     * @param encoding
+     *            accept-encoding from the client
+     * @param auth
+     *            Authorization header
      * @return Response to send back to the calling client
      */
-    public Response executeSearch( UriInfo uriInfo, String encoding, String auth ) {
+    public Response executeSearch( HttpServletRequest servletRequest, UriInfo uriInfo, String encoding, String auth ) {
         Response response;
+        QueryResponse queryResponse = null;
+        boolean success = false;
         try {
             String localSourceId = platformConfig.getSiteName();
             MultivaluedMap<String, String> queryParameters = uriInfo.getQueryParameters();
             CDRQueryImpl query = new CDRQueryImpl( filterBuilder, queryParameters, queryParser, useDefaultSortIfNotSpecified(), localSourceId );
 
-            QueryResponse queryResponse = executeQuery( localSourceId, queryParameters, query );
+            queryResponse = executeQuery( localSourceId, queryParameters, query );
 
             // Move the specific links into Atom Transformer if possible
             Map<String, Serializable> transformProperties = QueryHelper.getTransformLinkProperties( uriInfo, query, queryResponse,
-                platformConfig.getSchemeFromProtocol(), platformConfig.getHostname(), platformConfig.getPort() );
+                    platformConfig.getSchemeFromProtocol(), platformConfig.getHostname(), platformConfig.getPort() );
             transformProperties.put( SearchConstants.FEED_TITLE, "Atom Search Results from '" + localSourceId + "' for Query: "
-                + query.getHumanReadableQuery().trim() );
+                    + query.getHumanReadableQuery().trim() );
             transformProperties.put( SearchConstants.FORMAT_PARAMETER, query.getResponseFormat() );
             transformProperties.put( SearchConstants.STATUS_PARAMETER, queryParser.isIncludeStatus( queryParameters ) );
             transformProperties.put( SearchConstants.LOCAL_SOURCE_ID, catalogFramework.getId() );
@@ -133,6 +150,7 @@ public abstract class AbstractRestSearchEndpoint implements RegistrableService {
 
             try ( InputStream is = content.getInputStream() ) {
                 response = Response.ok( is, content.getMimeTypeValue() ).build();
+                success = true;
             } catch ( IOException e ) {
                 LOGGER.error( "Error reading response [" + e.getMessage() + "]", e );
                 response = Response.status( Response.Status.INTERNAL_SERVER_ERROR ).build();
@@ -157,6 +175,9 @@ public abstract class AbstractRestSearchEndpoint implements RegistrableService {
             response = Response.status( Response.Status.INTERNAL_SERVER_ERROR ).build();
         }
 
+        for ( SearchAuditor auditor : auditors ) {
+            auditor.auditRESTQuery( servletRequest, queryResponse, response );
+        }
         return response;
     }
 
@@ -168,10 +189,10 @@ public abstract class AbstractRestSearchEndpoint implements RegistrableService {
         osd.setShortName( platformConfig.getSiteName() );
         osd.setDescription( getServiceDescription() );
         osd.setTags( "ecdr opensearch cdr ddf" );
-        if ( StringUtils.isNotBlank(platformConfig.getOrganization())) {
+        if ( StringUtils.isNotBlank( platformConfig.getOrganization() ) ) {
             osd.setDeveloper( platformConfig.getOrganization() );
         }
-        if (StringUtils.isNotBlank( platformConfig.getContactEmailAddress() )) {
+        if ( StringUtils.isNotBlank( platformConfig.getContactEmailAddress() ) ) {
             osd.setContact( platformConfig.getContactEmailAddress() );
         }
         Query query = new Query();
@@ -205,7 +226,7 @@ public abstract class AbstractRestSearchEndpoint implements RegistrableService {
             marshaller.setProperty( Marshaller.JAXB_FORMATTED_OUTPUT, true );
             marshaller.setProperty( Marshaller.JAXB_FRAGMENT, true );
             marshaller.marshal( osd, writer );
-            is = getClass().getResourceAsStream("/templates/osd_info.template");
+            is = getClass().getResourceAsStream( "/templates/osd_info.template" );
             if ( is != null ) {
                 String osdTemplate = IOUtils.toString( is );
 
@@ -218,7 +239,7 @@ public abstract class AbstractRestSearchEndpoint implements RegistrableService {
             LOGGER.warn( "Could not create OSD for client due to exception.", e );
             return Response.serverError().build();
         } finally {
-            IOUtils.closeQuietly(is);
+            IOUtils.closeQuietly( is );
         }
     }
 
@@ -238,7 +259,7 @@ public abstract class AbstractRestSearchEndpoint implements RegistrableService {
     public abstract boolean useDefaultSortIfNotSpecified();
 
     public abstract QueryResponse executeQuery( String localSourceId, MultivaluedMap<String, String> queryParameters, CDRQueryImpl query )
-        throws SourceUnavailableException, UnsupportedQueryException, FederationException;
+            throws SourceUnavailableException, UnsupportedQueryException, FederationException;
 
     @Override
     public Map<String, String> getProperties() {
