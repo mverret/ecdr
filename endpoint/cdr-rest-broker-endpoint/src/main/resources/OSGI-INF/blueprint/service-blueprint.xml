@@ -75,6 +75,8 @@
             <ref component-id="cors-filter" />
         </jaxrs:providers>
     </jaxrs:server>
+    
+    <reference-list id="auditorList" interface="net.di2e.ecdr.api.auditor.SearchAuditor" availability="optional" />
 
     <bean id="cdrRestSearchService" class="net.di2e.ecdr.broker.endpoint.rest.CDRRestBrokerServiceImpl">
         <argument ref="catalogFramework" />
@@ -84,6 +86,7 @@
         <argument ref="transformIdMapper" />
         <argument ref="normalizingFedStrategy" />
         <argument ref="fifoFederationStrategyBean" />
+        <argument ref="auditorList"/>
     </bean>
 
     <service ref="cdrRestSearchService" auto-export="interfaces" />

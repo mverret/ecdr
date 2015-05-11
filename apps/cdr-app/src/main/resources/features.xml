@@ -74,10 +74,15 @@
         <bundle>mvn:ddf.registry.core/registry-core-api/${ddf.registry.version}</bundle>
     </feature>
     
+    <feature name="cdr-api-auditor" install="manual" version="${project.version}" description="Auditor API">
+        <bundle>mvn:net.di2e.ecdr.api/cdr-api-auditor/${project.version}</bundle>
+    </feature>
+    
     <feature name="cdr-app" install="auto" version="${project.version}"
         description="Enterprise CDR (Content Discovery and Retrieval) is used for discovering data that is exposed by the CDR Search and/or Brokered Search Interfaces.::Enterprise CDR">
         <feature>catalog-app</feature>
         <feature>cdr-ddf-registry-core</feature>
+        <feature>cdr-api-auditor</feature>
         <feature>cdr-atom-result-xformer</feature>
         <feature>cdr-rest-search-endpoint</feature>
         <feature>cdr-rest-broker-endpoint</feature>
