@@ -102,6 +102,8 @@
         <ddf.libs.platform-config-impl.version>1.0.0</ddf.libs.platform-config-impl.version>
         <ddf.compression.version>2.6.0</ddf.compression.version>
         <ddf.registry.version>0.1.0</ddf.registry.version>
+
+        <cxf.version>3.0.4</cxf.version>
         
        <!--  <checkstyle.config.location>src/main/resources/cdr-checkstyle.xml</checkstyle.config.location>
          <checkstyle.header.location>src/main/resources/header.txt</checkstyle.header.location>-->
@@ -524,8 +526,8 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.cxf</groupId>
-                <artifactId>cxf-bundle</artifactId>
-                <version>2.7.8</version>
+                <artifactId>apache-cxf</artifactId>
+                <version>3.0.4</version>
             </dependency>
             <dependency> 
                 <groupId>com.hazelcast</groupId>

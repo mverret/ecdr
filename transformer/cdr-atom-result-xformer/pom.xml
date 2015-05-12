@@ -80,6 +80,7 @@
                             platform-configuration-impl,
                             abdera*,
                             axiom*,
+                            joda-time
                         </Embed-Dependency>
                         <Import-Package>
                             !org.apache.commons.codec.*,
